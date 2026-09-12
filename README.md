@@ -9,11 +9,17 @@ actual progress and verification evidence.
 
 The intended workflow is a USB-connected iPhone → available originals → user-selected Mac or
 external-drive folder → verified incremental backup. No account, analytics or cloud processing.
-The app will not modify or delete iPhone media, convert originals, or represent DCIM folders as
+V1 will not modify or delete iPhone media, convert originals, or represent DCIM folders as
 Photos albums. A wired backup can only include originals exposed by the device; iCloud-only or
 otherwise unavailable media may be omitted.
 
 Requires macOS 14 or later; development uses Xcode 27, Swift 6, XcodeGen and SwiftLint.
+
+**Feature backlog:** restore selected photos and videos from an existing backup folder to a new
+iPhone. This remains outside V1 until a supported public approach works without installing an
+extra iPhone app; no companion app is planned. Apple's manual Finder synchronization is an
+external option with different behavior, not an implemented CloakRoll restore feature. See
+[restore research and requirements](docs/RESTORE-TO-IPHONE.md).
 
 ```sh
 cd apps/macos

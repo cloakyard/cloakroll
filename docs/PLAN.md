@@ -133,6 +133,26 @@ Do not claim physical power-loss durability from a process-restart test.
 | 9 Performance | Generated 10k/50k/100k catalogs; timed catalog/matching/startup, bounded thumbnails, measured main-thread/scrolling and database behavior. | Planned |
 | 10 Release | Privacy/entitlement/sandbox review, Release build/lint/tests, docs/screenshots, signing/notarization with verified identity. | Planned |
 
+## Feature backlog — restore to a new iPhone
+
+Requested future feature: choose an existing Mac/external-drive backup folder, preview its photos
+and videos, select items, and copy them into a new iPhone's Photos library. **Backlog only; no
+committed phase, no V1 gate, and no iOS companion app planned.** The user's requirement is that
+no extra app be installed on the iPhone; if one is required, this feature remains in backlog.
+
+[Restore feasibility and conditional design](RESTORE-TO-IPHONE.md) records the official API
+research, native Finder/Photos alternatives, inventory/selection design, conservative duplicate
+handling, resource fidelity and interruption requirements. ImageCaptureCore's historical upload
+method is deprecated because sandbox restrictions prohibit direct device writes. Finder offers
+an external manual synchronization workflow, but no public CloakRoll-controlled additive restore
+path was validated. PhotoKit on the phone would require the excluded companion app.
+
+Promote this item only after the core backup work and a supported public, sandbox-compatible,
+**no-extra-iPhone-app** path has been verified on physical hardware for additive import, original
+resource handling, measured progress, and safe reconciliation of duplicate/unknown outcomes.
+No automatic destructive sync, iPhone deletion, private protocols, or source-backup modification.
+The current phase table and its acceptance gates remain unchanged.
+
 ## Test map
 
 Phase 1 covers deterministic fixtures, date boundaries/unknown dates, filtering, stable ordering,

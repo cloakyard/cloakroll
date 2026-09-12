@@ -87,5 +87,24 @@ private metadata redacted; bookmark bytes and photo content must never be logged
 
 iCloud-optimized devices may not expose every original. Detectable hints may inform the user,
 but successful backup of enumerated items is never presented as a complete iCloud Photos backup.
-Actual Photos album synchronization is separate future research, potentially using PhotoKit and
-an iOS companion; it is outside V1.
+Actual Photos album synchronization remains outside V1. No iOS companion app is planned.
+
+## Restore to a new iPhone — backlog boundary
+
+The requested reverse workflow starts with a selected local backup folder and would add selected
+original media to a new iPhone. It is **backlog only**, outside the committed phases, until a
+supported public approach works without an extra app on the iPhone. The current capture adapter
+must remain read/import only; its presence is not a restore transport.
+
+ImageCaptureCore's generic upload API is deprecated because sandbox restrictions prohibit direct
+device writes. PhotoKit resource creation addresses the library available to the running app;
+using it on the phone would require the excluded companion. Native Finder synchronization is an
+external user-managed workflow, not a validated app-controlled additive restore API. No new
+transport, PhotoKit writer, iOS target, network entitlement or persistence module is introduced.
+See [the sourced restore assessment](docs/RESTORE-TO-IPHONE.md).
+
+If the no-extra-app feasibility gate is ever met, restore needs independent operation/target
+identity, immutable backup inventory, whole-asset resource grouping, and durable completion
+evidence. Backup success must never imply successful phone restoration. Source bytes stay intact;
+target additions require explicit selection, and an unknown target commit cannot be retried
+silently or rolled back through deletion. Those are conditional requirements, not current behavior.
