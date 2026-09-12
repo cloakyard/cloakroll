@@ -8,10 +8,16 @@ struct CloakRollApp: App {
 
     init() {
         #if DEBUG
-        if ProcessInfo.processInfo.arguments.contains("--verify-dark-appearance") {
-            NSApplication.shared.appearance = NSAppearance(named: .darkAqua)
-        } else if ProcessInfo.processInfo.arguments.contains("--verify-light-appearance") {
-            NSApplication.shared.appearance = NSAppearance(named: .aqua)
+        let arguments = ProcessInfo.processInfo.arguments
+        let highContrast = arguments.contains("--verify-increased-contrast")
+        if arguments.contains("--verify-dark-appearance") {
+            NSApplication.shared.appearance = NSAppearance(
+                named: highContrast ? .accessibilityHighContrastDarkAqua : .darkAqua
+            )
+        } else if arguments.contains("--verify-light-appearance") {
+            NSApplication.shared.appearance = NSAppearance(
+                named: highContrast ? .accessibilityHighContrastAqua : .aqua
+            )
         }
         #endif
     }

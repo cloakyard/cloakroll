@@ -4,24 +4,20 @@ struct BackupBar: View {
     @Environment(AppModel.self) private var model
 
     var body: some View {
-        VStack(spacing: 0) {
-            Divider()
-            HStack(spacing: 16) {
-                if model.sampleProgress {
-                    sampleProgress
-                } else {
-                    summary
-                    Spacer(minLength: 12)
-                    Button(actionTitle) { }
-                        .buttonStyle(.bordered)
-                        .disabled(true)
-                        .help(model.isSample ? "Transfers are unavailable in the sample library." : "Backup is not available yet.")
-                }
+        HStack(spacing: 16) {
+            if model.sampleProgress {
+                sampleProgress
+            } else {
+                summary
+                Spacer(minLength: 12)
+                Button(actionTitle) { }
+                    .buttonStyle(.bordered)
+                    .disabled(true)
+                    .help(model.isSample ? "Transfers are unavailable in the sample library." : "Backup is not available yet.")
             }
-            .padding(.horizontal, Design.contentInset)
-            .padding(.vertical, 16)
         }
-        .background(.bar)
+        .padding(.horizontal, Design.contentInset)
+        .padding(.vertical, 16)
     }
 
     private var summary: some View {

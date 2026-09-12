@@ -30,8 +30,9 @@ Reference files were inspected under `../cloakdrop`:
 | Release | `project.yml`, `scripts/dmg`, `.github` | Hardened runtime and ad-hoc local build first. No existing CI workflow to copy. Developer ID/notarization require actual credentials and release verification. |
 
 Do not copy CloakDrop's networking, web browser, segmented downloads, menu-bar ambient systems,
-download actions, helper executables, permanent inspector, or macOS 26-only visual APIs. The macOS
-14 baseline provides Observation, SwiftUI split navigation and Settings without requiring Tahoe.
+download actions, helper executables, or permanent inspector. The macOS 14 baseline provides
+Observation, SwiftUI split navigation and Settings. Following the user's Liquid Glass refinement
+request, use newer system UI APIs behind availability checks with native macOS 14 fallbacks.
 Purple is semantic `AppAccent`, with separate light/dark asset values; source-list selection stays native.
 
 ## Planned architecture and directory structure
@@ -222,3 +223,17 @@ passes. See `verification/PHASE-3.md` for exact evidence and callback-lifetime l
 
 The actual iPhone library and thumbnails still need unlock/reconnect validation. Leave the normal
 app open for this gate; Phase 4 caching/prefetch and all backup transfer phases remain planned.
+
+### Liquid Glass UI audit — complete
+
+The user requested a second audit focused on native appearance and slider tracking. Thumbnail
+sizing now uses an unmodified system slider directly in the toolbar; sort/group options use a
+native menu. Removed forced focus and custom key handling, replaced custom Info chrome with
+the system sheet structure, and adopted the macOS 26+ native bottom-bar API with macOS 14–15
+fallbacks. Improved badge contrast and added increased-contrast accent variants.
+
+Actual pointer drag, track click, endpoints, menu keyboard isolation, Info dismissal, compact and
+standard layouts, light/dark appearance previews, Settings, search and scrolling were checked.
+111 core and 12 hosted app tests, final normal build, strict lint and signature verification pass.
+See `verification/UI-LIQUID-GLASS.md` for evidence and untested accessibility/runtime combinations.
+The sample preview is left open for UI review; the Phase 3 physical library gate remains pending.

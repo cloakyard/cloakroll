@@ -7,17 +7,7 @@ struct MediaInfoView: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        VStack(spacing: 0) {
-            HStack(spacing: 10) {
-                Image(systemName: "info.circle").font(.title2).foregroundStyle(Design.accent)
-                    .accessibilityHidden(true)
-                Text("Media Info").font(.headline)
-                Spacer()
-                Button("Done") { dismiss() }.keyboardShortcut(.defaultAction)
-            }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 14)
-            .background(.bar)
+        NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
                     MediaThumbnail(asset: asset, contentMode: .fit)
@@ -58,6 +48,13 @@ struct MediaInfoView: View {
                     }
                 }
                 .padding(20)
+            }
+            .navigationTitle("Media Info")
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { dismiss() }
+                        .keyboardShortcut(.defaultAction)
+                }
             }
         }
         .frame(width: 460, height: 660)

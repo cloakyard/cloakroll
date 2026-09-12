@@ -42,15 +42,25 @@ Debug launch options:
 ```sh
 open -n build/Verify/Build/Products/Debug/CloakRoll.app --args --sample --verify-light-appearance
 open -n build/Verify/Build/Products/Debug/CloakRoll.app --args --sample --verify-dark-appearance
+open -n build/Verify/Build/Products/Debug/CloakRoll.app --args --sample --verify-light-appearance --verify-increased-contrast
+open -n build/Verify/Build/Products/Debug/CloakRoll.app --args --sample --verify-dark-appearance --verify-increased-contrast
 open -n build/Verify/Build/Products/Debug/CloakRoll.app --args --empty
 open -n build/Verify/Build/Products/Debug/CloakRoll.app --args --locked
 open -n build/Verify/Build/Products/Debug/CloakRoll.app --args --sample-100k
 ```
 
+Quit the app between appearance variants. These flags set an app-local AppKit appearance; they
+do not change or fully simulate the system's accessibility preferences. Launch with `--sample`
+alone to inspect the user's normal system appearance.
+
 Check selection (click/⌘/⇧/⌘A), arrows, Space/⌘I info, search, sort, grouping, resizing,
 sidebar focus, small-window layout, Settings, light and dark appearance. Keep screenshots and
 timing evidence under `docs/verification`. SwiftUI previews cover empty, mixed, large,
 restricted, disconnected and illustrative in-progress states.
+
+Thumbnail sizing uses the toolbar's native continuous slider; View Options is the native
+sort/group menu. Check pointer drags and track clicks as well as accessibility values. See
+`verification/UI-LIQUID-GLASS.md` for the latest UI audit and remaining accessibility checks.
 
 ## Hardware gates and release limits
 

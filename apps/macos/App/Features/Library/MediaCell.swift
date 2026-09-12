@@ -30,7 +30,7 @@ struct MediaCell: View {
                         if selected {
                             Image(systemName: "checkmark.circle.fill")
                                 .symbolRenderingMode(.palette)
-                                .foregroundStyle(.white, Design.accent)
+                                .foregroundStyle(Design.contentBackground, Design.accent)
                                 .font(.system(size: 20))
                                 .padding(7)
                         }
@@ -77,8 +77,8 @@ struct MediaCell: View {
         if model.status(for: asset) == .backedUp {
             Image(systemName: "checkmark.circle.fill")
                 .font(.caption)
-                .foregroundStyle(.white)
-                .shadow(color: .black.opacity(0.5), radius: 2)
+                .symbolRenderingMode(.palette)
+                .foregroundStyle(.white, .black.opacity(0.65))
         }
     }
 }
@@ -88,7 +88,7 @@ private extension View {
         self.foregroundStyle(.white)
             .padding(.horizontal, 5)
             .padding(.vertical, 3)
-            .background(.black.opacity(0.45), in: RoundedRectangle(cornerRadius: 4))
+            .background(.black.opacity(0.65), in: RoundedRectangle(cornerRadius: 4))
     }
 }
 
