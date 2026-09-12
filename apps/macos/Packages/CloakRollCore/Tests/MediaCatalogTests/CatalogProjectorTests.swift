@@ -50,6 +50,8 @@ struct CatalogProjectorTests {
         #expect(snapshot.totalBytes == 500)
         #expect(snapshot.newCount == 3)
         #expect(snapshot.newBytes == 300)
+        #expect(snapshot.visibleNewCount == 0)
+        #expect(snapshot.visibleNewBytes == 0)
     }
 
     @Test(arguments: LibraryFilter.allCases)
@@ -83,6 +85,8 @@ struct CatalogProjectorTests {
         #expect(snapshot.orderedIDs == ["paired"])
         #expect(snapshot.sections.first?.assets.first?.resources.count == 2)
         #expect(snapshot.sections.first?.assets.first?.byteCount == 300)
+        #expect(snapshot.visibleNewCount == 1)
+        #expect(snapshot.visibleNewBytes == 300)
     }
 
     @Test(arguments: [CatalogSort.newestFirst, .oldestFirst])
@@ -176,6 +180,7 @@ struct CatalogProjectorTests {
             assets: large, statuses: [:], backupDates: [:], query: CatalogQuery()
         )
         #expect(snapshot.newBytes == Int64.max)
+        #expect(snapshot.visibleNewBytes == Int64.max)
         #expect(snapshot.totalBytes == Int64.max)
     }
 

@@ -59,6 +59,8 @@ targets:
         product: DeviceCapture
       - package: CloakRollCore
         product: ThumbnailPipeline
+      - package: CloakRollCore
+        product: BackupEngine
   CloakRollTests:
     type: bundle.unit-test
     platform: macOS

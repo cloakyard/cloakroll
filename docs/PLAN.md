@@ -6,8 +6,10 @@ Started 12 September 2026. Product: **Your camera roll, safely on your Mac.**
 
 CloakDrop (`../cloakdrop`) is read-only. Work proceeds through the gates below in order.
 Every phase records its build, relevant tests, manual evidence and remaining limitations here.
-A passing mock test never substitutes for a real iPhone acceptance check. Do not advance past
-a hardware gate without that evidence. No source media is modified or deleted, at any phase.
+A passing mock test never substitutes for a real iPhone acceptance check. Following the user's
+12 September request to continue the next phases after committing current work, implementation
+may proceed while an explicitly recorded hardware check is pending. A phase is not accepted or
+called complete until its actual evidence is recorded. No source media is modified or deleted.
 
 ## Phase 0 discovery
 
@@ -127,7 +129,7 @@ Do not claim physical power-loss durability from a process-restart test.
 | 2 Detection | Public ImageCaptureCore adapter, serial lifecycle, normalized device/trust/lock/unavailable states. Real unplug → plug → disconnect → reconnect evidence required. No downloads. | Complete |
 | 3 Catalog | Real metadata and related resources, photos/videos/RAW/Live Photo evidence, sorting, lazy API thumbnails. Real library visible without downloading originals. | Complete |
 | 4 Thumbnails | Bounded memory/disk cache, versioned invalidation + eviction, visible priority, prefetch and cancellation. Rapid scrolling/reconnect memory and USB concurrency checks. | In progress |
-| 5 Backup | Folder picker/bookmarks, Year/Month paths, original-component queue, staging, progress and no-overwrite collision policy. Selected/all real photos and videos copied. | Planned |
+| 5 Backup | Folder picker/bookmarks, Year/Month paths, original-component queue, staging, progress and no-overwrite collision policy. Selected/all real photos and videos copied. | Complete (bounded physical import) |
 | 6 Incremental | GRDB schema/migrations, device/destination-scoped matching, session history, new/backed-up/recent filters. Reconnect old library + newly captured items checked. | Planned |
 | 7 Reliability | Size and digest evidence, disconnect/full disk/retry/cancel/relaunch tests and real interruptions. No incomplete success or unrelated file overwrite. | Planned |
 | 8 Polish | Onboarding, info/search/sort/context menus/shortcuts, cloud availability copy, external volume UX, accessibility and final icon. Compare all screens to CloakDrop. | Planned |
@@ -272,3 +274,26 @@ The final direct-value visibility refinement still needs its hardware follow-up,
 reconnect preview reuse is pending unlock/reconnect of the attached phone. See
 `verification/PHASE-4.md` for exact evidence, RSS/footprint measurements and limitations.
 Phase 5 original downloads remain planned; public download APIs were researched only.
+
+
+### Phase 5 — started after the user's continuation request
+
+Current work was already committed as `0568c76`; the working tree was clean before Phase 5.
+Implement original-component backup, a native folder picker with scoped bookmarks, Year/Month
+paths, a serial queue, measured progress, isolated staging, exact-size checks, streamed local
+SHA-256 and exclusive finalization. Begin with selected items, then all available items.
+Keep Phase 4's outstanding physical checks visible; do not treat implementation as acceptance.
+
+### Phase 5 — complete for bounded physical imports
+
+Native folder selection/bookmarks, original-component copies, Year/Month staging/finalization,
+measured progress, stop/retry, truthful component/asset completion and no-overwrite collisions are
+implemented. 204 core and 41 hosted app tests, strict lint, the normal sandbox build and signature
+checks pass. Real photo, Live Photo, 4K HEVC video and RAW copies succeeded; repeated selection
+reverified without copying, and stopping a large video left no false success or staged file.
+
+The UI audit corrected filtered action totals, removed a duplicate folder action and refined
+singular labels and indeterminate progress before byte callbacks. See `verification/PHASE-5.md`
+for aggregate evidence and limits. History is still connection-scoped in memory; next is Phase 6
+persistent history and conservative device/destination-scoped matching. Full-library stress,
+physical unplug/cache reconnect, external volumes and crash recovery remain explicit future checks.

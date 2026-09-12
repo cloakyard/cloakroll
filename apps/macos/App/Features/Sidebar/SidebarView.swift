@@ -22,6 +22,22 @@ struct SidebarView: View {
                     Label("Sample library", systemImage: "externaldrive")
                         .foregroundStyle(.secondary)
                 }
+            } else {
+                Section("Destination") {
+                    if let destination = model.backup.destination.selection {
+                        Label(destination.displayName, systemImage: "folder")
+                            .lineLimit(1)
+                            .help(destination.lastKnownPath)
+                    }
+                    Button {
+                        Task { await model.backup.chooseDestination() }
+                    } label: {
+                        Label(model.backup.destination.selection == nil ? "Choose Folder…" : "Change Folder…",
+                              systemImage: "folder.badge.plus")
+                    }
+                    .buttonStyle(.borderless)
+                    .disabled(model.backup.isBusy || model.backup.destination.isChoosing)
+                }
             }
         }
         .listStyle(.sidebar)

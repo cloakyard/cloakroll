@@ -6,7 +6,7 @@ import OSLog
 /// Owns ImageCaptureCore objects on the main actor and emits value-only connection/catalog state.
 /// Enumeration reads supplied file properties; thumbnails are requested only by visible consumers.
 @MainActor
-public final class DeviceBrowserService: DeviceMediaSource, ThumbnailProviding {
+public final class DeviceBrowserService: DeviceMediaSource, ThumbnailProviding, OriginalMediaDownloading {
     private let context: DeviceCaptureContext
     public let events: AsyncStream<DeviceEvent>
     public let catalogs: AsyncStream<DeviceMediaSnapshot>
@@ -200,6 +200,7 @@ public final class DeviceBrowserService: DeviceMediaSource, ThumbnailProviding {
         // Invalidate the session token before a close can deliver any late events.
         if let token = lifecycle.activeToken {
             context.thumbnailRequests.retire(sessionID: token)
+            context.originalDownloads.retire(sessionID: token)
             catalog.interrupt(sessionID: token)
         }
         lifecycle.reset()
@@ -209,7 +210,7 @@ public final class DeviceBrowserService: DeviceMediaSource, ThumbnailProviding {
         cameraDelegate = nil
     }
 
-    /// Internal seam for the next phase's bounded thumbnail provider. Handles remain actor-owned.
+    /// Resolves only current, readable source handles for explicit thumbnail or original requests.
     func catalogFile(for resourceID: String, sessionID: UUID) throws -> ICCameraFile {
         guard lifecycle.activeToken == sessionID else { throw MediaSourceError.staleSession }
         guard lifecycle.connection.state == .ready, camera?.hasOpenSession == true else {
@@ -240,6 +241,27 @@ public final class DeviceBrowserService: DeviceMediaSource, ThumbnailProviding {
         }
     }
 
+    public func downloadOriginal(
+        resourceID: String, sessionID: UUID, to directory: URL, filename: String,
+        progress: @escaping @Sendable (DownloadProgress) -> Void
+    ) async throws -> DownloadedOriginal {
+        guard directory.isFileURL else { throw OriginalDownloadError.invalidDestination }
+        guard OriginalDownloadPaths.isFilename(filename) else { throw OriginalDownloadError.invalidFilename }
+        let result = try await context.originalDownloads.download(sessionID: sessionID, progress: progress) { [weak self] receive in
+            guard let self else { throw MediaSourceError.unavailable }
+            let file = try catalogFile(for: resourceID, sessionID: sessionID)
+            guard let camera else { throw MediaSourceError.unavailable }
+            if camera.capabilities.contains(ICDeviceCapability.cameraDeviceSupportsHEIF.rawValue),
+               camera.mediaPresentation != .originalAssets {
+                throw OriginalDownloadError.originalPresentationUnavailable
+            }
+            return OriginalDownloadOperation.start(camera: camera, file: file, directory: directory, filename: filename, receive: receive)
+        }
+        try Task.checkCancellation()
+        _ = try catalogFile(for: resourceID, sessionID: sessionID)
+        return result
+    }
+
     private func preferOriginals(_ camera: ICCameraDevice) {
         if camera.capabilities.contains(ICDeviceCapability.cameraDeviceSupportsHEIF.rawValue),
            camera.mediaPresentation != .originalAssets {
@@ -253,8 +275,10 @@ public final class DeviceBrowserService: DeviceMediaSource, ThumbnailProviding {
             switch lifecycle.connection.state {
             case .ready:
                 context.thumbnailRequests.begin(sessionID: token)
+                context.originalDownloads.begin(sessionID: token)
             case .restricted, .unavailable:
                 context.thumbnailRequests.retire(sessionID: token)
+                context.originalDownloads.retire(sessionID: token)
             case .disconnected, .opening:
                 break
             }

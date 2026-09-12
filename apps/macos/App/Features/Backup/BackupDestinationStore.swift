@@ -1,0 +1,175 @@
+import AppKit
+import Foundation
+import Observation
+
+struct BackupDestination: Codable, Sendable, Equatable, Identifiable {
+    let id: UUID
+    let displayName: String
+    /// Presentation only. Access always resolves bookmarkData; this path is never a fallback.
+    let lastKnownPath: String
+    let bookmarkData: Data
+}
+
+enum BackupDestinationError: Error, LocalizedError, Equatable {
+    case noSelection, accessDenied, unavailable, notDirectory, notWritable
+    case bookmarkCreationFailed, persistenceFailed, selectionChanged
+
+    var errorDescription: String? { message }
+
+    var message: String {
+        switch self {
+        case .noSelection: "Choose a backup folder first."
+        case .accessDenied: "CloakRoll couldn't access the backup folder. Choose it again to grant access."
+        case .unavailable: "The backup folder isn't available. Reconnect its drive or choose another folder."
+        case .notDirectory: "Choose a folder to store the backup."
+        case .notWritable: "The backup folder is read-only. Choose a writable folder."
+        case .bookmarkCreationFailed: "Couldn't keep access to this folder. Try choosing it again."
+        case .persistenceFailed: "Couldn't save the backup folder. Try choosing it again."
+        case .selectionChanged: "The backup folder changed. Start the backup again."
+        }
+    }
+}
+
+@MainActor @Observable
+final class BackupDestinationStore {
+    nonisolated static let storageKey = "backupDestination.v1"
+    private(set) var selection: BackupDestination?
+    private(set) var isChoosing = false
+    private(set) var errorMessage: String?
+    @ObservationIgnored private let operations: BackupDestinationOperations
+    @ObservationIgnored private let selectFolder: @MainActor () async -> URL?
+    @ObservationIgnored private let saveRecord: @MainActor (Data) throws -> Void
+
+    init(
+        defaults: UserDefaults = .standard,
+        operations: BackupDestinationOperations = .live,
+        selectFolder: @escaping @MainActor () async -> URL? = BackupFolderPicker.choose,
+        saveRecord: (@MainActor (Data) throws -> Void)? = nil
+    ) {
+        self.operations = operations
+        self.selectFolder = selectFolder
+        self.saveRecord = saveRecord ?? { data in
+            defaults.set(data, forKey: Self.storageKey)
+            guard defaults.data(forKey: Self.storageKey) == data else { throw BackupDestinationError.persistenceFailed }
+        }
+        if let data = defaults.data(forKey: Self.storageKey) {
+            do {
+                let record = try JSONDecoder().decode(BackupDestination.self, from: data)
+                guard !record.bookmarkData.isEmpty else { throw BackupDestinationError.unavailable }
+                selection = record
+            } catch { errorMessage = "The saved backup folder couldn't be read. Choose it again." }
+        }
+    }
+
+    func clearError() { errorMessage = nil }
+
+    @discardableResult
+    func chooseFolder() async -> Bool {
+        guard !isChoosing else { return false }
+        isChoosing = true
+        errorMessage = nil
+        defer { isChoosing = false }
+        guard let url = await selectFolder(), !Task.isCancelled else { return false }
+        let previous = selection
+        let operations = operations
+        do {
+            let record = try await Self.work { try operations.prepareSelection(url: url, previous: previous) }
+            try Task.checkCancellation()
+            guard selection?.id == previous?.id else { throw BackupDestinationError.selectionChanged }
+            try persist(record)
+            selection = record
+            return true
+        } catch is CancellationError {
+            return false
+        } catch {
+            errorMessage = Self.message(for: error)
+            return false
+        }
+    }
+
+    func acquireLease() async throws -> DestinationLease {
+        guard let original = selection else { throw BackupDestinationError.noSelection }
+        let operations = operations
+        do {
+            let acquired = try await Self.work { try operations.acquire(original) }
+            var handedOff = false
+            defer { if !handedOff { acquired.lease.release() } }
+            try Task.checkCancellation()
+            guard selection == original else { throw BackupDestinationError.selectionChanged }
+            if acquired.record != original {
+                try persist(acquired.record)
+                selection = acquired.record
+            }
+            errorMessage = nil
+            handedOff = true
+            return acquired.lease
+        } catch {
+            if !(error is CancellationError) { errorMessage = Self.message(for: error) }
+            throw error
+        }
+    }
+
+    private func persist(_ record: BackupDestination) throws {
+        do { try saveRecord(JSONEncoder().encode(record)) } catch { throw BackupDestinationError.persistenceFailed }
+    }
+
+    private static func message(for error: any Error) -> String {
+        (error as? BackupDestinationError)?.message ?? BackupDestinationError.unavailable.message
+    }
+
+    private nonisolated static func work<Value: Sendable>(
+        _ operation: @escaping @Sendable () throws -> Value
+    ) async throws -> Value {
+        let task = Task.detached(priority: .userInitiated) {
+            try Task.checkCancellation()
+            return try operation()
+        }
+        return try await withTaskCancellationHandler { try await task.value } onCancel: { task.cancel() }
+    }
+}
+
+@MainActor
+private enum BackupFolderPicker {
+    static func choose() async -> URL? {
+        guard !Task.isCancelled else { return nil }
+        let panel = NSOpenPanel()
+        panel.canChooseDirectories = true
+        panel.canChooseFiles = false
+        panel.canCreateDirectories = true
+        panel.allowsMultipleSelection = false
+        panel.prompt = "Choose"
+        let lifecycle = BackupFolderPickerLifecycle(panel: panel)
+        return await withTaskCancellationHandler {
+            await withCheckedContinuation { continuation in
+                guard !Task.isCancelled else { continuation.resume(returning: nil); return }
+                let completion: (NSApplication.ModalResponse) -> Void = { response in
+                    guard !lifecycle.didFinish else { return }
+                    lifecycle.didFinish = true
+                    continuation.resume(returning: response == .OK ? panel.url : nil)
+                }
+                lifecycle.didBegin = true
+                if let window = NSApplication.shared.keyWindow ?? NSApplication.shared.mainWindow {
+                    panel.beginSheetModal(for: window, completionHandler: completion)
+                } else {
+                    panel.begin(completionHandler: completion)
+                }
+            }
+        } onCancel: {
+            Task { @MainActor in lifecycle.cancel() }
+        }
+    }
+}
+
+@MainActor
+private final class BackupFolderPickerLifecycle {
+    let panel: NSOpenPanel
+    var didBegin = false
+    var didFinish = false
+
+    init(panel: NSOpenPanel) { self.panel = panel }
+
+    func cancel() {
+        guard didBegin, !didFinish else { return }
+        panel.cancel(nil)
+    }
+}

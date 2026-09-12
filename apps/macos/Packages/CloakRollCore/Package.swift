@@ -8,7 +8,8 @@ let package = Package(
         .library(name: "MediaModels", targets: ["MediaModels"]),
         .library(name: "MediaCatalog", targets: ["MediaCatalog"]),
         .library(name: "DeviceCapture", targets: ["DeviceCapture"]),
-        .library(name: "ThumbnailPipeline", targets: ["ThumbnailPipeline"])
+        .library(name: "ThumbnailPipeline", targets: ["ThumbnailPipeline"]),
+        .library(name: "BackupEngine", targets: ["BackupEngine"])
     ],
     targets: [
         .target(name: "MediaModels", swiftSettings: [.swiftLanguageMode(.v6)]),
@@ -23,6 +24,7 @@ let package = Package(
             swiftSettings: [.swiftLanguageMode(.v6)]
         ),
         .target(name: "ThumbnailPipeline", swiftSettings: [.swiftLanguageMode(.v6)]),
+        .target(name: "BackupEngine", dependencies: ["MediaModels"], swiftSettings: [.swiftLanguageMode(.v6)]),
         .testTarget(
             name: "MediaModelsTests",
             dependencies: ["MediaModels"],
@@ -41,6 +43,11 @@ let package = Package(
         .testTarget(
             name: "ThumbnailPipelineTests",
             dependencies: ["ThumbnailPipeline"],
+            swiftSettings: [.swiftLanguageMode(.v6)]
+        ),
+        .testTarget(
+            name: "BackupEngineTests",
+            dependencies: ["BackupEngine", "MediaModels"],
             swiftSettings: [.swiftLanguageMode(.v6)]
         )
     ]

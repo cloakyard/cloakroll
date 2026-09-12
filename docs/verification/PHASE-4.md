@@ -55,10 +55,24 @@ unbounded image cache or of a total-process plateau. The final code removes the 
 environment override and passes that value directly to the thumbnail, preserving its pixels.
 No quantified benefit is claimed for this small refinement before a comparable follow-up run.
 
-The final refined build (PID 94498) is open, but macOS currently exposes no camera library despite
+At the initial final-build check, the refined build (PID 94498) was open, but macOS exposed no camera library despite
 the phone remaining attached in IORegistry. Unlock was requested. Final scrolling/footprint and
 physical unplug→reconnect cache reuse remain **pending**; Phase 5 has not started.
-No original file was requested or downloaded.
+No original file was requested or downloaded during that stage.
+
+### Follow-up during Phase 5
+
+The same refined process subsequently displayed the 1,893-item library. At 17:24–17:29 on
+12 September, rapid multi-page scrolling increased source loads from 8 to 105 and decodes from
+6 to 59. At rest, decoded cost was 40,532,160 bytes / 59 entries; encoded cost was 6,027,862 bytes /
+104 entries. There were 16 encoded hits and 4 decoded hits, zero decode/disk errors and one
+unavailable source thumbnail. Actual framework high-water remained 2, queue high-water 1, and
+all 105 requests settled. Initial RSS was 166,176 KiB; a comparable final footprint was not taken.
+
+This confirms final-code real scrolling and bounded request behavior. It does not establish a
+process-memory plateau or physical reconnect cache reuse, which remain pending. The user
+authorized Phase 5 implementation while those checks stay recorded. Original-file acceptance
+for that phase is recorded separately in `PHASE-5.md`.
 
 ## Limits
 

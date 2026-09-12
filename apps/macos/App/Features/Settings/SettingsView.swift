@@ -43,14 +43,27 @@ struct SettingsView: View {
 
     private var backup: some View {
         Form {
+            Section("Destination") {
+                if let destination = model.backup.destination.selection {
+                    LabeledContent("Folder", value: destination.displayName)
+                    Text(destination.lastKnownPath)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .textSelection(.enabled)
+                        .lineLimit(2)
+                        .truncationMode(.middle)
+                }
+                Button(model.backup.destination.selection == nil ? "Choose Folder…" : "Change Folder…") {
+                    Task { await model.backup.chooseDestination() }
+                }
+                .disabled(model.backup.isBusy || model.backup.destination.isChoosing)
+            }
             Section("Originals") {
                 LabeledContent("Media format", value: "Keep originals")
                 LabeledContent("Folder structure", value: "Year / Month")
             }
             Section {
-                Label("Backup is not available in this development build.", systemImage: "info.circle")
-                    .foregroundStyle(.secondary)
-                Text("Sample backup states illustrate the interface. They are not records of a completed backup.")
+                Text("Backup history currently lasts for this connection. Existing files are kept when another copy is made.")
                     .font(.callout)
                     .foregroundStyle(.secondary)
             }

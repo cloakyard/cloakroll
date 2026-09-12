@@ -66,6 +66,9 @@ public struct CatalogSnapshot: Equatable, Sendable {
     /// Every item without a confirmed backup remains eligible, including uncertain/failed items.
     public let newCount: Int
     public let newBytes: Int64
+    /// Eligible items after the current filter and filename search, matching backup candidates.
+    public let visibleNewCount: Int
+    public let visibleNewBytes: Int64
     public let totalBytes: Int64
     public let grouping: CatalogGrouping
 
@@ -79,7 +82,9 @@ public struct CatalogSnapshot: Equatable, Sendable {
         newCount: Int,
         newBytes: Int64,
         totalBytes: Int64,
-        grouping: CatalogGrouping = .day
+        grouping: CatalogGrouping = .day,
+        visibleNewCount: Int? = nil,
+        visibleNewBytes: Int64? = nil
     ) {
         self.sections = sections
         self.counts = counts
@@ -87,6 +92,8 @@ public struct CatalogSnapshot: Equatable, Sendable {
         self.totalCount = totalCount
         self.newCount = newCount
         self.newBytes = newBytes
+        self.visibleNewCount = visibleNewCount ?? newCount
+        self.visibleNewBytes = visibleNewBytes ?? newBytes
         self.totalBytes = totalBytes
         self.grouping = grouping
     }

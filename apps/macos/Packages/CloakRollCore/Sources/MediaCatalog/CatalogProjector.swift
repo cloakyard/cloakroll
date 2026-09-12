@@ -20,6 +20,8 @@ public actor CatalogProjector {
         var counts = Dictionary(uniqueKeysWithValues: LibraryFilter.allCases.map { ($0, 0) })
         var totalBytes: Int64 = 0
         var newBytes: Int64 = 0
+        var visibleNewCount = 0
+        var visibleNewBytes: Int64 = 0
         var filtered: [MediaAsset] = []
         filtered.reserveCapacity(assets.count)
 
@@ -39,6 +41,10 @@ public actor CatalogProjector {
                 $0.filename.range(of: search, options: [.caseInsensitive, .diacriticInsensitive]) != nil
             }) else { continue }
             filtered.append(asset)
+            if status != .backedUp {
+                visibleNewCount += 1
+                visibleNewBytes = Self.addBytes(visibleNewBytes, asset.byteCount)
+            }
         }
 
         try Task.checkCancellation()
@@ -69,7 +75,9 @@ public actor CatalogProjector {
             newCount: counts[.notBackedUp, default: 0],
             newBytes: newBytes,
             totalBytes: totalBytes,
-            grouping: grouping
+            grouping: grouping,
+            visibleNewCount: visibleNewCount,
+            visibleNewBytes: visibleNewBytes
         )
     }
 

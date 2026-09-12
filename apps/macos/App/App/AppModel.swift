@@ -51,6 +51,7 @@ final class AppModel {
     @ObservationIgnored private var catalogLoader: LiveCatalogLoader?
     @ObservationIgnored private var lastProjectedQuery: CatalogQuery?
     @ObservationIgnored let thumbnails = LibraryThumbnailController()
+    @ObservationIgnored let backup = LibraryBackupController()
 
     init(makeBrowser: (@MainActor () -> any DeviceBrowsing)? = nil) {
         if let makeBrowser {
@@ -59,6 +60,7 @@ final class AppModel {
             let context = DeviceCaptureContext()
             self.makeBrowser = { DeviceBrowserService(context: context) }
         }
+        backup.onStatusesChanged = { [weak self] in self?.refreshBackupStatuses() }
     }
 
     func bootstrap() async {
@@ -82,6 +84,8 @@ final class AppModel {
     }
 
     func loadSample(count: Int, state: DeviceViewState = .ready) async {
+        guard !backup.isBusy else { return }
+        backup.dismissSummary()
         stopDeviceBrowsing()
         resetCatalogState()
         sourceGeneration += 1
@@ -114,6 +118,8 @@ final class AppModel {
     }
 
     func startLive() {
+        guard !backup.isBusy else { return }
+        backup.dismissSummary()
         started = true
         stopDeviceBrowsing()
         resetCatalogState()
@@ -154,7 +160,57 @@ final class AppModel {
         service.start()
     }
 
-    func retryDeviceConnection() { browser?.retry() }
+    func retryDeviceConnection() {
+        guard !backup.isBusy else { return }
+        browser?.retry()
+    }
+
+    var canBackUp: Bool {
+        backupSourceAvailable && (!selection.selectedIDs.isEmpty || snapshot.visibleNewCount > 0)
+    }
+
+    private var backupSourceAvailable: Bool {
+        !isSample && deviceState == .ready && mediaScanState == .complete
+            && !isCatalogPreparing && !isProjecting && !backup.isBusy && !backup.destination.isChoosing
+            && catalogSessionID != nil && browser is any OriginalMediaDownloading
+    }
+
+    func backUpCurrentSelection() {
+        guard canBackUp else { return }
+        let selected = selection.selectedIDs
+        let candidates = snapshot.sections.flatMap(\.assets).filter {
+            selected.isEmpty ? status(for: $0) != .backedUp : selected.contains($0.id)
+        }
+        startBackup(assets: candidates)
+    }
+
+    var canRetryBackup: Bool {
+        guard backupSourceAvailable, let attempt = backup.lastAttempt, attempt.sessionID == catalogSessionID else { return false }
+        return attempt.assets.allSatisfy { lookup[$0.id] == $0 }
+    }
+
+    func retryLastBackup() {
+        guard canRetryBackup, let attempt = backup.lastAttempt else { return }
+        startBackup(assets: attempt.assets)
+    }
+
+    private func startBackup(assets: [MediaAsset]) {
+        guard let sessionID = catalogSessionID, let provider = browser as? any OriginalMediaDownloading else { return }
+        backup.start(assets: assets, sessionID: sessionID) { request, progress in
+            try await provider.downloadOriginal(
+                resourceID: request.resource.id, sessionID: request.sessionID,
+                to: request.directory, filename: request.filename, progress: progress
+            )
+        }
+    }
+
+    private func refreshBackupStatuses() {
+        guard !isSample else { return }
+        let projection = backup.projection(assets: assets, sessionID: catalogSessionID)
+        statuses = projection.statuses
+        backupDates = projection.dates
+        scheduleProjection()
+    }
 
     func thumbnailData(for key: ThumbnailKey) async throws -> Data {
         guard !isSample, deviceState == .ready,
@@ -170,6 +226,7 @@ final class AppModel {
     }
 
     func shutdown() {
+        backup.cancel()
         sourceGeneration += 1
         generation += 1
         projectionTask?.cancel()
@@ -221,7 +278,7 @@ final class AppModel {
         thumbnailReuseIDs = prepared.thumbnailReuseIDs
         lookup = prepared.lookup
         if let infoAsset { self.infoAsset = lookup[infoAsset.id] }
-        scheduleProjection()
+        refreshBackupStatuses()
     }
 
     private func apply(_ event: DeviceEvent) {
@@ -231,6 +288,7 @@ final class AppModel {
             device = connection.device
             deviceState = connection.state
             deviceMessage = connection.message
+            if connection.state != .ready { backup.cancel() }
             if connection.state != .ready { thumbnails.setSession(nil) } else if mediaScanState != .interrupted {
                 thumbnails.setSession(catalogSessionID)
             }
