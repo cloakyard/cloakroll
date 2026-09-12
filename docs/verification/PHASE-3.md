@@ -1,7 +1,7 @@
 # Phase 3 — real media catalog
 
-Status: in progress. Metadata implementation is built and tested; physical catalog acceptance and
-lazy thumbnails remain pending. Phase 4 has not started.
+Status: in progress. Metadata and lazy thumbnail implementation are built and tested. Physical
+catalog and thumbnail acceptance remain pending. Phase 4 has not started.
 
 ## Metadata stage
 
@@ -21,7 +21,7 @@ lazy thumbnails remain pending. Phase 4 has not started.
 - Scan progress and USB/iCloud scope are explicit. A completed scan describes device-exposed media,
   not complete iPhone/iCloud coverage. A closed session remains unavailable until retry opens a new one.
 
-## Verification to date
+## Metadata-stage verification
 
 - **99 core tests pass:** 24 model, 39 catalog and 36 device tests.
 - **9 hosted app tests pass**, including catalog revisions, retired sessions, disconnect retention,
@@ -34,5 +34,40 @@ lazy thumbnails remain pending. Phase 4 has not started.
   discovery callback. User unlock/reconnect requested; no real catalog count or classification is
   claimed from mock test logs. Keep the normal app open for that validation.
 
-Next within Phase 3: lazy public thumbnail requests with a small outstanding-request bound, then
-real-device grid/metadata/scrolling validation. Disk cache and prefetch remain Phase 4.
+## Lazy thumbnail stage
+
+- Visible grid cells and Info request public thumbnail data only. The adapter permits thumbnail
+  dispatch only for explicitly pending requests; catalog enumeration does not authorize it.
+- One app-owned capture context limits actual outstanding framework calls to two, including calls
+  from retired browser instances. Queued demand is bounded at 128; cancelled queued requests never
+  launch. Active cancellation releases the caller but retains the physical slot until its callback.
+- Session/resource validation runs before enqueue and again at launch. Retired or cancelled results
+  cannot publish into the current cell. Missing data remains an honest placeholder.
+- ImageIO decodes off the main actor, respects orientation and bounds each decoded thumbnail to
+  512 pixels. Cell disappearance cancels demand and clears its decoded image. Queue saturation can
+  retry with a cancellable delay. Caching, priority and prefetch remain Phase 4.
+
+## Thumbnail-stage verification — 12 September 2026
+
+- **111 core tests pass:** 24 model, 39 catalog and 48 device tests. Added checks cover two-call
+  concurrency, bounded queues, cancellation races, retired sessions, synchronous/duplicate callbacks,
+  failed data and explicit request permissions.
+- **12 hosted app tests pass**, including three decoder tests for bounded dimensions, orientation
+  and invalid input. Invalid-image diagnostics come from the deliberate corrupt-input test.
+- Strict lint and diff whitespace checks pass. The normal Debug build after hosted tests passes
+  without compiler warnings/errors; signature and normal sandbox entitlements verify.
+- Independent thumbnail implementation review found no blocking issue.
+- Final compact-window sample regression confirms video duration/status badges, selection and Info.
+  The broader light/dark, slider and keyboard audit remains recorded in `UI-REFINEMENT.md`.
+- No original-download API is invoked. Real device catalog counts, relationships and thumbnails
+  are still unverified; simulated callbacks and sample illustrations do not close the hardware gate.
+- Final normal launch at 14:48 (process 88016) shows the connect-iPhone empty state. IORegistry
+  still lists an attached iPhone; app logs show discovery started but no device callback. The normal
+  app is left open, awaiting the already requested physical unlock/reconnect.
+
+Known physical-validation question: if ImageCaptureCore never completes an outstanding request
+after unplugging, that slot deliberately remains occupied. Releasing it on a timer would falsely
+claim that underlying I/O ended. Measure this behavior during physical interruption checks.
+
+Next: unlock/reconnect the attached iPhone and verify its actual library, metadata, thumbnails and
+responsive scrolling in the normal sandboxed app. Do not advance to Phase 4 before that gate passes.

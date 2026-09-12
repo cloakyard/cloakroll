@@ -93,5 +93,5 @@ public protocol ThumbnailProviding: AnyObject {
 }
 
 public enum MediaSourceError: Error, Equatable, Sendable {
-    case unavailable, staleSession, missingResource, thumbnailUnavailable
+    case unavailable, staleSession, missingResource, thumbnailUnavailable, thumbnailQueueFull
 }

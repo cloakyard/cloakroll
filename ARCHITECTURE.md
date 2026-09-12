@@ -11,7 +11,7 @@ follows CloakDrop's proven bridge pattern, but a media browser needs prepared ca
 and selection state instead of download rows and a permanently open inspector. UI-facing models
 stay small; catalog projection, transfer state and persistence have independent owners.
 
-The local `CloakRollCore` package begins with `MediaModels` and `MediaCatalog`. Additional modules
+The local `CloakRollCore` package contains `MediaModels`, `MediaCatalog` and `DeviceCapture`. Additional modules
 arrive in their implementation phases. None imports SwiftUI. Values crossing tasks are Sendable.
 Views issue intents and display state; they do not transfer files, sort a whole library in `body`,
 or manipulate ImageCaptureCore objects.
@@ -50,10 +50,28 @@ The framework adapter owns its browser, device and camera handles on one serial 
 context. Asynchronous delegate APIs do the USB work; immutable events cross into the rest of
 the app. Cancellation and removal invalidate session generations before accepting later results.
 
-Thumbnail requests are lazy. The planned service bounds simultaneous USB operations, decoded
-memory and on-disk bytes; cache keys include device/resource identity, metadata revision,
-rendition size and cache version. Eviction and cancellation are part of the service contract.
-Full originals are never requested merely to fill the grid.
+`CameraCatalog` accumulates all resource callbacks before publishing coalesced full snapshots.
+Its newest-only stream may skip intermediate envelopes without losing resource deltas. Explicit
+complete-catalog readiness is separate from connection readiness. `LiveCatalogLoader` assembles
+the latest pending snapshot off the main actor, serializing expensive preparation and rejecting
+retired sessions/revisions. Query edits reset scrolling; incoming metadata alone does not.
+
+`CatalogAssembler` scopes relationships by device and requires unambiguous evidence for pairs.
+Every resource is retained once, including ambiguous/orphaned sidecars. A still-image primary
+resource gives RAW pairs and Live Photos stable selection and preview identity as companions
+arrive. These session resource IDs address device requests; they are not persistent backup keys.
+
+Thumbnail requests are lazy. One explicit `DeviceCaptureContext` belongs to the app model and
+shares two physical request slots across replacement browser instances. Cancelling a Swift caller
+does not release a slot until the underlying callback arrives. A small bounded pending queue rejects
+overflow with a distinct transient error, allowing visible cells to retry without growing it. A
+synchronous delegate gate permits only explicitly launched resource requests. Cell-owned images are
+decoded and orientation-corrected off the main actor, downsampled to a pixel bound, and released when
+cells leave use. No original is requested to render the grid or Info sheet.
+
+Phase 4 will add memory/disk caches, visible priority and prefetch. Their keys must include
+device/resource identity, metadata revision, rendition size and cache version. Persistent eviction
+and reconnect reuse are not claims about the uncached Phase 3 implementation.
 
 ## Backup truth is conservative
 

@@ -1,0 +1,160 @@
+import Foundation
+import MediaModels
+import OSLog
+
+struct ThumbnailResponse: Sendable {
+    let data: Data?
+    let error: CaptureError?
+
+    init(data: Data?, error: (any Error)? = nil) {
+        self.data = data
+        self.error = error.map(CaptureError.init)
+    }
+}
+
+/// Slots represent actual framework operations, not suspended Swift callers. A cancelled caller
+/// returns promptly, while its physical slot and cleanup remain owned until the callback arrives.
+@MainActor
+final class ThumbnailRequestCoordinator {
+    typealias Completion = @Sendable (ThumbnailResponse) -> Void
+    // An operation may throw only before launching the physical request. Its returned cleanup
+    // owns any framework references until a real completion, independent of caller cancellation.
+    typealias Operation = @MainActor (@escaping Completion) throws -> (@MainActor () -> Void)
+
+    private struct Request {
+        let id: UUID
+        let sessionID: UUID
+        let cancellation: ThumbnailCancellation
+        let operation: Operation
+        var continuation: CheckedContinuation<Data, any Error>?
+        var cleanup: (@MainActor () -> Void)?
+    }
+
+    private let logger = Logger(subsystem: "com.cloakroll.core", category: "Thumbnails")
+    private let maximumQueued: Int
+    private(set) var sessionID: UUID?
+    private var queued: [Request] = []
+    private var active: [UUID: Request] = [:]
+    private var isPumping = false
+
+    init(maximumQueued: Int = 128) {
+        self.maximumQueued = max(1, maximumQueued)
+    }
+
+    var outstandingCount: Int { active.count }
+    var queuedCount: Int { queued.count }
+
+    func begin(sessionID: UUID) {
+        guard self.sessionID != sessionID else { return }
+        if let previous = self.sessionID { retire(sessionID: previous) }
+        self.sessionID = sessionID
+        pump()
+    }
+
+    func retire(sessionID: UUID) {
+        guard self.sessionID == sessionID else { return }
+        self.sessionID = nil
+        let retired = queued
+        queued.removeAll()
+        for request in retired { request.continuation?.resume(throwing: MediaSourceError.staleSession) }
+        for identifier in Array(active.keys) {
+            guard var request = active[identifier], request.sessionID == sessionID else { continue }
+            request.continuation?.resume(throwing: MediaSourceError.staleSession)
+            request.continuation = nil
+            active[identifier] = request
+        }
+        // Do not remove active requests: session closure is not proof their callbacks completed.
+    }
+
+    func data(sessionID: UUID, operation: @escaping Operation) async throws -> Data {
+        let identifier = UUID()
+        let cancellation = ThumbnailCancellation()
+        return try await withTaskCancellationHandler {
+            try Task.checkCancellation()
+            return try await withCheckedThrowingContinuation { continuation in
+                guard !cancellation.isCancelled else {
+                    continuation.resume(throwing: CancellationError())
+                    return
+                }
+                guard self.sessionID == sessionID else {
+                    continuation.resume(throwing: MediaSourceError.staleSession)
+                    return
+                }
+                guard queued.count < maximumQueued else {
+                    continuation.resume(throwing: MediaSourceError.thumbnailQueueFull)
+                    return
+                }
+                queued.append(Request(
+                    id: identifier, sessionID: sessionID, cancellation: cancellation,
+                    operation: operation, continuation: continuation
+                ))
+                pump()
+            }
+        } onCancel: {
+            cancellation.cancel()
+            Task { @MainActor [weak self] in self?.cancel(identifier) }
+        }
+    }
+
+    private func cancel(_ identifier: UUID) {
+        if let index = queued.firstIndex(where: { $0.id == identifier }) {
+            let request = queued.remove(at: index)
+            request.continuation?.resume(throwing: CancellationError())
+        } else if var request = active[identifier] {
+            request.continuation?.resume(throwing: CancellationError())
+            request.continuation = nil
+            active[identifier] = request
+        }
+    }
+
+    private func pump() {
+        guard !isPumping else { return }
+        isPumping = true
+        defer { isPumping = false }
+        while active.count < 2, !queued.isEmpty {
+            var request = queued.removeFirst()
+            if request.cancellation.isCancelled {
+                request.continuation?.resume(throwing: CancellationError())
+                continue
+            }
+            guard request.sessionID == sessionID else {
+                request.continuation?.resume(throwing: MediaSourceError.staleSession)
+                continue
+            }
+            let identifier = request.id
+            active[identifier] = request
+            do {
+                request.cleanup = try request.operation { [self] response in
+                    // The block API can complete on any queue, including synchronously. Always
+                    // enqueue result handling so operation cleanup is installed before it runs.
+                    DispatchQueue.main.async { self.complete(identifier, response: response) }
+                }
+                active[identifier] = request
+            } catch {
+                active[identifier] = nil
+                request.continuation?.resume(throwing: error)
+            }
+        }
+    }
+
+    private func complete(_ identifier: UUID, response: ThumbnailResponse) {
+        guard let request = active.removeValue(forKey: identifier) else { return }
+        request.cleanup?()
+        if let continuation = request.continuation {
+            if request.cancellation.isCancelled {
+                continuation.resume(throwing: CancellationError())
+            } else if request.sessionID != sessionID {
+                continuation.resume(throwing: MediaSourceError.staleSession)
+            } else if let error = response.error {
+                logger.error("Thumbnail error domain: \(error.domain, privacy: .public), code: \(error.code, privacy: .public)")
+                logger.debug("Thumbnail error detail: \(error.message, privacy: .private)")
+                continuation.resume(throwing: MediaSourceError.thumbnailUnavailable)
+            } else if let data = response.data, !data.isEmpty {
+                continuation.resume(returning: data)
+            } else {
+                continuation.resume(throwing: MediaSourceError.thumbnailUnavailable)
+            }
+        }
+        pump()
+    }
+}

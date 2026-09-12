@@ -4,14 +4,16 @@ import MediaModels
 import OSLog
 
 /// Owns ImageCaptureCore objects on the main actor and emits value-only connection/catalog state.
-/// Enumeration reads supplied file properties; no metadata, thumbnail or original requests.
+/// Enumeration reads supplied file properties; thumbnails are requested only by visible consumers.
 @MainActor
-public final class DeviceBrowserService: DeviceMediaSource {
+public final class DeviceBrowserService: DeviceMediaSource, ThumbnailProviding {
+    private let context: DeviceCaptureContext
     public let events: AsyncStream<DeviceEvent>
     public let catalogs: AsyncStream<DeviceMediaSnapshot>
     private let continuation: AsyncStream<DeviceEvent>.Continuation
     private let catalogContinuation: AsyncStream<DeviceMediaSnapshot>.Continuation
     private let catalog: CameraCatalog
+    private let thumbnailPermissions = ThumbnailRequestPermissions()
     private let logger = Logger(subsystem: "com.cloakroll.core", category: "DeviceCapture")
     private var browser: ICDeviceBrowser?
     private var browserDelegate: CaptureBrowserDelegate?
@@ -23,7 +25,8 @@ public final class DeviceBrowserService: DeviceMediaSource {
     private var lifecycle = DeviceLifecycle()
     private var lastPublished: DeviceConnection?
 
-    public init() {
+    public init(context: DeviceCaptureContext = DeviceCaptureContext()) {
+        self.context = context
         let stream = AsyncStream<DeviceEvent>.makeStream(bufferingPolicy: .bufferingNewest(16))
         events = stream.stream
         continuation = stream.continuation
@@ -111,14 +114,18 @@ public final class DeviceBrowserService: DeviceMediaSource {
             name: name.flatMap { $0.isEmpty ? nil : $0 } ?? "Apple mobile device",
             productKind: selected.productKind
         )
-        let delegate = CaptureCameraDelegate { [weak self] event in
-            DispatchQueue.main.async { self?.receive(event, token: token) }
-        }
+        let delegate = CaptureCameraDelegate(
+            shouldGetThumbnail: { [thumbnailPermissions] identifier in thumbnailPermissions.contains(identifier) },
+            receive: { [weak self] event in
+                DispatchQueue.main.async { self?.receive(event, token: token) }
+            }
+        )
         camera = selected
         cameraDelegate = delegate
         selected.delegate = delegate
         preferOriginals(selected)
         lifecycle.begin(device: value, token: token)
+        context.thumbnailRequests.begin(sessionID: token)
         catalog.begin(
             sessionID: token, deviceID: value.id, percent: Int(selected.contentCatalogPercentCompleted),
             iCloudPhotosEnabled: selected.iCloudPhotosEnabled
@@ -190,7 +197,10 @@ public final class DeviceBrowserService: DeviceMediaSource {
 
     private func retireCamera() {
         // Invalidate the session token before a close can deliver any late events.
-        if let token = lifecycle.activeToken { catalog.interrupt(sessionID: token) }
+        if let token = lifecycle.activeToken {
+            context.thumbnailRequests.retire(sessionID: token)
+            catalog.interrupt(sessionID: token)
+        }
         lifecycle.reset()
         camera?.delegate = nil
         camera?.requestCloseSession()
@@ -207,6 +217,28 @@ public final class DeviceBrowserService: DeviceMediaSource {
         return try catalog.file(for: resourceID, sessionID: sessionID)
     }
 
+    public func thumbnailData(for resourceID: String, sessionID: UUID, maximumPixelSize: Int) async throws -> Data {
+        // Validate before queuing and again when a physical slot becomes available.
+        _ = try catalogFile(for: resourceID, sessionID: sessionID)
+        let pixelSize = min(512, max(64, maximumPixelSize))
+        return try await context.thumbnailRequests.data(sessionID: sessionID) { [weak self] completion in
+            guard let self else { throw MediaSourceError.unavailable }
+            let file = try catalogFile(for: resourceID, sessionID: sessionID)
+            let identifier = ObjectIdentifier(file)
+            let permissions = thumbnailPermissions
+            permissions.insert(identifier)
+            file.requestThumbnailData(options: [.imageSourceThumbnailMaxPixelSize: pixelSize]) { data, error in
+                completion(ThumbnailResponse(data: data, error: error))
+            }
+            return {
+                permissions.remove(identifier)
+                // Keep the framework file alive on its actor until the real callback, even after
+                // the catalog registry has retired. No source media or original data is accessed.
+                withExtendedLifetime(file) {}
+            }
+        }
+    }
+
     private func preferOriginals(_ camera: ICCameraDevice) {
         if camera.capabilities.contains(ICDeviceCapability.cameraDeviceSupportsHEIF.rawValue),
            camera.mediaPresentation != .originalAssets {
@@ -216,6 +248,16 @@ public final class DeviceBrowserService: DeviceMediaSource {
 
     private func publish() {
         guard lastPublished != lifecycle.connection else { return }
+        if let token = lifecycle.activeToken {
+            switch lifecycle.connection.state {
+            case .ready:
+                context.thumbnailRequests.begin(sessionID: token)
+            case .restricted, .unavailable:
+                context.thumbnailRequests.retire(sessionID: token)
+            case .disconnected, .opening:
+                break
+            }
+        }
         lastPublished = lifecycle.connection
         continuation.yield(.stateChanged(lifecycle.connection))
         logger.info("Connection state: \(self.lifecycle.connection.state.rawValue, privacy: .public)")

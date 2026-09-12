@@ -48,8 +48,13 @@ final class AppModel {
     @ObservationIgnored private var catalogLoader: LiveCatalogLoader?
     @ObservationIgnored private var lastProjectedQuery: CatalogQuery?
 
-    init(makeBrowser: @escaping @MainActor () -> any DeviceBrowsing = { DeviceBrowserService() }) {
-        self.makeBrowser = makeBrowser
+    init(makeBrowser: (@MainActor () -> any DeviceBrowsing)? = nil) {
+        if let makeBrowser {
+            self.makeBrowser = makeBrowser
+        } else {
+            let context = DeviceCaptureContext()
+            self.makeBrowser = { DeviceBrowserService(context: context) }
+        }
     }
 
     func bootstrap() async {
@@ -146,6 +151,17 @@ final class AppModel {
     }
 
     func retryDeviceConnection() { browser?.retry() }
+
+    func thumbnailData(for asset: MediaAsset, maximumPixelSize: Int) async throws -> Data {
+        guard !isSample, deviceState == .ready,
+              let sessionID = catalogSessionID, let resourceID = asset.primaryResourceID,
+              let provider = browser as? any ThumbnailProviding else { throw MediaSourceError.unavailable }
+        try Task.checkCancellation()
+        let data = try await provider.thumbnailData(for: resourceID, sessionID: sessionID, maximumPixelSize: maximumPixelSize)
+        try Task.checkCancellation()
+        guard catalogSessionID == sessionID, deviceState == .ready else { throw MediaSourceError.staleSession }
+        return data
+    }
 
     func shutdown() {
         sourceGeneration += 1

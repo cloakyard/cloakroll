@@ -20,7 +20,7 @@ struct MediaInfoView: View {
             .background(.bar)
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
-                    SampleThumbnail(asset: asset)
+                    MediaThumbnail(asset: asset, contentMode: .fit)
                         .frame(width: 420, height: 260)
                         .clipped()
                         .clipShape(RoundedRectangle(cornerRadius: Design.inlineRadius))

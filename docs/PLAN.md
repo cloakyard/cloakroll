@@ -211,3 +211,14 @@ The physical phone is attached in IORegistry; its rebuilt-app discovery/catalog 
 and reconnect. See `verification/PHASE-3.md`. No original or thumbnail calls in this metadata stage.
 Next within this phase: lazy thumbnail integration and physical catalog acceptance; do not advance
 to Phase 4 until the real library and scrolling gate passes.
+
+### Phase 3 — lazy thumbnail stage implemented; physical acceptance pending
+
+Visible cells and Info now request public thumbnails, with two actual outstanding framework calls
+across browser replacements, a bounded queue, cancellation/session rejection and bounded ImageIO
+decoding off the main actor. 111 core and 12 hosted app tests pass. Strict lint, normal build and
+signature checks pass; independent review found no blocker. Final compact sample UI regression
+passes. See `verification/PHASE-3.md` for exact evidence and callback-lifetime limitations.
+
+The actual iPhone library and thumbnails still need unlock/reconnect validation. Leave the normal
+app open for this gate; Phase 4 caching/prefetch and all backup transfer phases remain planned.

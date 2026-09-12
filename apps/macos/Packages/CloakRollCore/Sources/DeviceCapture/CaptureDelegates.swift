@@ -81,8 +81,13 @@ enum CameraCallback: Sendable {
 /// Framework entry points only forward events. No file metadata or thumbnails are requested.
 final class CaptureCameraDelegate: NSObject, ICCameraDeviceDelegate {
     private let receive: @Sendable (CameraCallback) -> Void
+    private let shouldGetThumbnail: @Sendable (ObjectIdentifier) -> Bool
 
-    init(receive: @escaping @Sendable (CameraCallback) -> Void) {
+    init(
+        shouldGetThumbnail: @escaping @Sendable (ObjectIdentifier) -> Bool = { _ in false },
+        receive: @escaping @Sendable (CameraCallback) -> Void
+    ) {
+        self.shouldGetThumbnail = shouldGetThumbnail
         self.receive = receive
     }
 
@@ -135,7 +140,9 @@ final class CaptureCameraDelegate: NSObject, ICCameraDeviceDelegate {
         for item: ICCameraItem, error: (any Error)?
     ) {}
 
-    func cameraDevice(_ cameraDevice: ICCameraDevice, shouldGetThumbnailOf item: ICCameraItem) -> Bool { false }
+    func cameraDevice(_ cameraDevice: ICCameraDevice, shouldGetThumbnailOf item: ICCameraItem) -> Bool {
+        shouldGetThumbnail(ObjectIdentifier(item))
+    }
 
     func cameraDevice(_ cameraDevice: ICCameraDevice, shouldGetMetadataOf item: ICCameraItem) -> Bool { false }
 }

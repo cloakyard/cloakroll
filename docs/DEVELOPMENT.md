@@ -25,14 +25,16 @@ GIT_CONFIG_COUNT=0 swift test
 ```
 
 `GIT_CONFIG_COUNT=0` prevents inherited Git configuration from breaking SwiftPM. Keep actual exit
-codes when recording results. The app treats first-party warnings as errors. Tests use Swift
-Testing and deterministic protocol-friendly fixtures without launching the app.
+codes when recording results. The app treats first-party warnings as errors. Core tests use Swift
+Testing and deterministic protocol-friendly fixtures without launching the app; hosted tests launch
+an app with physical discovery disabled.
 
 ## Sample UI
 
 The app now starts in live device-discovery mode. Use `--sample` for 1,200 illustrated sample items. This is a development preview, and
 sample backup status never represents transferred files. Use the Debug **Development** menu to
 switch between 20/1,200/100,000 items, no-device/restricted/disconnected states and static progress.
+The same menu includes Compact Window (860-point width) and Standard Window for repeatable UI checks.
 Sample media is generated locally from editable illustration code; no personal photos are used.
 
 Debug launch options:
@@ -63,4 +65,4 @@ publish release claims until the corresponding Phase 10 checks are complete.
 
 Hosted AppModel tests use the scheme’s `CLOAKROLL_TESTING=1` environment to prevent the host app from starting hardware discovery; injected mock browsers drive their events. Core package tests remain headless.
 
-After `xcodebuild test`, run the normal `xcodebuild ... build` command before manual device checks. Xcode temporarily signs hosted-test apps with additional test-service/file permissions; the normal build removes those additions. Verify actual entitlements with `codesign -d --entitlements :-` on the app bundle.
+After `xcodebuild test`, run the normal `xcodebuild ... build` command before manual device checks. Xcode temporarily signs hosted-test apps with additional test-service/file permissions; the normal build removes those additions. Verify actual entitlements with `codesign -d --entitlements -` on the app bundle.
