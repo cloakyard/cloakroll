@@ -1,4 +1,3 @@
-import CryptoKit
 import Foundation
 import MediaModels
 
@@ -8,6 +7,7 @@ public actor BackupEngine {
     public typealias Download = @Sendable (
         BackupDownloadRequest, @escaping @Sendable (DownloadProgress) -> Void
     ) async throws -> DownloadedOriginal
+    public typealias VerificationHandler = @Sendable (VerifiedBackupResource) async throws -> Void
 
     public nonisolated let snapshots: AsyncStream<BackupSnapshot>
     private let continuation: AsyncStream<BackupSnapshot>.Continuation
@@ -38,7 +38,8 @@ public actor BackupEngine {
     /// Busy is rejected before starting. Once started, failures return a terminal result with
     /// every verified partial component retained; an incomplete asset is never marked complete.
     public func run(
-        assets: [MediaAsset], sessionID: UUID, destination: URL, download: @escaping Download
+        assets: [MediaAsset], sessionID: UUID, destination: URL,
+        onVerified: @escaping VerificationHandler = { _ in }, download: @escaping Download
     ) async throws -> BackupResult {
         guard worker == nil else { throw BackupEngineError.busy }
         let runID = UUID()
@@ -46,7 +47,9 @@ public actor BackupEngine {
         records = []
         currentTransfer = nil
         publish()
-        let task = Task { await execute(assets: assets, sessionID: sessionID, destination: destination, download: download) }
+        let task = Task {
+            await execute(assets: assets, sessionID: sessionID, destination: destination, onVerified: onVerified, download: download)
+        }
         worker = task
         let result = await withTaskCancellationHandler {
             await task.value
@@ -71,7 +74,8 @@ public actor BackupEngine {
     }
 
     private func execute(
-        assets: [MediaAsset], sessionID: UUID, destination: URL, download: @escaping Download
+        assets: [MediaAsset], sessionID: UUID, destination: URL,
+        onVerified: @escaping VerificationHandler, download: @escaping Download
     ) async -> BackupResult {
         var store: BackupFileStore?
         do {
@@ -86,9 +90,12 @@ public actor BackupEngine {
             for asset in assets {
                 for resource in asset.resources {
                     try Task.checkCancellation()
-                    try await transfer(resource, asset: asset, sessionID: sessionID, store: store, download: download)
+                    try await transfer(
+                        resource, asset: asset, sessionID: sessionID, store: store, onVerified: onVerified, download: download
+                    )
                 }
                 // Every original component has already been finalized and recorded at this point.
+                try Task.checkCancellation()
                 state.completedAssetIDs.insert(asset.id)
                 state.completedAssets = state.completedAssetIDs.count
                 publish()
@@ -97,6 +104,10 @@ public actor BackupEngine {
             state.currentFilename = nil
             state.currentResourceBytes = 0
             state.currentResourceExpectedBytes = 0
+        } catch BackupEngineError.persistenceFailed {
+            // A failed record transaction remains a failure even if Stop arrived during it.
+            state.phase = .failed
+            state.message = BackupEngineError.persistenceFailed.errorDescription
         } catch is CancellationError {
             state.phase = .cancelled
             state.message = nil
@@ -132,14 +143,15 @@ public actor BackupEngine {
     }
 
     private func transfer(
-        _ resource: MediaResource, asset: MediaAsset, sessionID: UUID, store: BackupFileStore, download: @escaping Download
+        _ resource: MediaResource, asset: MediaAsset, sessionID: UUID, store: BackupFileStore,
+        onVerified: @escaping VerificationHandler, download: @escaping Download
     ) async throws {
         state.currentFilename = resource.filename
         state.currentResourceExpectedBytes = resource.byteCount
         state.currentResourceBytes = 0
         let evidenceKey = try BackupEvidenceKey(
             sessionID: sessionID, deviceID: asset.deviceID, assetID: asset.id, resource: resource,
-            destinationIdentity: store.destinationIdentity, sourceMetadataSignature: Self.signature(asset: asset, resource: resource)
+            destinationIdentity: store.destinationIdentity, sourceMetadataSignature: Self.sourceSignature(asset: asset, resource: resource)
         )
         if let previous = history[evidenceKey] {
             state.phase = .verifying
@@ -150,7 +162,7 @@ public actor BackupEngine {
                 )
             }
             if valid {
-                record(previous, evidenceKey: evidenceKey)
+                try await record(previous, evidenceKey: evidenceKey, onVerified: onVerified)
                 return
             }
             history[evidenceKey] = nil
@@ -189,7 +201,7 @@ public actor BackupEngine {
                 sha256: finalized.sha256, verifiedAt: Date(), sourceModifiedAt: resource.modifiedAt,
                 destinationIdentity: store.destinationIdentity, sourceMetadataSignature: evidenceKey.sourceMetadataSignature
             )
-            record(verified, evidenceKey: evidenceKey)
+            try await record(verified, evidenceKey: evidenceKey, onVerified: onVerified)
         } catch {
             currentTransfer = nil
             await Task.detached(priority: .utility) { store.discard(staged) }.value
@@ -197,12 +209,18 @@ public actor BackupEngine {
         }
     }
 
-    private func record(_ verified: VerifiedBackupResource, evidenceKey: BackupEvidenceKey) {
+    private func record(
+        _ verified: VerifiedBackupResource, evidenceKey: BackupEvidenceKey, onVerified: @escaping VerificationHandler
+    ) async throws {
         history[evidenceKey] = verified
         records.append(verified)
         state.verifiedResources += 1
         state.verifiedBytes += verified.byteCount
         publish()
+        // Publication already happened. Own and await this uncancelled transaction through its
+        // real completion, retaining both the local original and retry evidence on write failure.
+        let persistence = Task.detached(priority: .utility) { try await onVerified(verified) }
+        do { try await persistence.value } catch { throw BackupEngineError.persistenceFailed }
     }
 
     private func receive(_ progress: DownloadProgress, transferID: UUID) {
@@ -219,13 +237,6 @@ public actor BackupEngine {
 
     private func publish() { continuation.yield(state) }
 
-    private static func signature(asset: MediaAsset, resource: MediaResource) throws -> String {
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = [.sortedKeys]
-        let value = BackupSourceSignature(asset: asset, resource: resource)
-        return try SHA256.hash(data: encoder.encode(value)).map { String(format: "%02x", $0) }.joined()
-    }
-
     private func detached<Value: Sendable>(_ operation: @escaping @Sendable () throws -> Value) async throws -> Value {
         let task = Task.detached(priority: .utility, operation: operation)
         return try await withTaskCancellationHandler {
@@ -236,16 +247,11 @@ public actor BackupEngine {
     }
 }
 
-private struct BackupEvidenceKey: Hashable {
+struct BackupEvidenceKey: Hashable {
     let sessionID: UUID
     let deviceID: String
     let assetID: String
     let resource: MediaResource
     let destinationIdentity: String
     let sourceMetadataSignature: String
-}
-
-private struct BackupSourceSignature: Encodable {
-    let asset: MediaAsset
-    let resource: MediaResource
 }

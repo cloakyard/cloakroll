@@ -25,6 +25,14 @@ struct LibraryBackupHistory {
 
     func records(in scope: Scope) -> [VerifiedBackupResource] { entries[scope]?.records ?? [] }
 
+    mutating func retainAssets(_ identifiers: Set<String>, in scope: Scope) {
+        guard var entry = entries[scope] else { return }
+        entry.records.removeAll { !identifiers.contains($0.assetID) }
+        entry.completed = entry.completed.filter { identifiers.contains($0.key) }
+        entry.dates = entry.dates.filter { identifiers.contains($0.key) }
+        entries[scope] = entry
+    }
+
     mutating func apply(_ result: BackupResult, assets: [MediaAsset], scope: Scope) {
         var entry = entries[scope] ?? Entry()
         // Keep earlier candidates if a retry stops before visiting them. The engine must freshly

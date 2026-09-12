@@ -10,6 +10,7 @@ public enum BackupEngineError: Error, Equatable, Sendable {
     case invalidSelection
     case invalidResourceSize
     case sourceSizeChanged
+    case persistenceFailed
 }
 
 extension BackupEngineError: LocalizedError {
@@ -19,6 +20,8 @@ extension BackupEngineError: LocalizedError {
         case .invalidSelection: "The selected media contains missing or ambiguous original resources."
         case .invalidResourceSize: "An original has no reliable size. Reconnect your iPhone and try again."
         case .sourceSizeChanged: "The original changed or its download format differs from the catalog. Refresh the library and try again."
+        case .persistenceFailed:
+            "The original was saved, but its backup record couldn’t be stored. Try again to finish recording the backup."
         }
     }
 }
@@ -79,7 +82,7 @@ public struct BackupSnapshot: Sendable, Equatable {
 }
 
 /// Evidence about one finalized local original. The SHA-256 is local byte evidence, not a source
-/// hash comparison. This phase keeps records in memory and does not claim database persistence.
+/// hash comparison. A local record alone does not establish that the persistence hook succeeded.
 public struct VerifiedBackupResource: Sendable, Equatable {
     public let assetID: String
     public let resourceID: String

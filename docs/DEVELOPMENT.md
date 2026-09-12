@@ -90,3 +90,37 @@ ImageCaptureCore allocations and temporary buffers are not included in encoded/d
 costs. The cache is disposable and stays inside the app's sandboxed Caches directory. Reconnect
 reuse requires a unique complete-catalog metadata match and persistent device identity; prior
 runtime namespaces are purged on startup. Hosted tests disable default disk caching.
+
+## Persistent original-backup history
+
+Phase 6 adds GRDB 7.11.1, pinned exactly with `Package.resolved`. Run `swift package resolve` from
+the core package when setting up a new checkout; preserve the lockfile in commits. The app stores
+its local SQLite database at `Application Support/CloakRoll/Backups.sqlite` inside the sandbox.
+The database contains source metadata, device/destination references and local verification
+evidence, not media bytes. Never commit a real database, its journal files or personal test media.
+
+`BackupStore` owns asynchronous GRDB reads/writes. Its initializer creates missing parent folders,
+opens and migrates off the main actor, then marks previously running sessions interrupted while
+retaining verified records. Keep one application-owned instance per database URL and coalesce
+concurrent opens; reopening during another instance's active run would interrupt its history.
+Append migrations after `v1_original_backup_history`; do not edit an applied migration, reset a
+schema on mismatch or replace an unreadable database with an empty one.
+
+The complete original catalog is converted to `BackupCatalogIdentity` off the main actor.
+`LibraryBackupPersistence` asks for device/destination-scoped candidates, rebases their proved
+canonical matches to current runtime addresses, and calls `BackupVerification.validateExisting`
+while retaining the destination lease. Candidate metadata never directly publishes a backed-up
+badge. Every component must pass fresh local path, destination, size and SHA-256 checks first.
+Keep these identities independent of thumbnail cache keys, PTP handles and filename-only matching.
+
+Before an original run, call `beginSession` with its selected assets and complete-catalog identity.
+Wire the engine's `onVerified` callback to `recordVerified`; the engine independently awaits that
+transaction after exclusive file finalization, even when UI cancellation has arrived. Await
+`finishSession` before reporting the terminal history outcome. Preserve finalized originals and
+truthful partial records on failure. The durable prepublication journal and crash reconciliation
+are still Phase 7 work; a renamed file with no committed record remains an unverified orphan.
+
+Use temporary caller-supplied database/destination URLs for tests. Hosted tests disable the default
+application store and inject their own fixture storage. Check [Phase 6 evidence](verification/PHASE-6.md)
+for the latest automated, native UI and physical acceptance results; reopening fixtures never
+substitutes for the real device/reconnect gate.

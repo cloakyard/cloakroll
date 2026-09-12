@@ -48,7 +48,8 @@ final class BackupFileStore: @unchecked Sendable {
     }
 
     func verifyAndFinalize(
-        _ staged: StagedOriginal, returnedURL: URL, expectedByteCount: Int64, createdAt: Date?
+        _ staged: StagedOriginal, returnedURL: URL, expectedByteCount: Int64, createdAt: Date?,
+        afterPublication: @Sendable () throws -> Void = {}
     ) throws -> FinalizedOriginal {
         try Task.checkCancellation()
         let expectedURL = staged.directory.appendingPathComponent(staged.filename, isDirectory: false)
@@ -73,17 +74,23 @@ final class BackupFileStore: @unchecked Sendable {
             guard try evidence.matches(current.status()) else { throw BackupFileError.changedDuringVerification }
             let filename = BackupPathNaming.filename(staged.filename, collision: collision)
             if renameatx_np(staged.descriptor.value, staged.filename, destination.value, filename, UInt32(RENAME_EXCL)) == 0 {
+                // An internal test seam models other processes moving destination folders.
+                try afterPublication()
                 let published = try destination.file(filename)
+                let relativePath = (folders + [filename]).joined(separator: "/")
                 // Rename itself can update ctime. Inode, bytes and content-modification time
                 // must still match the exact regular file that was hashed.
-                guard try evidence.matches(published.status(), includingChangeTime: false) else {
+                guard try evidence.matches(published.status(), includingChangeTime: false),
+                      BackupReadOnlyFiles.matches(
+                        root: root, relativePath: relativePath, evidence: evidence, includingChangeTime: false
+                      ) else {
                     throw BackupFileError.changedDuringVerification
                 }
                 // Publication is exclusive and same-volume. No process-restart/power-loss durability
                 // claim is made here; the digest records verified local bytes for later persistence.
                 _ = unlinkat(staging.value, staged.container, AT_REMOVEDIR)
                 return FinalizedOriginal(
-                    relativePath: (folders + [filename]).joined(separator: "/"), byteCount: evidence.bytes, sha256: evidence.sha256
+                    relativePath: relativePath, byteCount: evidence.bytes, sha256: evidence.sha256
                 )
             }
             guard errno == EEXIST else { throw BackupFileError.unavailable(errno) }
@@ -92,19 +99,7 @@ final class BackupFileStore: @unchecked Sendable {
     }
 
     func verifyExisting(relativePath: String, expectedByteCount: Int64, sha256: String) throws -> Bool {
-        let components = relativePath.split(separator: "/", omittingEmptySubsequences: false).map(String.init)
-        guard !components.isEmpty, components.allSatisfy(BackupDescriptor.isComponent), let filename = components.last else { return false }
-        do {
-            var directory = root
-            for component in components.dropLast() { directory = try directory.directory(component) }
-            let file = try directory.file(filename)
-            let evidence = try BackupFileEvidence.inspect(file, expectedBytes: expectedByteCount)
-            return evidence.sha256 == sha256
-        } catch is CancellationError {
-            throw CancellationError()
-        } catch {
-            return false
-        }
+        try BackupReadOnlyFiles.verifyExisting(root: root, relativePath: relativePath, expectedByteCount: expectedByteCount, sha256: sha256)
     }
 
     func discard(_ staged: StagedOriginal) {

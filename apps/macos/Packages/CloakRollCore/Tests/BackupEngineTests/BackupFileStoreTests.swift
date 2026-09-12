@@ -171,6 +171,38 @@ struct BackupFileStoreTests {
         store.closeStaging()
     }
 
+    @Test(arguments: [false, true])
+    func movedOrReplacedPublicationFolderCannotReturnVerifiedEvidence(replaceFolder: Bool) throws {
+        let root = try backupDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let store = try BackupFileStore(destination: root, runID: UUID(), timeZone: .gmt)
+        let staged = try stage(store, name: "IMG.HEIC", data: Data([1, 2, 3]))
+        let folders = BackupPathNaming.folders(createdAt: date, timeZone: .gmt)
+        let originalFolder = folders.reduce(root) { $0.appendingPathComponent($1) }
+        let movedFolder = root.appendingPathComponent("Moved originals")
+        let declaredFile = originalFolder.appendingPathComponent(staged.filename)
+        var finalized: FinalizedOriginal?
+        #expect(throws: BackupFileError.changedDuringVerification) {
+            finalized = try store.verifyAndFinalize(
+                staged, returnedURL: staged.directory.appendingPathComponent(staged.filename), expectedByteCount: 3, createdAt: date
+            ) {
+                try FileManager.default.moveItem(at: originalFolder, to: movedFolder)
+                if replaceFolder {
+                    try FileManager.default.createDirectory(at: originalFolder, withIntermediateDirectories: false)
+                    // Even identical bytes in a different inode cannot attest the published path.
+                    try Data([1, 2, 3]).write(to: declaredFile)
+                }
+            }
+        }
+        #expect(finalized == nil)
+        store.discard(staged)
+        store.closeStaging()
+        #expect(try Data(contentsOf: movedFolder.appendingPathComponent(staged.filename)) == Data([1, 2, 3]))
+        if replaceFolder { #expect(try Data(contentsOf: declaredFile) == Data([1, 2, 3])) }
+        else { #expect(!FileManager.default.fileExists(atPath: declaredFile.path)) }
+        #expect(try FileManager.default.contentsOfDirectory(atPath: root.path).allSatisfy { !$0.hasPrefix(".cloakroll-staging-") })
+    }
+
     private func stage(_ store: BackupFileStore, name: String, data: Data) throws -> StagedOriginal {
         let staged = try store.prepare(filename: name)
         try data.write(to: staged.directory.appendingPathComponent(staged.filename), options: [.withoutOverwriting])

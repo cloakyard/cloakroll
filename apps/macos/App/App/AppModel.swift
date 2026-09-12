@@ -51,7 +51,7 @@ final class AppModel {
     @ObservationIgnored private var catalogLoader: LiveCatalogLoader?
     @ObservationIgnored private var lastProjectedQuery: CatalogQuery?
     @ObservationIgnored let thumbnails = LibraryThumbnailController()
-    @ObservationIgnored let backup = LibraryBackupController()
+    @ObservationIgnored let backup = LibraryBackupController(persistence: LibraryBackupPersistence.appDefault())
 
     init(makeBrowser: (@MainActor () -> any DeviceBrowsing)? = nil) {
         if let makeBrowser {
@@ -172,6 +172,7 @@ final class AppModel {
     private var backupSourceAvailable: Bool {
         !isSample && deviceState == .ready && mediaScanState == .complete
             && !isCatalogPreparing && !isProjecting && !backup.isBusy && !backup.destination.isChoosing
+            && !backup.isCheckingHistory && backup.historyErrorMessage == nil
             && catalogSessionID != nil && browser is any OriginalMediaDownloading
     }
 
@@ -234,6 +235,7 @@ final class AppModel {
     }
 
     private func stopDeviceBrowsing() {
+        backup.suspendHistory(resetSource: true)
         thumbnails.setSession(nil)
         catalogLoader?.stop()
         catalogLoader = nil
@@ -278,6 +280,7 @@ final class AppModel {
         thumbnailReuseIDs = prepared.thumbnailReuseIDs
         lookup = prepared.lookup
         if let infoAsset { self.infoAsset = lookup[infoAsset.id] }
+        backup.acceptCatalog(source: prepared.source, assets: prepared.assets, device: device)
         refreshBackupStatuses()
     }
 
@@ -288,7 +291,12 @@ final class AppModel {
             device = connection.device
             deviceState = connection.state
             deviceMessage = connection.message
-            if connection.state != .ready { backup.cancel() }
+            if connection.state != .ready {
+                backup.cancel()
+                backup.suspendHistory()
+            } else {
+                backup.retryHistoryCheck()
+            }
             if connection.state != .ready { thumbnails.setSession(nil) } else if mediaScanState != .interrupted {
                 thumbnails.setSession(catalogSessionID)
             }

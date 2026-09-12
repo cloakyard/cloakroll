@@ -14,8 +14,21 @@ struct LiveLibraryNotice: View {
                         Text("\(percent)%").monospacedDigit()
                     }
                 }
+            } else if model.backup.isCheckingHistory {
+                HStack(spacing: 8) {
+                    ProgressView().controlSize(.mini)
+                    Text("Checking previous backups…")
+                }
             } else if model.mediaScanState == .complete {
                 Text("\(model.assets.count.formatted()) items available over USB")
+            }
+            if let message = model.backup.historyErrorMessage {
+                HStack(alignment: .firstTextBaseline, spacing: 12) {
+                    Text(message)
+                    Spacer(minLength: 8)
+                    Button("Try Again") { model.backup.retryHistoryCheck() }
+                        .disabled(model.backup.isBusy || model.backup.isCheckingHistory)
+                }
             }
             if model.iCloudPhotosEnabled {
                 Label {
@@ -35,6 +48,6 @@ struct LiveLibraryNotice: View {
 
     private var showsContent: Bool {
         (model.isCatalogLoading && model.deviceState == .ready)
-            || model.mediaScanState == .complete || model.iCloudPhotosEnabled
+            || model.mediaScanState == .complete || model.iCloudPhotosEnabled || model.backup.historyErrorMessage != nil
     }
 }

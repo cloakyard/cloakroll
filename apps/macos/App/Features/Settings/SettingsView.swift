@@ -1,3 +1,4 @@
+import BackupPersistence
 import SwiftUI
 
 enum SettingsTab: Hashable {
@@ -63,9 +64,23 @@ struct SettingsView: View {
                 LabeledContent("Folder structure", value: "Year / Month")
             }
             Section {
-                Text("Backup history currently lasts for this connection. Existing files are kept when another copy is made.")
+                Text("Previous backups are remembered for each iPhone and folder. Saved originals are checked before they are reused.")
                     .font(.callout)
                     .foregroundStyle(.secondary)
+            }
+            if let sessions = model.backup.persistence?.recentSessions, !sessions.isEmpty {
+                Section("Recent Backups") {
+                    ForEach(sessions.prefix(3), id: \.id) { session in
+                        HStack(alignment: .firstTextBaseline) {
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text(session.startedAt, format: .dateTime.day().month(.abbreviated).hour().minute())
+                                Text(session.deviceName).font(.caption).foregroundStyle(.secondary)
+                            }
+                            Spacer()
+                            Text(sessionLabel(session)).foregroundStyle(.secondary)
+                        }
+                    }
+                }
             }
         }
         .formStyle(.grouped)
@@ -90,6 +105,16 @@ struct SettingsView: View {
             }
         }
         .formStyle(.grouped)
+    }
+
+    private func sessionLabel(_ session: StoredBackupSession) -> String {
+        switch session.status {
+        case .completed: "\(session.completedAssets.formatted()) \(session.completedAssets == 1 ? "item" : "items")"
+        case .running: "In Progress"
+        case .cancelled: "Stopped"
+        case .failed: "Incomplete"
+        case .interrupted: "Interrupted"
+        }
     }
 
     private var version: String {

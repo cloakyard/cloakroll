@@ -11,8 +11,8 @@ follows CloakDrop's proven bridge pattern, but a media browser needs prepared ca
 and selection state instead of download rows and a permanently open inspector. UI-facing models
 stay small; catalog projection, transfer state and persistence have independent owners.
 
-The local `CloakRollCore` package contains `MediaModels`, `MediaCatalog`, `DeviceCapture` and `ThumbnailPipeline`. Additional modules
-arrive in their implementation phases. None imports SwiftUI. Values crossing tasks are Sendable.
+The local `CloakRollCore` package contains `MediaModels`, `MediaCatalog`, `DeviceCapture`,
+`ThumbnailPipeline`, `BackupEngine` and `BackupPersistence`. None imports SwiftUI. Values crossing tasks are Sendable.
 Views issue intents and display state; they do not transfer files, sort a whole library in `body`,
 or manipulate ImageCaptureCore objects.
 
@@ -35,7 +35,7 @@ and counts use logical assets, while transfer and verification account for every
 Missing capture times stay unknown rather than being fabricated. Display grouping has no
 connection to DCIM storage folders and never claims to reflect iPhone Photos albums.
 
-One identity component will own deterministic matching. Device identity scopes every source
+`BackupIdentityIndex` owns deterministic matching. Device identity scopes every source
 identity; destination identity scopes backup status. Stable API evidence is preferred, metadata
 is a conservative fallback, and ambiguous matches cannot silently become verified backups.
 Names, PTP handles and local-only digests cannot independently establish cross-session identity.
@@ -106,10 +106,22 @@ before reusing a file found after a crash. Existing unrelated files are never ov
 A logical asset is backed up only when every required component has a verified record at the
 selected destination. Missing/unavailable destinations are visible and never silently replaced.
 
-GRDB is planned because CloakDrop already uses it for tested migrations and transactional
-SQLite access. Indexed normalized identities support device/destination isolation and large
-incremental scans. JSON payloads may hold optional metadata, but matching-critical columns stay
-explicit and indexed. The store remains behind a protocol for failure-injection tests.
+`BackupStore` is a headless actor using pinned GRDB and one serial SQLite connection. Versioned
+migrations preserve existing history; transactions register sessions and commit each verified
+component before advancing to the next one. Only `BackupPersistence` imports GRDB. One lazy,
+application-owned store coalesces opening and marks unfinished prior sessions interrupted.
+
+Complete-catalog identity combines persistent device identity, resource metadata and companion
+relationships. Runtime USB handles never become persistent keys. Missing or ambiguous evidence
+stays scoped to the source session. Candidate queries are scoped to the selected destination;
+stored local size and digest are checked again before projecting backed-up status. Catalog or
+destination changes cancel stale checks, and changed canonical evidence invalidates in-memory
+retry records too. The destination lease remains held until its check or transfer settles.
+
+Phase 6 records success after filesystem publication. A process crash between publication and
+the database commit can leave a preserved, unregistered original. Phase 7 must add a durable
+publication journal and evidence-based reconciliation; the current retry conservatively creates
+another exclusive copy. No power-loss durability claim is made.
 
 ## Native presentation and privacy
 

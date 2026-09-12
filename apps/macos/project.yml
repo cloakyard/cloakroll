@@ -61,6 +61,8 @@ targets:
         product: ThumbnailPipeline
       - package: CloakRollCore
         product: BackupEngine
+      - package: CloakRollCore
+        product: BackupPersistence
   CloakRollTests:
     type: bundle.unit-test
     platform: macOS

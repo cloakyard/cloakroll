@@ -122,6 +122,7 @@ struct BackupBar: View {
     }
 
     private var actionTitle: String {
+        if model.backup.isCheckingHistory { return "Checking Backups…" }
         if !model.selection.selectedIDs.isEmpty {
             return "Back Up \(model.selection.selectedIDs.count.formatted()) Selected"
         }

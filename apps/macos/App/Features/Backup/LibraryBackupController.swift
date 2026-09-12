@@ -1,5 +1,6 @@
 import AppKit
 import BackupEngine
+import BackupPersistence
 import MediaModels
 import Observation
 
@@ -11,34 +12,50 @@ final class LibraryBackupController {
     }
 
     let destination: BackupDestinationStore
+    let persistence: LibraryBackupPersistence?
     private(set) var snapshot: BackupSnapshot?
     private(set) var isBusy = false
     private(set) var isStopping = false
     private(set) var lastAttempt: Attempt?
+    private(set) var isCheckingHistory = false
+    private(set) var historyErrorMessage: String?
     var errorMessage: String?
     @ObservationIgnored var onStatusesChanged: (() -> Void)?
     @ObservationIgnored private var history = LibraryBackupHistory()
     @ObservationIgnored private var runTask: Task<Void, Never>?
     @ObservationIgnored private var engine: BackupEngine?
+    @ObservationIgnored private var historyTask: Task<Void, Never>?
+    @ObservationIgnored private var historyGeneration = 0
+    @ObservationIgnored private var context: PreparedBackupContext?
+    @ObservationIgnored private var pendingCatalog: PendingBackupCatalog?
+    @ObservationIgnored private var needsHistoryCheck = false
 
-    init(destination: BackupDestinationStore = BackupDestinationStore()) {
+    init(destination: BackupDestinationStore = BackupDestinationStore(), persistence: LibraryBackupPersistence? = nil) {
         self.destination = destination
+        self.persistence = persistence
     }
 
     func chooseDestination() async {
         guard !isBusy, !destination.isChoosing else { return }
         let previous = destination.selection?.id
-        await destination.chooseFolder()
+        let didChoose = await destination.chooseFolder()
         if destination.selection?.id != previous {
             snapshot = nil
             lastAttempt = nil
+            history = LibraryBackupHistory()
             onStatusesChanged?()
         }
         takeDestinationError()
+        if didChoose { retryHistoryCheck() }
     }
 
     func start(assets: [MediaAsset], sessionID: UUID, download: @escaping BackupEngine.Download) {
-        guard !isBusy, !destination.isChoosing, !assets.isEmpty else { return }
+        guard !isBusy, !isCheckingHistory, historyErrorMessage == nil,
+              !destination.isChoosing, !assets.isEmpty else { return }
+        if persistence != nil {
+            guard pendingCatalog?.source.state == .complete, context?.identity.sessionID == sessionID,
+                  !needsHistoryCheck else { return }
+        }
         isBusy = true
         isStopping = false
         errorMessage = nil
@@ -83,6 +100,7 @@ final class LibraryBackupController {
             isBusy = false
             isStopping = false
             runTask = nil
+            if needsHistoryCheck { retryHistoryCheck() }
         }
         do {
             if destination.selection == nil {
@@ -98,6 +116,7 @@ final class LibraryBackupController {
             defer { lease.release() }
             try Task.checkCancellation()
             let scope = LibraryBackupHistory.Scope(sessionID: sessionID, destinationID: lease.destinationID)
+            let journal = try await beginJournal(assets: assets, sessionID: sessionID, destinationID: lease.destinationID)
             let engine = BackupEngine(previousRecords: history.records(in: scope))
             self.engine = engine
             let monitor = Task { [weak self] in
@@ -107,10 +126,28 @@ final class LibraryBackupController {
                 }
             }
             defer { monitor.cancel() }
-            let result = try await engine.run(assets: assets, sessionID: sessionID, destination: lease.url, download: download)
+            var result = try await engine.run(
+                assets: assets, sessionID: sessionID, destination: lease.url,
+                onVerified: { record in
+                    if let journal { try await journal.store.recordVerified(sessionID: journal.id, record: record) }
+                }, download: download
+            )
+            monitor.cancel()
+            if let journal {
+                do {
+                    let terminal = result.snapshot
+                    try await Task { try await journal.store.finishSession(id: journal.id, result: terminal) }.value
+                } catch {
+                    var terminal = result.snapshot
+                    terminal.phase = .failed
+                    terminal.message = "The files were saved, but the backup history couldn’t be finalized. Try again."
+                    result = BackupResult(snapshot: terminal, records: result.records)
+                }
+            }
             snapshot = result.snapshot
             history.apply(result, assets: assets, scope: scope)
             onStatusesChanged?()
+            if let persistence { try? await Task { try await persistence.refreshSessions() }.value }
         } catch is CancellationError {
             snapshot = BackupSnapshot(phase: .cancelled, totalAssets: assets.count)
         } catch {
@@ -123,4 +160,115 @@ final class LibraryBackupController {
         if let message = destination.errorMessage { errorMessage = message }
         destination.clearError()
     }
+
+    private func beginJournal(assets: [MediaAsset], sessionID: UUID, destinationID: UUID) async throws -> BackupJournalSession? {
+        guard let persistence else { return nil }
+        guard let context, context.identity.sessionID == sessionID else { throw LibraryHistoryError.libraryChanged }
+        let validation = Task.detached(priority: .utility) {
+            for asset in assets {
+                try Task.checkCancellation()
+                guard context.lookup[asset.id] == asset else { throw LibraryHistoryError.libraryChanged }
+            }
+        }
+        try await withTaskCancellationHandler {
+            try await validation.value
+        } onCancel: { validation.cancel() }
+        let store = try await persistence.store()
+        let id = try await store.beginSession(
+            device: context.device, destinationID: destinationID, sourceSessionID: sessionID,
+            assets: assets, identity: context.identity
+        )
+        return BackupJournalSession(id: id, store: store)
+    }
+
+    func acceptCatalog(source: DeviceMediaSnapshot, assets: [MediaAsset], device: ConnectedDevice?) {
+        guard persistence != nil else { return }
+        if pendingCatalog?.source.sessionID != source.sessionID { history = LibraryBackupHistory() }
+        pendingCatalog = device.map { PendingBackupCatalog(source: source, assets: assets, device: $0) }
+        needsHistoryCheck = true
+        guard !isBusy else { return }
+        retryHistoryCheck()
+    }
+
+    func suspendHistory(resetSource: Bool = false) {
+        historyGeneration += 1
+        historyTask?.cancel()
+        historyTask = nil
+        isCheckingHistory = false
+        if resetSource {
+            pendingCatalog = nil
+            context = nil
+            historyErrorMessage = nil
+            needsHistoryCheck = false
+        }
+    }
+
+    func retryHistoryCheck() {
+        guard let persistence, !isBusy else { return }
+        suspendHistory()
+        guard let pending = pendingCatalog, pending.source.state == .complete else { return }
+        let generation = historyGeneration
+        isCheckingHistory = true
+        historyErrorMessage = nil
+        needsHistoryCheck = false
+        historyTask = Task { [weak self] in
+            guard let self else { return }
+            defer {
+                if historyGeneration == generation {
+                    isCheckingHistory = false
+                    historyTask = nil
+                }
+            }
+            do {
+                let prepared = try await LibraryBackupPersistence.prepare(
+                    source: pending.source, assets: pending.assets, device: pending.device,
+                    previousIdentity: context?.identity
+                )
+                try Task.checkCancellation()
+                guard historyGeneration == generation else { return }
+                if let destinationID = destination.selection?.id {
+                    history.retainAssets(prepared.retainedAssetIDs, in: .init(
+                        sessionID: pending.source.sessionID, destinationID: destinationID
+                    ))
+                }
+                context = prepared
+                onStatusesChanged?()
+                if destination.selection != nil {
+                    let lease = try await destination.acquireLease()
+                    defer { lease.release() }
+                    let result = try await persistence.verifyHistory(context: prepared, lease: lease)
+                    try Task.checkCancellation()
+                    guard historyGeneration == generation else { return }
+                    history.apply(result, assets: pending.assets, scope: .init(
+                        sessionID: pending.source.sessionID, destinationID: lease.destinationID
+                    ))
+                }
+                onStatusesChanged?()
+                try await persistence.refreshSessions()
+            } catch is CancellationError {
+                // An obsolete catalog or destination may never replace the current projection.
+            } catch {
+                if historyGeneration == generation {
+                    historyErrorMessage = (error as? LocalizedError)?.errorDescription
+                        ?? "Backup history couldn’t be checked. Try again or choose the folder again."
+                }
+            }
+        }
+    }
+}
+
+private struct PendingBackupCatalog {
+    let source: DeviceMediaSnapshot
+    let assets: [MediaAsset]
+    let device: ConnectedDevice
+}
+
+private struct BackupJournalSession: Sendable {
+    let id: UUID
+    let store: BackupStore
+}
+
+private enum LibraryHistoryError: LocalizedError {
+    case libraryChanged
+    var errorDescription: String? { "The iPhone library changed. Wait for it to finish loading, then try again." }
 }

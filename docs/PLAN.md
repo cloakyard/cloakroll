@@ -130,7 +130,7 @@ Do not claim physical power-loss durability from a process-restart test.
 | 3 Catalog | Real metadata and related resources, photos/videos/RAW/Live Photo evidence, sorting, lazy API thumbnails. Real library visible without downloading originals. | Complete |
 | 4 Thumbnails | Bounded memory/disk cache, versioned invalidation + eviction, visible priority, prefetch and cancellation. Rapid scrolling/reconnect memory and USB concurrency checks. | In progress |
 | 5 Backup | Folder picker/bookmarks, Year/Month paths, original-component queue, staging, progress and no-overwrite collision policy. Selected/all real photos and videos copied. | Complete (bounded physical import) |
-| 6 Incremental | GRDB schema/migrations, device/destination-scoped matching, session history, new/backed-up/recent filters. Reconnect old library + newly captured items checked. | Planned |
+| 6 Incremental | GRDB schema/migrations, device/destination-scoped matching, session history, new/backed-up/recent filters. Reconnect old library + newly captured items checked. | In progress |
 | 7 Reliability | Size and digest evidence, disconnect/full disk/retry/cancel/relaunch tests and real interruptions. No incomplete success or unrelated file overwrite. | Planned |
 | 8 Polish | Onboarding, info/search/sort/context menus/shortcuts, cloud availability copy, external volume UX, accessibility and final icon. Compare all screens to CloakDrop. | Planned |
 | 9 Performance | Generated 10k/50k/100k catalogs; timed catalog/matching/startup, bounded thumbnails, measured main-thread/scrolling and database behavior. | Planned |
@@ -297,3 +297,21 @@ singular labels and indeterminate progress before byte callbacks. See `verificat
 for aggregate evidence and limits. History is still connection-scoped in memory; next is Phase 6
 persistent history and conservative device/destination-scoped matching. Full-library stress,
 physical unplug/cache reconnect, external volumes and crash recovery remain explicit future checks.
+
+### Phase 6 — implemented; physical incremental acceptance pending
+
+Pinned GRDB persistence, versioned migrations, per-resource transactions, conservative complete-
+catalog identity, fresh local verification and native history-checking/session presentation are
+implemented. 245 core and 48 hosted app tests pass, as do strict lint, normal sandbox build and
+signature checks. Independent matching review found no blocker. The normal compact disconnected
+window and updated Settings were inspected. See `verification/PHASE-6.md` for evidence and limits.
+
+The reliability review also added a root-relative final-path check: moving or replacing a
+Year/Month folder during publication now fails without returning incorrect verified evidence,
+while preserving both the published file and any replacement. The deterministic regression,
+full core suite and final normal build pass.
+
+USB inventory now shows no iPhone; reconnect and a new capture were requested. Real persistent
+backup/relaunch/new-item acceptance is pending and is not replaced by the automated fixture
+reopen tests. Phase 7 must close the documented publication-to-database crash gap; existing
+unrecorded originals are preserved and conservatively copied again rather than trusted by name.
