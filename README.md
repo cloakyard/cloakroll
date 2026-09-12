@@ -3,8 +3,8 @@
 **Your camera roll, safely on your Mac.** A native macOS photo and video backup app, part of Cloakyard.
 
 CloakRoll is being built in verified phases. Physical iPhone discovery and the native UI quality
-gate have passed. The current Phase 3 work adds real metadata and lazy thumbnails; its physical
-library acceptance check is still pending. The app also includes clearly labeled sample media,
+gate have passed. Phase 3's real metadata and lazy thumbnails have passed physical library
+acceptance. The app also includes clearly labeled sample media,
 chronological groups, filtering, selection, media info and Settings. **It does not back up files yet.**
 Follow [the implementation plan](docs/PLAN.md) for actual progress and verification evidence.
 The latest [Liquid Glass UI audit](docs/verification/UI-LIQUID-GLASS.md) covers native slider

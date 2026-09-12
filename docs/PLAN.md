@@ -125,7 +125,7 @@ Do not claim physical power-loss durability from a process-restart test.
 | 0 Discovery | Reference inspection, architecture, validated public APIs and coherent implementation plan. | Complete |
 | 1 Foundation | macOS 14 app + package, mock library, native sidebar/grid/settings, purple tokens, prototype icon. Build, tests, lint; manually inspect 1,000+ assets, light/dark and empty states. | Complete |
 | 2 Detection | Public ImageCaptureCore adapter, serial lifecycle, normalized device/trust/lock/unavailable states. Real unplug → plug → disconnect → reconnect evidence required. No downloads. | Complete |
-| 3 Catalog | Real metadata and related resources, photos/videos/RAW/Live Photo evidence, sorting, lazy API thumbnails. Real library visible without downloading originals. | In progress |
+| 3 Catalog | Real metadata and related resources, photos/videos/RAW/Live Photo evidence, sorting, lazy API thumbnails. Real library visible without downloading originals. | Complete |
 | 4 Thumbnails | Bounded memory/disk cache, versioned invalidation + eviction, visible priority, prefetch and cancellation. Rapid scrolling/reconnect memory and USB concurrency checks. | Planned |
 | 5 Backup | Folder picker/bookmarks, Year/Month paths, original-component queue, staging, progress and no-overwrite collision policy. Selected/all real photos and videos copied. | Planned |
 | 6 Incremental | GRDB schema/migrations, device/destination-scoped matching, session history, new/backed-up/recent filters. Reconnect old library + newly captured items checked. | Planned |
@@ -237,3 +237,12 @@ standard layouts, light/dark appearance previews, Settings, search and scrolling
 111 core and 12 hosted app tests, final normal build, strict lint and signature verification pass.
 See `verification/UI-LIQUID-GLASS.md` for evidence and untested accessibility/runtime combinations.
 The sample preview is left open for UI review; the Phase 3 physical library gate remains pending.
+
+### Phase 3 — physical acceptance complete
+
+The normal app displayed 1,881 real USB-exposed media items after physical unlock/reconnect.
+Real photo, Live Photo, video and RAW thumbnails, related originals, video dimensions/duration,
+filename search, sorting and scrolling were inspected. Disconnection and recovery were observed.
+No original files were downloaded. See `verification/PHASE-3.md` for aggregate evidence and
+coverage limits. Commit the requested fixed-size UI and catalog responsiveness stage next,
+then proceed to Phase 4 thumbnail caching and scheduling.

@@ -1,7 +1,8 @@
 # Phase 3 — real media catalog
 
-Status: in progress. Metadata and lazy thumbnail implementation are built and tested. Physical
-catalog and thumbnail acceptance remain pending. Phase 4 has not started.
+Status: complete. Physical catalog and thumbnail acceptance passed on 12 September 2026.
+The implementation-stage notes below retain their original pending status as historical evidence;
+the final hardware check is recorded at the end.
 
 ## Metadata stage
 
@@ -71,3 +72,31 @@ claim that underlying I/O ended. Measure this behavior during physical interrupt
 
 Next: unlock/reconnect the attached iPhone and verify its actual library, metadata, thumbnails and
 responsive scrolling in the normal sandboxed app. Do not advance to Phase 4 before that gate passes.
+
+## Physical acceptance — 12 September 2026, 15:27–15:35
+
+The normal sandboxed app (process 89605, committed build `63d0eec`) received the physical phone
+after unlock/reconnect. Logs recorded restricted → ready at 15:27:47, physical disconnection at
+15:27:56, and rediscovery → ready at 15:28:00. Error -9943 before readiness is the SDK's
+`ICReturnDeviceIsPasscodeLocked`; the run recovered without changing entitlements.
+
+- The live UI displayed **1,881 logical media items**: 1,773 still-image items, 108 videos,
+  1,143 Live Photo groups and two RAW items. Live Photos and RAW are subsets of still images.
+- Real JPEG/HEIC, Live Photo, video and RAW thumbnails appeared. Newly visible video thumbnails
+  arrived while scrolling; some requests initially showed placeholders. Cache/revisit behavior is
+  part of Phase 4, not a measured performance claim in this gate.
+- Info for an actual Live Photo showed two related original resources (HEIC plus MOV). A video
+  showed 3840 × 2160 dimensions and a ten-second duration. Both RAW items displayed thumbnails.
+- Filename search reduced the RAW collection to the matching item; clearing search restored both.
+  Choosing Oldest First reversed their date ordering. Info, filter changes and scrolling responded.
+- No original-download API was used. No source media was changed or deleted. No personal images
+  or filenames are stored in this evidence file.
+
+Catalog logs reported 3,614 resources before unplugging and a later sequence of 0, 2,127 and
+3,602 after reconnect. The current log labels every snapshot whose state is complete as “complete”;
+these lines do not establish separate readiness callbacks or complete coverage of the phone.
+Counts describe the media exposed by this session only, and do not prove iCloud/Hidden-album
+coverage or cross-session resource completeness.
+
+Gate passed: physical device → metadata catalog → classified grid → lazy thumbnails/Info has
+been exercised. Phase 4 may proceed after the current UI/performance refinement is committed.
