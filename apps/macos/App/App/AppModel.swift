@@ -1,11 +1,10 @@
 import Foundation
 import MediaModels
 import MediaCatalog
+import DeviceCapture
 import Observation
 
-enum DeviceViewState: String {
-    case disconnected, opening, restricted, ready, unavailable
-}
+typealias DeviceViewState = DeviceConnectionState
 
 /// Presentation state and intents only. Catalog transformations belong to the headless projector.
 @MainActor @Observable
@@ -20,7 +19,8 @@ final class AppModel {
     private(set) var activeID: String?
     var device: ConnectedDevice?
     var deviceState: DeviceViewState = .disconnected
-    var isSample = true
+    var isSample = false
+    var deviceMessage: String?
     var isProjecting = false
     var infoAsset: MediaAsset?
     var settingsTab = SettingsTab.general
@@ -36,21 +36,36 @@ final class AppModel {
     @ObservationIgnored private var isLoadingSource = false
     @ObservationIgnored private var started = false
     @ObservationIgnored private var lookup: [String: MediaAsset] = [:]
+    @ObservationIgnored private let makeBrowser: @MainActor () -> any DeviceBrowsing
+    @ObservationIgnored private var browser: (any DeviceBrowsing)?
+    @ObservationIgnored private var deviceTask: Task<Void, Never>?
+
+    init(makeBrowser: @escaping @MainActor () -> any DeviceBrowsing = { DeviceBrowserService() }) {
+        self.makeBrowser = makeBrowser
+    }
 
     func bootstrap() async {
         guard !started else { return }
         started = true
+        #if DEBUG
+        if ProcessInfo.processInfo.environment["CLOAKROLL_TESTING"] == "1" { return }
         let arguments = ProcessInfo.processInfo.arguments
         if arguments.contains("--empty") {
             await loadSample(count: 0, state: .disconnected)
+            return
         } else if arguments.contains("--locked") {
             await loadSample(count: 0, state: .restricted)
-        } else {
+            return
+        } else if arguments.contains("--sample") || arguments.contains("--sample-100k") {
             await loadSample(count: arguments.contains("--sample-100k") ? 100_000 : 1_200)
+            return
         }
+        #endif
+        startLive()
     }
 
     func loadSample(count: Int, state: DeviceViewState = .ready) async {
+        stopDeviceBrowsing()
         sourceGeneration += 1
         let requestedSource = sourceGeneration
         generation += 1
@@ -65,6 +80,7 @@ final class AppModel {
         guard sourceGeneration == requestedSource else { return }
         isLoadingSource = false
         isSample = true
+        deviceMessage = nil
         device = state == .disconnected ? nil : fixture.device
         deviceState = state
         assets = fixture.assets
@@ -76,6 +92,56 @@ final class AppModel {
         sampleProgress = false
         generation += 1
         await project(generation: generation)
+    }
+
+    func startLive() {
+        stopDeviceBrowsing()
+        sourceGeneration += 1
+        generation += 1
+        projectionTask?.cancel()
+        isLoadingSource = false
+        isProjecting = false
+        isSample = false
+        sampleProgress = false
+        assets = []
+        statuses = [:]
+        backupDates = [:]
+        lookup = [:]
+        snapshot = .empty
+        clearSelection()
+        infoAsset = nil
+        device = nil
+        deviceState = .disconnected
+        deviceMessage = nil
+        let service = makeBrowser()
+        browser = service
+        let events = service.events
+        deviceTask = Task { [weak self] in
+            for await event in events {
+                guard !Task.isCancelled else { return }
+                self?.apply(event)
+            }
+        }
+        service.start()
+    }
+
+    func retryDeviceConnection() { browser?.retry() }
+
+    private func stopDeviceBrowsing() {
+        browser?.stop()
+        deviceTask?.cancel()
+        deviceTask = nil
+        browser = nil
+    }
+
+    private func apply(_ event: DeviceEvent) {
+        guard !isSample else { return }
+        switch event {
+        case .stateChanged(let connection):
+            device = connection.device
+            deviceState = connection.state
+            deviceMessage = connection.message
+        }
     }
 
     func status(for asset: MediaAsset) -> BackupStatus { statuses[asset.id] ?? .notBackedUp }

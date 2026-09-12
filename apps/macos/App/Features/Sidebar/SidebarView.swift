@@ -91,7 +91,7 @@ struct DeviceSummary: View {
         case .opening: "Connecting…"
         case .restricted: "Unlock and trust this Mac"
         case .ready: model.isSample ? "Connected · Sample" : "Connected"
-        case .unavailable: "Disconnected"
+        case .unavailable: "Unavailable"
         }
     }
 

@@ -10,7 +10,7 @@ struct LibraryView: View {
     var body: some View {
         VStack(spacing: 0) {
             if model.isSample { sampleNotice }
-            if model.deviceState == .unavailable { disconnectNotice }
+            if model.deviceState == .unavailable && !model.assets.isEmpty { disconnectNotice }
             if model.assets.isEmpty && model.isProjecting {
                 ProgressView("Preparing library…").frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if model.assets.isEmpty {
@@ -50,7 +50,7 @@ struct LibraryView: View {
     }
 
     private var disconnectNotice: some View {
-        Label("iPhone disconnected. Reconnect and unlock it to continue.", systemImage: "cable.connector")
+        Label("iPhone unavailable. Reconnect and unlock it to continue.", systemImage: "cable.connector")
             .font(.callout)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(12)
@@ -142,6 +142,10 @@ struct DeviceEmptyView: View {
             Label(title, systemImage: model.deviceState == .restricted ? "lock.iphone" : "iphone.gen3")
         } description: {
             Text(message).frame(maxWidth: 380)
+        } actions: {
+            if !model.isSample && (model.deviceState == .restricted || model.deviceState == .unavailable) {
+                Button("Try Again") { model.retryDeviceConnection() }
+            }
         }
     }
 
@@ -150,18 +154,21 @@ struct DeviceEmptyView: View {
         case .disconnected: "Connect your iPhone"
         case .restricted: "Unlock your iPhone"
         case .opening: "Connecting to your iPhone"
-        case .unavailable: "Reconnect your iPhone"
-        case .ready: "No Media Available"
+        case .unavailable: "iPhone unavailable"
+        case .ready: model.isSample ? "No Media Available" : "Your iPhone is connected"
         }
     }
 
     private var message: String {
-        switch model.deviceState {
+        if let message = model.deviceMessage { return message }
+        return switch model.deviceState {
         case .disconnected: "Use a USB cable to browse and back up your photos and videos. Your originals stay on your iPhone."
         case .restricted: "Unlock your iPhone and, if asked, tap Trust to allow this Mac to access its photos and videos."
         case .opening: "Keep your iPhone connected and unlocked."
         case .unavailable: "Connect and unlock your iPhone to continue."
-        case .ready: "There are no photos or videos available from this device."
+        case .ready: model.isSample
+            ? "There are no photos or videos available from this device."
+            : "Connected over USB. Your originals stay on your iPhone."
         }
     }
 }

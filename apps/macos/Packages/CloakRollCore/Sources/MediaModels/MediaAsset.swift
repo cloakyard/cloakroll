@@ -67,16 +67,6 @@ public struct MediaAsset: Identifiable, Hashable, Codable, Sendable {
     }
 }
 
-public struct ConnectedDevice: Identifiable, Hashable, Codable, Sendable {
-    public let id: String
-    public let displayName: String
-
-    public init(id: String, displayName: String) {
-        self.id = id
-        self.displayName = displayName
-    }
-}
-
 public enum BackupStatus: String, CaseIterable, Codable, Sendable {
     case notBackedUp
     case backedUp

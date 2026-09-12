@@ -48,12 +48,27 @@ targets:
         CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
         LSMinimumSystemVersion: "14.0"
         LSApplicationCategoryType: public.app-category.photography
+        NSPhotoLibraryUsageDescription: "CloakRoll reads photos and videos from your connected iPhone for local browsing and backup. It does not modify or delete them."
         NSHumanReadableCopyright: "CloakRoll is part of Cloakyard. Your camera roll, safely on your Mac."
     dependencies:
       - package: CloakRollCore
         product: MediaModels
       - package: CloakRollCore
         product: MediaCatalog
+      - package: CloakRollCore
+        product: DeviceCapture
+  CloakRollTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - Tests
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: com.cloakyard.cloakroll.tests
+        CODE_SIGN_ENTITLEMENTS: ""
+    dependencies:
+      - target: CloakRoll
 schemes:
   CloakRoll:
     build:
@@ -61,5 +76,11 @@ schemes:
         CloakRoll: all
     run:
       config: Debug
+    test:
+      config: Debug
+      targets:
+        - CloakRollTests
+      environmentVariables:
+        CLOAKROLL_TESTING: "1"
     archive:
       config: Release

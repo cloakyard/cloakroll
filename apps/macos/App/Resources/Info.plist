@@ -26,5 +26,7 @@
 	<string>14.0</string>
 	<key>NSHumanReadableCopyright</key>
 	<string>CloakRoll is part of Cloakyard. Your camera roll, safely on your Mac.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>CloakRoll reads photos and videos from your connected iPhone for local browsing and backup. It does not modify or delete them.</string>
 </dict>
 </plist>

@@ -15,6 +15,7 @@ From `apps/macos`:
 GIT_CONFIG_COUNT=0 xcodegen generate
 GIT_CONFIG_COUNT=0 xcodebuild -project CloakRoll.xcodeproj -scheme CloakRoll -destination 'platform=macOS,arch=arm64' -configuration Debug -derivedDataPath build/Verify build
 swiftlint --strict
+GIT_CONFIG_COUNT=0 xcodebuild -project CloakRoll.xcodeproj -scheme CloakRoll -destination 'platform=macOS,arch=arm64' -configuration Debug -derivedDataPath build/Verify test
 ```
 
 From `apps/macos/Packages/CloakRollCore`:
@@ -29,7 +30,7 @@ Testing and deterministic protocol-friendly fixtures without launching the app.
 
 ## Sample UI
 
-The Phase 1 app starts with 1,200 illustrated sample items. This is a development preview, and
+The app now starts in live device-discovery mode. Use `--sample` for 1,200 illustrated sample items. This is a development preview, and
 sample backup status never represents transferred files. Use the Debug **Development** menu to
 switch between 20/1,200/100,000 items, no-device/restricted/disconnected states and static progress.
 Sample media is generated locally from editable illustration code; no personal photos are used.
@@ -37,8 +38,8 @@ Sample media is generated locally from editable illustration code; no personal p
 Debug launch options:
 
 ```sh
-open -n build/Verify/Build/Products/Debug/CloakRoll.app --args --verify-light-appearance
-open -n build/Verify/Build/Products/Debug/CloakRoll.app --args --verify-dark-appearance
+open -n build/Verify/Build/Products/Debug/CloakRoll.app --args --sample --verify-light-appearance
+open -n build/Verify/Build/Products/Debug/CloakRoll.app --args --sample --verify-dark-appearance
 open -n build/Verify/Build/Products/Debug/CloakRoll.app --args --empty
 open -n build/Verify/Build/Products/Debug/CloakRoll.app --args --locked
 open -n build/Verify/Build/Products/Debug/CloakRoll.app --args --sample-100k
@@ -59,3 +60,7 @@ complete from compile-time probes or sample UI tests.
 Local builds are sandboxed, hardened-runtime and ad-hoc signed. These checks do not establish
 Developer ID signing, notarization, behavior on macOS 14 hardware, or release readiness. Do not
 publish release claims until the corresponding Phase 10 checks are complete.
+
+Hosted AppModel tests use the scheme’s `CLOAKROLL_TESTING=1` environment to prevent the host app from starting hardware discovery; injected mock browsers drive their events. Core package tests remain headless.
+
+After `xcodebuild test`, run the normal `xcodebuild ... build` command before manual device checks. Xcode temporarily signs hosted-test apps with additional test-service/file permissions; the normal build removes those additions. Verify actual entitlements with `codesign -d --entitlements :-` on the app bundle.
