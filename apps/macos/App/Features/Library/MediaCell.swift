@@ -17,6 +17,15 @@ struct MediaCell: View {
                     .clipped()
                     .overlay(alignment: .bottomLeading) { mediaBadge.padding(7) }
                     .overlay(alignment: .bottomTrailing) { backupBadge.padding(7) }
+                    .overlay(alignment: .topLeading) {
+                        if asset.kind == .video {
+                            Image(systemName: "video.fill")
+                                .font(.caption2)
+                                .foregroundStyle(.white)
+                                .shadow(color: .black.opacity(0.5), radius: 2)
+                                .padding(7)
+                        }
+                    }
                     .overlay(alignment: .topTrailing) {
                         if selected {
                             Image(systemName: "checkmark.circle.fill")
@@ -52,7 +61,7 @@ struct MediaCell: View {
     @ViewBuilder private var mediaBadge: some View {
         switch asset.kind {
         case .video:
-            Label(Format.duration(asset.duration), systemImage: "video.fill")
+            Text(Format.duration(asset.duration))
                 .font(.caption2.weight(.medium).monospacedDigit())
                 .badgeSurface()
         case .livePhoto:

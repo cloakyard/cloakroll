@@ -191,3 +191,13 @@ Before Phase 3, complete the user's explicit UI quality pass: replace the crampe
 slider, audit hierarchy/spacing/unsupported actions, verify keyboard/accessibility and minimum
 window width in light/dark appearance. Commit this refinement as its own stage. Git was initialized
 at project creation; continue committing each verified stage and recording actual evidence.
+
+### UI refinement gate — complete
+
+Native View Options popover/shared continuous sizing control, accessible endpoint names and
+keyboard focus, cleaner sidebar/action hierarchy and Settings help are implemented. The audit
+also fixed a pinned-header overlap after filter/sort changes. Default and compact (860-point) layouts,
+light/dark, 100,000-item count widths, slider range/keyboard, Info and empty states were inspected.
+All 56 core and 4 hosted app tests, strict lint and a normal warning-free build pass. See
+`verification/UI-REFINEMENT.md` for the exact evidence and accessibility/runtime limitations.
+Next: Phase 3 metadata first, then lazy public thumbnails, with separate stage commits.

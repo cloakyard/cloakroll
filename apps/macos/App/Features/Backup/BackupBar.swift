@@ -13,7 +13,7 @@ struct BackupBar: View {
                     summary
                     Spacer(minLength: 12)
                     Button(actionTitle) { }
-                        .buttonStyle(.borderedProminent)
+                        .buttonStyle(.bordered)
                         .disabled(true)
                         .help(model.isSample ? "Transfers are unavailable in the sample library." : "Backup is not available yet.")
                 }
@@ -26,9 +26,7 @@ struct BackupBar: View {
 
     private var summary: some View {
         VStack(alignment: .leading, spacing: 4) {
-            if model.assets.isEmpty {
-                Text("Your camera roll, safely on your Mac.").fontWeight(.medium)
-            } else if model.selection.selectedIDs.isEmpty {
+            if model.selection.selectedIDs.isEmpty {
                 HStack(spacing: 5) {
                     Text("\(model.snapshot.newCount.formatted()) new items").fontWeight(.medium)
                     Text("· \(Format.bytes(model.snapshot.newBytes))").foregroundStyle(.secondary)

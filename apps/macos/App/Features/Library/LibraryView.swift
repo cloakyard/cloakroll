@@ -61,28 +61,33 @@ struct LibraryView: View {
         GeometryReader { geometry in
             ScrollViewReader { scroll in
                 ScrollView {
-                    LazyVGrid(
-                        columns: [GridItem(.adaptive(minimum: model.cellSize), spacing: Design.gridSpacing)],
-                        spacing: Design.gridSpacing,
-                        pinnedViews: [.sectionHeaders]
-                    ) {
-                        ForEach(model.snapshot.sections) { section in
-                            Section {
-                                ForEach(section.assets) { asset in
-                                    MediaCell(asset: asset) {
-                                        keyboard.focus()
-                                        let flags = NSEvent.modifierFlags
-                                        model.select(asset, extendingRange: flags.contains(.shift), toggling: flags.contains(.command))
+                    VStack(spacing: 0) {
+                        Color.clear.frame(height: 0).id(LibraryScrollAnchor.top)
+                        LazyVGrid(
+                            columns: [GridItem(.adaptive(minimum: model.cellSize), spacing: Design.gridSpacing)],
+                            spacing: Design.gridSpacing,
+                            pinnedViews: [.sectionHeaders]
+                        ) {
+                            ForEach(model.snapshot.sections) { section in
+                                Section {
+                                    ForEach(section.assets) { asset in
+                                        MediaCell(asset: asset) {
+                                            keyboard.focus()
+                                            let flags = NSEvent.modifierFlags
+                                            model.select(
+                                                asset, extendingRange: flags.contains(.shift), toggling: flags.contains(.command)
+                                            )
+                                        }
+                                        .id(asset.id)
                                     }
-                                    .id(asset.id)
+                                } header: {
+                                    sectionHeader(section)
                                 }
-                            } header: {
-                                sectionHeader(section)
                             }
                         }
+                        .padding(.horizontal, Design.contentInset)
+                        .padding(.bottom, 24)
                     }
-                    .padding(.horizontal, Design.contentInset)
-                    .padding(.bottom, 24)
                 }
                 .background {
                     GridKeyboardBridge(
@@ -98,7 +103,7 @@ struct LibraryView: View {
                     .frame(width: 1, height: 1)
                 }
                 .onChange(of: model.snapshot.orderedIDs.first) {
-                    if let id = model.snapshot.orderedIDs.first { scroll.scrollTo(id, anchor: .top) }
+                    scroll.scrollTo(LibraryScrollAnchor.top, anchor: .top)
                 }
             }
             .onChange(of: geometry.size.width, initial: true) { updateColumnCount(width: geometry.size.width) }
@@ -133,6 +138,8 @@ struct LibraryView: View {
         }
     }
 }
+
+private enum LibraryScrollAnchor { case top }
 
 struct DeviceEmptyView: View {
     @Environment(AppModel.self) private var model

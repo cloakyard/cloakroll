@@ -20,16 +20,22 @@ struct SettingsView: View {
     private var general: some View {
         @Bindable var model = model
         return Form {
-            Section("Browsing") {
-                Slider(value: $model.cellSize, in: 84...200, step: 4) { Text("Thumbnail size") }
-                LabeledContent("Selection", value: "Click, ⌘-click, ⇧-click")
-                LabeledContent("Preview", value: "Space or ⌘I")
+            Section {
+                ThumbnailSizeControl(size: $model.cellSize)
+                    .padding(.vertical, 4)
+            } header: {
+                Text("Browsing")
+            } footer: {
+                Text("""
+                ⌘-click to select individual items. ⇧-click to select a range.
+                Press Space or ⌘I to show info for the selected item.
+                """)
             }
             Section {
                 Text("CloakRoll browses photos and videos available over USB. It does not change or delete media on your iPhone.")
                     .foregroundStyle(.secondary)
             } header: {
-                Text("Your camera roll, safely on your Mac.")
+                Text("Privacy")
             }
         }
         .formStyle(.grouped)

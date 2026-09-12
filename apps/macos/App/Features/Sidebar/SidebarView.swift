@@ -17,18 +17,11 @@ struct SidebarView: View {
             Section("Backup") {
                 ForEach([LibraryFilter.notBackedUp, .backedUp, .recentlyBackedUp], id: \.self) { row($0) }
             }
-            Section("Destination") {
-                VStack(alignment: .leading, spacing: 7) {
-                    Label("No folder selected", systemImage: "externaldrive")
-                    Text("Choose where your originals will be kept.")
-                        .font(.caption)
+            if model.isSample {
+                Section("Destination") {
+                    Label("Sample library", systemImage: "externaldrive")
                         .foregroundStyle(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                    Button("Choose Folder…") { }
-                        .disabled(true)
-                        .help("Destination selection arrives with the backup engine.")
                 }
-                .padding(.vertical, 6)
             }
         }
         .listStyle(.sidebar)
@@ -51,12 +44,14 @@ struct SidebarView: View {
 
     private func row(_ filter: LibraryFilter) -> some View {
         HStack {
-            Label(filter.title, systemImage: filter.symbol)
+            Label(filter == .recentlyBackedUp ? "Recent Backups" : filter.title, systemImage: filter.symbol)
+                .lineLimit(1)
             Spacer(minLength: 4)
             if let count = model.snapshot.counts[filter], count > 0 {
                 Text(count, format: .number)
                     .font(.caption.monospacedDigit())
                     .foregroundStyle(.secondary)
+                    .fixedSize()
             }
         }
         .tag(filter)
@@ -80,6 +75,7 @@ struct DeviceSummary: View {
                 Label(status, systemImage: symbol)
                     .font(.caption)
                     .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
             }
         }
         .accessibilityElement(children: .combine)
