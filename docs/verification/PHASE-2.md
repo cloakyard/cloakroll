@@ -37,7 +37,10 @@ Status: software verification complete; physical disconnect/reconnect gate pendi
   then successful unlock/readiness, but a terminal unavailable state ignored the recovery.
 - Fixed that reducer behavior and added regression tests. Nil framework error callbacks are now
   ignored; actual error domain/code is diagnostic, while localized details remain private in logs.
-- The corrected run observed `restricted → ready`; the UI displayed Connected. The public framework
+- The corrected run observed `restricted → ready`; the UI displayed Connected. This observation
+  preceded the final normal-build relaunch (the preceding hosted-test build had test permissions).
+  The final normal-build launch is awaiting a fresh physical reconnect, so its full sandboxed
+  hardware gate remains open. The public framework
   error `-9943` is `ICReturnDeviceIsPasscodeLocked` in the installed SDK. No delete/mutation API is used.
 - The user was asked to unplug for roughly five seconds, reconnect and unlock the phone. A full
   real `ready → removed/no device → rediscovered/ready` sequence still needs to be recorded before

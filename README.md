@@ -2,7 +2,7 @@
 
 **Your camera roll, safely on your Mac.** A native macOS photo and video backup app, part of Cloakyard.
 
-CloakRoll is being built in verified phases. The current build detects a USB-connected iPhone and includes a native media browser
+CloakRoll is being built in verified phases. The current build includes USB iPhone discovery (hardware validation in progress) and a native media browser
 with clearly labeled sample media, chronological groups, filtering, selection, media info and
 Settings. Real media browsing is the next gated phase. **It does not back up files yet.** Follow [the implementation plan](docs/PLAN.md) for
 actual progress and verification evidence.
