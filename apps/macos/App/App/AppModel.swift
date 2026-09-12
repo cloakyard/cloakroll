@@ -3,6 +3,7 @@ import MediaModels
 import MediaCatalog
 import DeviceCapture
 import Observation
+import ThumbnailPipeline
 
 typealias DeviceViewState = DeviceConnectionState
 
@@ -34,6 +35,7 @@ final class AppModel {
     private(set) var scrollReset = 0
     private(set) var assets: [MediaAsset] = []
     private(set) var statuses: [String: BackupStatus] = [:]
+    private(set) var thumbnailReuseIDs: [String: String] = [:]
 
     @ObservationIgnored private var backupDates: [String: Date] = [:]
     @ObservationIgnored private let projector = CatalogProjector()
@@ -48,6 +50,7 @@ final class AppModel {
     @ObservationIgnored private var deviceTask: Task<Void, Never>?
     @ObservationIgnored private var catalogLoader: LiveCatalogLoader?
     @ObservationIgnored private var lastProjectedQuery: CatalogQuery?
+    @ObservationIgnored let thumbnails = LibraryThumbnailController()
 
     init(makeBrowser: (@MainActor () -> any DeviceBrowsing)? = nil) {
         if let makeBrowser {
@@ -153,14 +156,16 @@ final class AppModel {
 
     func retryDeviceConnection() { browser?.retry() }
 
-    func thumbnailData(for asset: MediaAsset, maximumPixelSize: Int) async throws -> Data {
+    func thumbnailData(for key: ThumbnailKey) async throws -> Data {
         guard !isSample, deviceState == .ready,
-              let sessionID = catalogSessionID, let resourceID = asset.primaryResourceID,
+              key.sessionID == catalogSessionID,
               let provider = browser as? any ThumbnailProviding else { throw MediaSourceError.unavailable }
         try Task.checkCancellation()
-        let data = try await provider.thumbnailData(for: resourceID, sessionID: sessionID, maximumPixelSize: maximumPixelSize)
+        let data = try await provider.thumbnailData(
+            for: key.resourceID, sessionID: key.sessionID, maximumPixelSize: key.maximumPixelSize
+        )
         try Task.checkCancellation()
-        guard catalogSessionID == sessionID, deviceState == .ready else { throw MediaSourceError.staleSession }
+        guard catalogSessionID == key.sessionID, deviceState == .ready else { throw MediaSourceError.staleSession }
         return data
     }
 
@@ -172,6 +177,7 @@ final class AppModel {
     }
 
     private func stopDeviceBrowsing() {
+        thumbnails.setSession(nil)
         catalogLoader?.stop()
         catalogLoader = nil
         browser?.stop()
@@ -183,6 +189,7 @@ final class AppModel {
     var isCatalogLoading: Bool { mediaScanState == .scanning || isCatalogPreparing }
 
     private func resetCatalogState() {
+        thumbnailReuseIDs = [:]
         catalogSessionID = nil
         mediaScanState = nil
         mediaScanPercent = nil
@@ -193,6 +200,7 @@ final class AppModel {
     private func receiveCatalog(_ source: DeviceMediaSnapshot) {
         guard !isSample else { return }
         catalogSessionID = source.sessionID
+        thumbnails.setSession(source.state == .interrupted ? nil : source.sessionID)
         mediaScanState = source.state
         mediaScanPercent = source.percentComplete
         iCloudPhotosEnabled = source.iCloudPhotosEnabled == true
@@ -210,6 +218,7 @@ final class AppModel {
             scrollReset += 1
         }
         assets = prepared.assets
+        thumbnailReuseIDs = prepared.thumbnailReuseIDs
         lookup = prepared.lookup
         if let infoAsset { self.infoAsset = lookup[infoAsset.id] }
         scheduleProjection()
@@ -222,6 +231,9 @@ final class AppModel {
             device = connection.device
             deviceState = connection.state
             deviceMessage = connection.message
+            if connection.state != .ready { thumbnails.setSession(nil) } else if mediaScanState != .interrupted {
+                thumbnails.setSession(catalogSessionID)
+            }
         }
     }
 

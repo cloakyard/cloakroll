@@ -4,7 +4,8 @@
 
 CloakRoll is being built in verified phases. Physical iPhone discovery and the native UI quality
 gate have passed. Phase 3's real metadata and lazy thumbnails have passed physical library
-acceptance. The app also includes clearly labeled sample media,
+acceptance. Phase 4 adds bounded thumbnail caches and scheduling; its final hardware gate
+is in progress. The app also includes clearly labeled sample media,
 chronological groups, filtering, selection, media info and Settings. **It does not back up files yet.**
 Follow [the implementation plan](docs/PLAN.md) for actual progress and verification evidence.
 The latest [UI and performance audit](docs/verification/UI-PRESETS-PERFORMANCE.md) covers fixed

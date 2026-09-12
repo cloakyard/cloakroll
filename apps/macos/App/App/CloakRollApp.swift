@@ -82,6 +82,7 @@ struct LibraryCommands: Commands {
             Button("Restricted Device") { Task { await model.loadSample(count: 0, state: .restricted) } }
             Button("Disconnected Library") { model.deviceState = .unavailable }
             Button("Sample Backup Progress") { model.sampleProgress.toggle() }
+            Button("Log Thumbnail Metrics") { Task { await model.thumbnails.logMetrics() } }
             Divider()
             Button("Compact Window") {
                 NSApplication.shared.mainWindow?.setContentSize(NSSize(width: 860, height: 560))

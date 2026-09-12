@@ -57,6 +57,8 @@ targets:
         product: MediaCatalog
       - package: CloakRollCore
         product: DeviceCapture
+      - package: CloakRollCore
+        product: ThumbnailPipeline
   CloakRollTests:
     type: bundle.unit-test
     platform: macOS

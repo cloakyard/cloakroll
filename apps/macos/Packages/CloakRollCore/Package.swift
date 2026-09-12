@@ -7,7 +7,8 @@ let package = Package(
     products: [
         .library(name: "MediaModels", targets: ["MediaModels"]),
         .library(name: "MediaCatalog", targets: ["MediaCatalog"]),
-        .library(name: "DeviceCapture", targets: ["DeviceCapture"])
+        .library(name: "DeviceCapture", targets: ["DeviceCapture"]),
+        .library(name: "ThumbnailPipeline", targets: ["ThumbnailPipeline"])
     ],
     targets: [
         .target(name: "MediaModels", swiftSettings: [.swiftLanguageMode(.v6)]),
@@ -21,6 +22,7 @@ let package = Package(
             dependencies: ["MediaModels"],
             swiftSettings: [.swiftLanguageMode(.v6)]
         ),
+        .target(name: "ThumbnailPipeline", swiftSettings: [.swiftLanguageMode(.v6)]),
         .testTarget(
             name: "MediaModelsTests",
             dependencies: ["MediaModels"],
@@ -34,6 +36,11 @@ let package = Package(
         .testTarget(
             name: "DeviceCaptureTests",
             dependencies: ["DeviceCapture", "MediaModels"],
+            swiftSettings: [.swiftLanguageMode(.v6)]
+        ),
+        .testTarget(
+            name: "ThumbnailPipelineTests",
+            dependencies: ["ThumbnailPipeline"],
             swiftSettings: [.swiftLanguageMode(.v6)]
         )
     ]

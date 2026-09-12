@@ -9,6 +9,15 @@ struct CatalogAssemblerTests {
         #expect(CatalogAssembler.assemble(records: []).isEmpty)
     }
 
+    @Test func modificationEvidenceSurvivesAssemblyForCacheInvalidation() throws {
+        let date = Date(timeIntervalSince1970: 1_700_000_000)
+        let record = SourceMediaRecord(
+            id: "modified", deviceID: "phone", filename: "photo.HEIC", byteCount: 128, modifiedAt: date
+        )
+        let asset = try #require(CatalogAssembler.assemble(records: [record]).first)
+        #expect(asset.primaryResource?.modifiedAt == date)
+    }
+
     @Test(arguments: [
         ("photo.heic", "public.heic", false, MediaKind.photo),
         ("photo.jpeg", "public.jpeg", false, .photo),

@@ -17,11 +17,13 @@ public struct MediaResource: Identifiable, Hashable, Codable, Sendable {
     public let id: String
     public let filename: String
     public let byteCount: Int64
+    public let modifiedAt: Date?
 
-    public init(id: String, filename: String, byteCount: Int64) {
+    public init(id: String, filename: String, byteCount: Int64, modifiedAt: Date? = nil) {
         self.id = id
         self.filename = filename
         self.byteCount = max(0, byteCount)
+        self.modifiedAt = modifiedAt.flatMap { $0.timeIntervalSinceReferenceDate.isFinite ? $0 : nil }
     }
 }
 

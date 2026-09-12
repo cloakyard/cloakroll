@@ -10,6 +10,7 @@ public final class DeviceBrowserService: DeviceMediaSource, ThumbnailProviding {
     private let context: DeviceCaptureContext
     public let events: AsyncStream<DeviceEvent>
     public let catalogs: AsyncStream<DeviceMediaSnapshot>
+    public var thumbnailDiagnostics: ThumbnailRequestDiagnostics { context.thumbnailDiagnostics }
     private let continuation: AsyncStream<DeviceEvent>.Continuation
     private let catalogContinuation: AsyncStream<DeviceMediaSnapshot>.Continuation
     private let catalog: CameraCatalog

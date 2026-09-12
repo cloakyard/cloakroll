@@ -4,15 +4,17 @@ import SwiftUI
 
 struct MediaCell: View {
     let asset: MediaAsset
+    let viewportSize: CGSize
     let onSelect: () -> Void
     @Environment(AppModel.self) private var model
+    @State private var thumbnailDemand = ThumbnailDemand.none
 
     private var selected: Bool { model.selection.selectedIDs.contains(asset.id) }
 
     var body: some View {
         Button(action: onSelect) {
             GeometryReader { geometry in
-                MediaThumbnail(asset: asset)
+                MediaThumbnail(asset: asset, demand: thumbnailDemand)
                     .frame(width: geometry.size.width, height: geometry.size.height)
                     .clipped()
                     .overlay(alignment: .bottomLeading) { mediaBadge.padding(7) }
@@ -41,6 +43,7 @@ struct MediaCell: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .modifier(ThumbnailViewport(size: viewportSize, demand: $thumbnailDemand))
         .accessibilityElement(children: .ignore)
         .accessibilityAddTraits(.isButton)
         .accessibilityAction { onSelect() }

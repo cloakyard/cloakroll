@@ -109,6 +109,60 @@ struct ThumbnailRequestCoordinatorTests {
         #expect(!fixture.operation.started.contains(2))
     }
 
+    @Test("Diagnostics retain actual calls across cancellation and session retirement")
+    func diagnosticsAcrossRetiredRequests() async throws {
+        let fixture = ThumbnailFixture()
+        let first = fixture.request(0)
+        let second = fixture.request(1)
+        try await waitUntil { fixture.operation.started.count == 2 }
+        let queued = fixture.request(2)
+        let alsoQueued = fixture.request(3)
+        try await waitUntil { fixture.coordinator.queuedCount == 2 }
+        var metrics = fixture.coordinator.diagnostics
+        #expect(metrics.startedCount == 2)
+        #expect(metrics.actualOutstandingCount == 2)
+        #expect(metrics.actualHighWaterMark == 2)
+        #expect(metrics.queuedCount == 2)
+        #expect(metrics.queuedHighWaterMark == 2)
+
+        queued.cancel()
+        first.cancel()
+        for task in [queued, first] {
+            await #expect(throws: CancellationError.self) { try await task.value }
+        }
+        fixture.coordinator.retire(sessionID: fixture.sessionID)
+        for task in [second, alsoQueued] {
+            await #expect(throws: MediaSourceError.staleSession) { try await task.value }
+        }
+        metrics = fixture.coordinator.diagnostics
+        #expect(metrics.actualOutstandingCount == 2)
+        #expect(metrics.completedCount == 0)
+        #expect(metrics.cancelledCount == 2)
+        #expect(metrics.retiredCount == 2)
+        #expect(metrics.queuedCount == 0)
+
+        let replacement = UUID()
+        fixture.coordinator.begin(sessionID: replacement)
+        let current = fixture.request(4, sessionID: replacement)
+        try await waitUntil { fixture.coordinator.queuedCount == 1 }
+        #expect(fixture.coordinator.diagnostics.startedCount == 2)
+        fixture.operation.finish(0)
+        try await waitUntil { fixture.operation.started.contains(4) }
+        #expect(fixture.coordinator.diagnostics.actualOutstandingCount == 2)
+        fixture.operation.finish(0)
+        fixture.operation.finish(1)
+        fixture.operation.finish(4)
+        #expect(try await current.value == Data([4]))
+        metrics = fixture.coordinator.diagnostics
+        #expect(metrics.startedCount == 3)
+        #expect(metrics.completedCount == 3)
+        #expect(metrics.failedCount == 0)
+        #expect(metrics.actualOutstandingCount == 0)
+        #expect(metrics.actualHighWaterMark == 2)
+        #expect(metrics.cancelledCount == 2)
+        #expect(metrics.retiredCount == 2)
+    }
+
     @Test("Missing, empty, or failed thumbnail data never becomes a successful result")
     func failuresAreTerminalAndReleaseSlots() async throws {
         let fixture = ThumbnailFixture()
@@ -125,6 +179,8 @@ struct ThumbnailRequestCoordinatorTests {
             #expect(fixture.coordinator.outstandingCount == 0)
         }
         #expect(fixture.operation.cleanupCount == 3)
+        #expect(fixture.coordinator.diagnostics.failedCount == 3)
+        #expect(fixture.coordinator.diagnostics.completedCount == 3)
     }
 
     @Test("A synchronous duplicate callback completes and cleans up exactly once")
@@ -141,6 +197,8 @@ struct ThumbnailRequestCoordinatorTests {
         #expect(data == Data([1]))
         #expect(cleanups == 1)
         #expect(coordinator.outstandingCount == 0)
+        #expect(coordinator.diagnostics.startedCount == 1)
+        #expect(coordinator.diagnostics.completedCount == 1)
     }
 
     @Test("A launch-time validation failure releases its reserved slot without a callback")
@@ -152,6 +210,9 @@ struct ThumbnailRequestCoordinatorTests {
             try await coordinator.data(sessionID: session) { _ in throw MediaSourceError.missingResource }
         }
         #expect(coordinator.outstandingCount == 0)
+        #expect(coordinator.diagnostics.startedCount == 0)
+        #expect(coordinator.diagnostics.completedCount == 0)
+        #expect(coordinator.diagnostics.actualHighWaterMark == 0)
     }
 
     @Test("Cancellation winning a completion race still resumes the caller only once")

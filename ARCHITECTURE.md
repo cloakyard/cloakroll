@@ -11,7 +11,7 @@ follows CloakDrop's proven bridge pattern, but a media browser needs prepared ca
 and selection state instead of download rows and a permanently open inspector. UI-facing models
 stay small; catalog projection, transfer state and persistence have independent owners.
 
-The local `CloakRollCore` package contains `MediaModels`, `MediaCatalog` and `DeviceCapture`. Additional modules
+The local `CloakRollCore` package contains `MediaModels`, `MediaCatalog`, `DeviceCapture` and `ThumbnailPipeline`. Additional modules
 arrive in their implementation phases. None imports SwiftUI. Values crossing tasks are Sendable.
 Views issue intents and display state; they do not transfer files, sort a whole library in `body`,
 or manipulate ImageCaptureCore objects.
@@ -61,17 +61,37 @@ Every resource is retained once, including ambiguous/orphaned sidecars. A still-
 resource gives RAW pairs and Live Photos stable selection and preview identity as companions
 arrive. These session resource IDs address device requests; they are not persistent backup keys.
 
-Thumbnail requests are lazy. One explicit `DeviceCaptureContext` belongs to the app model and
-shares two physical request slots across replacement browser instances. Cancelling a Swift caller
-does not release a slot until the underlying callback arrives. A small bounded pending queue rejects
-overflow with a distinct transient error, allowing visible cells to retry without growing it. A
-synchronous delegate gate permits only explicitly launched resource requests. Cell-owned images are
-decoded and orientation-corrected off the main actor, downsampled to a pixel bound, and released when
-cells leave use. No original is requested to render the grid or Info sheet.
+Thumbnail requests are lazy and viewport-driven. A macOS 14-compatible geometry observer reduces
+cell positions to visible, nearby prefetch, or no demand; scrolling does not publish every pixel.
+The grid and Info share one controller, an encoded pipeline actor, and a serial decoded-image actor.
+Visible consumers outrank queued prefetch. At most two logical source loads run, including at most
+one prefetch-only load, with 64 queued requests. Consumers of the same key share source work and
+can cancel independently. Cancelled active work retains its slot until the loading closure returns.
 
-Phase 4 will add memory/disk caches, visible priority and prefetch. Their keys must include
-device/resource identity, metadata revision, rendition size and cache version. Persistent eviction
-and reconnect reuse are not claims about the uncached Phase 3 implementation.
+One `DeviceCaptureContext` separately retains two **actual framework request** slots across browser
+replacements. Cancelling a caller does not release a slot until the ImageCaptureCore callback arrives.
+This second boundary is necessary because Swift cancellation does not cancel a physical operation.
+A synchronous delegate gate permits only explicitly launched requests. DEBUG diagnostics count
+actual framework calls and their high-water mark; they do not measure wire-level USB traffic.
+
+Encoded memory is bounded to 32 MiB / 512 entries, disk to 256 MiB / 2,000 entries, and decoded
+bitmaps to 64 MiB / 256 entries. Individual encoded payloads cannot exceed 16 MiB. LRU eviction
+uses actual encoded byte counts or bitmap bytes-per-row × height. Decoding is serial off the main
+actor, with ImageIO orientation handling and a 512-pixel bound. Nearby prefetch stores encoded data
+without decoding it. Views hold only their displayed bitmap and release it after leaving the visible
+band; these references, framework memory and temporary buffers are outside the cache-byte totals.
+
+Source requests always use connection-scoped keys. Disposable previews may be reused across a
+reconnect in the same app process only when a persistent device identity and a complete catalog
+provide a unique structured metadata signature (device, context, name, bytes, dates, type and other
+available source evidence). Ambiguous or incomplete signatures remain session-only. Metadata
+changes invalidate the preview. This is not a backup identity or content-verification claim.
+
+Connection transitions retire consumers and discard late results. Session-only cache entries are
+removed; eligible preview entries remain within the same combined budgets. Disk entries have
+hashed names, a versioned envelope, exact key/length checks and a payload digest. Corruption or IO
+failure becomes a cache miss. Startup purges prior owned runtime namespaces; cross-app-launch
+preview reuse is not implemented. No original is requested to render the grid or Info sheet.
 
 ## Backup truth is conservative
 

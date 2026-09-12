@@ -4,5 +4,7 @@
 public final class DeviceCaptureContext {
     let thumbnailRequests = ThumbnailRequestCoordinator()
 
+    public var thumbnailDiagnostics: ThumbnailRequestDiagnostics { thumbnailRequests.diagnostics }
+
     public init() {}
 }

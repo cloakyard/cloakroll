@@ -71,7 +71,7 @@ struct LibraryView: View {
                             ForEach(model.snapshot.sections) { section in
                                 Section {
                                     ForEach(section.assets) { asset in
-                                        MediaCell(asset: asset) {
+                                        MediaCell(asset: asset, viewportSize: geometry.size) {
                                             keyboard.focus()
                                             let flags = NSEvent.modifierFlags
                                             model.select(
@@ -89,6 +89,7 @@ struct LibraryView: View {
                         .padding(.bottom, 24)
                     }
                 }
+                .coordinateSpace(name: ThumbnailViewport.coordinateSpace)
                 .background {
                     GridKeyboardBridge(
                         controller: keyboard, columns: columns,

@@ -6,6 +6,7 @@ struct PreparedDeviceCatalog: Sendable {
     let source: DeviceMediaSnapshot
     let assets: [MediaAsset]
     let lookup: [String: MediaAsset]
+    let thumbnailReuseIDs: [String: String]
 }
 
 /// Serializes background assembly while retaining only the latest pending full catalog. USB
@@ -68,7 +69,8 @@ final class LiveCatalogLoader {
             let prepared = await Task.detached(priority: .userInitiated) {
                 let assets = CatalogAssembler.assemble(records: source.records)
                 let lookup = Dictionary(uniqueKeysWithValues: assets.map { ($0.id, $0) })
-                return PreparedDeviceCatalog(source: source, assets: assets, lookup: lookup)
+                let reuseIDs = source.state == .complete ? ThumbnailReuseIndex.make(records: source.records) : [:]
+                return PreparedDeviceCatalog(source: source, assets: assets, lookup: lookup, thumbnailReuseIDs: reuseIDs)
             }.value
             guard !Task.isCancelled, !isStopped else { return }
             if source.sessionID == sessionID, source.revision == latestRevision {

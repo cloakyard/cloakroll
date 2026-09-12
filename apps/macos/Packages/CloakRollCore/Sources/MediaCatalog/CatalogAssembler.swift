@@ -45,7 +45,9 @@ public enum CatalogAssembler {
         let companions = indices.filter { $0 != primaryIndex }.sorted { entries[$0].key < entries[$1].key }
         let resources = ([primaryIndex] + companions).map { index in
             let record = entries[index].record
-            return MediaResource(id: record.id, filename: record.filename, byteCount: record.byteCount)
+            return MediaResource(
+                id: record.id, filename: record.filename, byteCount: record.byteCount, modifiedAt: record.modifiedAt
+            )
         }
         let media = indices.filter { entries[$0].isMedia }
         let kind: MediaKind

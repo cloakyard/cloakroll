@@ -1,16 +1,16 @@
 import CoreGraphics
-import ImageIO
 import MediaModels
 import SwiftUI
+import ThumbnailPipeline
 
-/// Cell-owned decoded thumbnails. Requests are asynchronous and cancelled when the cell leaves
-/// use; original media is never requested to render either this view or the Info sheet.
+/// Cells retain only their displayed bitmap. Shared caches serve revisits and Info.
 struct MediaThumbnail: View {
     let asset: MediaAsset
     var contentMode: ContentMode = .fill
+    var demand: ThumbnailDemand = .visible
     @Environment(AppModel.self) private var model
     @State private var image: CGImage?
-    @State private var loadedKey: ThumbnailIdentity?
+    @State private var loadedKey: ThumbnailKey?
 
     var body: some View {
         Group {
@@ -35,61 +35,59 @@ struct MediaThumbnail: View {
 
     private var request: ThumbnailRequest {
         ThumbnailRequest(
-            identity: ThumbnailIdentity(
-                resourceID: asset.primaryResourceID ?? asset.id,
-                sessionID: model.catalogSessionID,
-                byteCount: asset.primaryResource?.byteCount ?? 0,
-                filename: asset.filename
-            ),
-            available: !model.isSample && model.deviceState == .ready
+            asset: asset, sessionID: model.catalogSessionID,
+            reusableIdentity: model.device?.identity?.isPersistent == true
+                ? asset.primaryResourceID.flatMap { model.thumbnailReuseIDs[$0] } : nil,
+            available: !model.isSample && model.deviceState == .ready,
+            demand: demand
         )
     }
 
     private func load(_ request: ThumbnailRequest) async {
-        if loadedKey != request.identity { image = nil }
-        guard request.available else { return }
+        guard request.demand != .none else {
+            image = nil
+            loadedKey = nil
+            return
+        }
+        let key = ThumbnailKey(asset: request.asset, sessionID: request.sessionID, reusableIdentity: request.reusableIdentity)
+        if loadedKey != key || request.demand != .visible {
+            image = nil
+            loadedKey = nil
+        }
+        guard request.available, request.demand != .none, let key else { return }
+        if loadedKey == key, image != nil { return }
         while !Task.isCancelled {
             do {
-                let data = try await model.thumbnailData(for: asset, maximumPixelSize: 512)
-                let decoded = await Task.detached(priority: .userInitiated) {
-                    ThumbnailDecoder.decode(data, maximumPixelSize: 512)
-                }.value
-                guard !Task.isCancelled, self.request == request else { return }
-                image = decoded
-                loadedKey = request.identity
+                let load: @Sendable () async throws -> Data = { [model] in
+                    try await model.thumbnailData(for: key)
+                }
+                if request.demand == .prefetch {
+                    try await model.thumbnails.prefetch(for: key, load: load)
+                } else {
+                    let decoded = try await model.thumbnails.image(for: key, load: load)
+                    guard !Task.isCancelled, self.request == request else { return }
+                    image = decoded
+                    loadedKey = key
+                }
                 return
+            } catch ThumbnailPipelineError.queueFull {
+                guard request.demand == .visible else { return }
+                do { try await Task.sleep(for: .milliseconds(250)) } catch { return }
             } catch MediaSourceError.thumbnailQueueFull {
-                // Backpressure is transient. Keep a visible cell eligible without growing the
-                // device queue, and stop waiting immediately when SwiftUI cancels this task.
+                guard request.demand == .visible else { return }
                 do { try await Task.sleep(for: .milliseconds(250)) } catch { return }
             } catch {
-                // Missing thumbnails are a normal source limitation. Metadata remains useful.
+                // Missing source thumbnails leave metadata and the placeholder available.
                 return
             }
         }
     }
 }
 
-private struct ThumbnailIdentity: Hashable {
-    let resourceID: String
-    let sessionID: UUID?
-    let byteCount: Int64
-    let filename: String
-}
-
 private struct ThumbnailRequest: Equatable {
-    let identity: ThumbnailIdentity
+    let asset: MediaAsset
+    let sessionID: UUID?
+    let reusableIdentity: String?
     let available: Bool
-}
-
-enum ThumbnailDecoder {
-    static func decode(_ data: Data, maximumPixelSize: Int) -> CGImage? {
-        guard let source = CGImageSourceCreateWithData(data as CFData, nil) else { return nil }
-        return CGImageSourceCreateThumbnailAtIndex(source, 0, [
-            kCGImageSourceCreateThumbnailFromImageAlways: true,
-            kCGImageSourceCreateThumbnailWithTransform: true,
-            kCGImageSourceThumbnailMaxPixelSize: maximumPixelSize,
-            kCGImageSourceShouldCacheImmediately: true
-        ] as CFDictionary)
-    }
+    let demand: ThumbnailDemand
 }

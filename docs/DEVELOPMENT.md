@@ -55,7 +55,7 @@ alone to inspect the user's normal system appearance.
 
 Check selection (click/⌘/⇧/⌘A), arrows, Space/⌘I info, search, sort, grouping, resizing,
 sidebar focus, small-window layout, Settings, light and dark appearance. Keep screenshots and
-timing evidence under `docs/verification`. SwiftUI previews cover empty, mixed, large,
+timing evidence under `docs/verification`. Never commit personal media screenshots, filenames or device identifiers; record aggregate hardware evidence instead. SwiftUI previews cover empty, mixed, large,
 restricted, disconnected and illustrative in-progress states.
 
 View Options contains native Small/Medium/Large thumbnail-size choices alongside sort and group
@@ -76,3 +76,17 @@ publish release claims until the corresponding Phase 10 checks are complete.
 Hosted AppModel tests use the scheme’s `CLOAKROLL_TESTING=1` environment to prevent the host app from starting hardware discovery; injected mock browsers drive their events. Core package tests remain headless.
 
 After `xcodebuild test`, run the normal `xcodebuild ... build` command before manual device checks. Xcode temporarily signs hosted-test apps with additional test-service/file permissions; the normal build removes those additions. Verify actual entitlements with `codesign -d --entitlements -` on the app bundle.
+
+## Thumbnail diagnostics
+
+The Debug Development menu's **Log Thumbnail Metrics** action writes aggregate cache hits, loads,
+queue depth, costs and decode counts to the `Thumbnails` OSLog category. DeviceCapture also logs
+actual outstanding framework requests and high-water counts at bounded intervals. These logs
+contain no filenames, device identifiers or image data. Read deltas before/after scrolling, Info
+and reconnect; a cache hit is not a measured frame-rate improvement or verified backup.
+
+Cache limits are separate from process RSS. Record both; displayed images, SwiftUI rendering,
+ImageCaptureCore allocations and temporary buffers are not included in encoded/decoded cache
+costs. The cache is disposable and stays inside the app's sandboxed Caches directory. Reconnect
+reuse requires a unique complete-catalog metadata match and persistent device identity; prior
+runtime namespaces are purged on startup. Hosted tests disable default disk caching.

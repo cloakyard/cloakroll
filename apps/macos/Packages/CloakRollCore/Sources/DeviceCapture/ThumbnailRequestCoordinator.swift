@@ -36,6 +36,11 @@ final class ThumbnailRequestCoordinator {
     private var queued: [Request] = []
     private var active: [UUID: Request] = [:]
     private var isPumping = false
+    private var metrics = ThumbnailRequestDiagnostics()
+    #if DEBUG
+    private var lastLoggedMetrics: ThumbnailRequestDiagnostics?
+    private var lastLoggedAt = Date.distantPast
+    #endif
 
     init(maximumQueued: Int = 128) {
         self.maximumQueued = max(1, maximumQueued)
@@ -43,6 +48,13 @@ final class ThumbnailRequestCoordinator {
 
     var outstandingCount: Int { active.count }
     var queuedCount: Int { queued.count }
+
+    var diagnostics: ThumbnailRequestDiagnostics {
+        var value = metrics
+        value.actualOutstandingCount = active.values.filter { $0.cleanup != nil }.count
+        value.queuedCount = queued.count
+        return value
+    }
 
     func begin(sessionID: UUID) {
         guard self.sessionID != sessionID else { return }
@@ -56,14 +68,19 @@ final class ThumbnailRequestCoordinator {
         self.sessionID = nil
         let retired = queued
         queued.removeAll()
-        for request in retired { request.continuation?.resume(throwing: MediaSourceError.staleSession) }
+        for request in retired {
+            if request.continuation != nil { metrics.retiredCount += 1 }
+            request.continuation?.resume(throwing: MediaSourceError.staleSession)
+        }
         for identifier in Array(active.keys) {
             guard var request = active[identifier], request.sessionID == sessionID else { continue }
+            if request.continuation != nil { metrics.retiredCount += 1 }
             request.continuation?.resume(throwing: MediaSourceError.staleSession)
             request.continuation = nil
             active[identifier] = request
         }
         // Do not remove active requests: session closure is not proof their callbacks completed.
+        logDiagnostics(force: true)
     }
 
     func data(sessionID: UUID, operation: @escaping Operation) async throws -> Data {
@@ -88,6 +105,7 @@ final class ThumbnailRequestCoordinator {
                     id: identifier, sessionID: sessionID, cancellation: cancellation,
                     operation: operation, continuation: continuation
                 ))
+                metrics.queuedHighWaterMark = max(metrics.queuedHighWaterMark, queued.count)
                 pump()
             }
         } onCancel: {
@@ -99,8 +117,10 @@ final class ThumbnailRequestCoordinator {
     private func cancel(_ identifier: UUID) {
         if let index = queued.firstIndex(where: { $0.id == identifier }) {
             let request = queued.remove(at: index)
+            if request.continuation != nil { metrics.cancelledCount += 1 }
             request.continuation?.resume(throwing: CancellationError())
         } else if var request = active[identifier] {
+            if request.continuation != nil { metrics.cancelledCount += 1 }
             request.continuation?.resume(throwing: CancellationError())
             request.continuation = nil
             active[identifier] = request
@@ -114,10 +134,12 @@ final class ThumbnailRequestCoordinator {
         while active.count < 2, !queued.isEmpty {
             var request = queued.removeFirst()
             if request.cancellation.isCancelled {
+                if request.continuation != nil { metrics.cancelledCount += 1 }
                 request.continuation?.resume(throwing: CancellationError())
                 continue
             }
             guard request.sessionID == sessionID else {
+                if request.continuation != nil { metrics.retiredCount += 1 }
                 request.continuation?.resume(throwing: MediaSourceError.staleSession)
                 continue
             }
@@ -130,6 +152,11 @@ final class ThumbnailRequestCoordinator {
                     DispatchQueue.main.async { self.complete(identifier, response: response) }
                 }
                 active[identifier] = request
+                metrics.startedCount += 1
+                if active.count > metrics.actualHighWaterMark {
+                    metrics.actualHighWaterMark = active.count
+                    logDiagnostics(force: true)
+                }
             } catch {
                 active[identifier] = nil
                 request.continuation?.resume(throwing: error)
@@ -140,10 +167,14 @@ final class ThumbnailRequestCoordinator {
     private func complete(_ identifier: UUID, response: ThumbnailResponse) {
         guard let request = active.removeValue(forKey: identifier) else { return }
         request.cleanup?()
+        metrics.completedCount += 1
+        if response.error != nil || response.data?.isEmpty != false { metrics.failedCount += 1 }
         if let continuation = request.continuation {
             if request.cancellation.isCancelled {
+                metrics.cancelledCount += 1
                 continuation.resume(throwing: CancellationError())
             } else if request.sessionID != sessionID {
+                metrics.retiredCount += 1
                 continuation.resume(throwing: MediaSourceError.staleSession)
             } else if let error = response.error {
                 logger.error("Thumbnail error domain: \(error.domain, privacy: .public), code: \(error.code, privacy: .public)")
@@ -156,5 +187,24 @@ final class ThumbnailRequestCoordinator {
             }
         }
         pump()
+        if metrics.completedCount.isMultiple(of: 32) || active.isEmpty {
+            logDiagnostics(force: metrics.completedCount.isMultiple(of: 32))
+        }
+    }
+
+    private func logDiagnostics(force: Bool = false) {
+        #if DEBUG
+        let value = diagnostics
+        guard value != lastLoggedMetrics, force || Date().timeIntervalSince(lastLoggedAt) >= 1 else { return }
+        lastLoggedMetrics = value
+        lastLoggedAt = Date()
+        logger.info("""
+        Thumbnail framework metrics: started=\(value.startedCount, privacy: .public) \
+        completed=\(value.completedCount, privacy: .public) failed=\(value.failedCount, privacy: .public) \
+        outstanding=\(value.actualOutstandingCount, privacy: .public) highWater=\(value.actualHighWaterMark, privacy: .public) \
+        queued=\(value.queuedCount, privacy: .public) queueHighWater=\(value.queuedHighWaterMark, privacy: .public) \
+        cancelled=\(value.cancelledCount, privacy: .public) retired=\(value.retiredCount, privacy: .public)
+        """)
+        #endif
     }
 }

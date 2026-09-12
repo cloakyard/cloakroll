@@ -126,7 +126,7 @@ Do not claim physical power-loss durability from a process-restart test.
 | 1 Foundation | macOS 14 app + package, mock library, native sidebar/grid/settings, purple tokens, prototype icon. Build, tests, lint; manually inspect 1,000+ assets, light/dark and empty states. | Complete |
 | 2 Detection | Public ImageCaptureCore adapter, serial lifecycle, normalized device/trust/lock/unavailable states. Real unplug → plug → disconnect → reconnect evidence required. No downloads. | Complete |
 | 3 Catalog | Real metadata and related resources, photos/videos/RAW/Live Photo evidence, sorting, lazy API thumbnails. Real library visible without downloading originals. | Complete |
-| 4 Thumbnails | Bounded memory/disk cache, versioned invalidation + eviction, visible priority, prefetch and cancellation. Rapid scrolling/reconnect memory and USB concurrency checks. | Planned |
+| 4 Thumbnails | Bounded memory/disk cache, versioned invalidation + eviction, visible priority, prefetch and cancellation. Rapid scrolling/reconnect memory and USB concurrency checks. | In progress |
 | 5 Backup | Folder picker/bookmarks, Year/Month paths, original-component queue, staging, progress and no-overwrite collision policy. Selected/all real photos and videos copied. | Planned |
 | 6 Incremental | GRDB schema/migrations, device/destination-scoped matching, session history, new/backed-up/recent filters. Reconnect old library + newly captured items checked. | Planned |
 | 7 Reliability | Size and digest evidence, disconnect/full disk/retry/cancel/relaunch tests and real interruptions. No incomplete success or unrelated file overwrite. | Planned |
@@ -257,4 +257,18 @@ Catalog projection now cooperatively cancels obsolete work and reuses calendar i
 grouping. An isolated optimized 100,000-item projection improved from a 199.665 ms median to
 161.196 ms with identical output. 113 core and 12 hosted app tests, normal build, strict lint and
 signature verification pass. See `verification/UI-PRESETS-PERFORMANCE.md` for exact scope.
-This refinement is ready to commit before Phase 4 caching work begins.
+Committed as `b26ad76` before Phase 4 caching work began.
+
+
+### Phase 4 — implementation validated; final hardware gate pending
+
+Shared encoded/decoded caches, viewport scheduling, bounded prefetch, independent cancellation,
+LRU eviction, corruption handling and conservative reconnect preview matching are implemented.
+156 core and 22 hosted app tests, final normal build, strict lint and signature checks pass.
+Real library scrolling demonstrated two actual outstanding framework calls and decoded cache
+costs staying below 64 MiB while evicting older images. Info reused the existing grid bitmap.
+
+The final direct-value visibility refinement still needs its hardware follow-up, and physical
+reconnect preview reuse is pending unlock/reconnect of the attached phone. See
+`verification/PHASE-4.md` for exact evidence, RSS/footprint measurements and limitations.
+Phase 5 original downloads remain planned; public download APIs were researched only.
