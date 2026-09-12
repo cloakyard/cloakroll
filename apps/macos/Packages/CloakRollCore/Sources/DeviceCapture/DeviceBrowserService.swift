@@ -73,14 +73,13 @@ public final class DeviceBrowserService: DeviceBrowsing {
         case .added(let reference), .changed(let reference):
             guard let discovered = reference.device as? ICCameraDevice else { return }
             let key = ObjectIdentifier(discovered)
-            guard DeviceClassification.isSupported(
+            let supported = DeviceClassification.isSupported(
                 productKind: discovered.productKind,
                 usbVendorID: Int(discovered.usbVendorID),
                 transportType: discovered.transportType
-            ) else {
-                logger.debug("Ignored camera with unconfirmed Apple mobile product metadata")
-                return
-            }
+            )
+            logger.notice("Camera discovery callback; supported mobile device: \(supported, privacy: .public)")
+            guard supported else { return }
             if candidates[key] == nil { candidateOrder.append(key) }
             candidates[key] = discovered
             connectNextIfNeeded()

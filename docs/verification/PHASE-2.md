@@ -52,3 +52,11 @@ Confirm physical removal updates the live UI, then reconnect the same phone and 
 Until then Phase 3 is not started. First-ever Trust prompts, permission denial, multiple physical
 phones and macOS 14 runtime behavior require separate hardware checks. Tests do not establish
 original transfer, cloud completeness, backup integrity, Developer ID signing or notarization.
+
+## Shutdown follow-up
+
+Added an explicit main-actor applicationWillTerminate → AppModel.shutdown → browser.stop path.
+A normal Quit was manually observed to emit Stopped camera discovery at 13:49:45. The new normal
+build and strict lint pass. A privacy-safe notice now records whether a camera discovery callback
+was accepted, without device names or identifiers, to distinguish missing callbacks from filtering.
+No additional sandbox permissions were added. The app was reopened for the pending hardware check.

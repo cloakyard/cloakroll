@@ -3,6 +3,7 @@ import SwiftUI
 
 @main
 struct CloakRollApp: App {
+    @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @State private var model = AppModel()
 
     init() {
@@ -21,7 +22,10 @@ struct CloakRollApp: App {
                 .environment(model)
                 .tint(Design.accent)
                 .frame(minWidth: 860, minHeight: 560)
-                .task { await model.bootstrap() }
+                .task {
+                    appDelegate.onTerminate = model.shutdown
+                    await model.bootstrap()
+                }
         }
         .defaultSize(width: 1_100, height: 740)
         .commands { LibraryCommands(model: model) }
@@ -32,6 +36,13 @@ struct CloakRollApp: App {
                 .tint(Design.accent)
         }
     }
+}
+
+@MainActor
+final class AppDelegate: NSObject, NSApplicationDelegate {
+    var onTerminate: (() -> Void)?
+
+    func applicationWillTerminate(_ notification: Notification) { onTerminate?() }
 }
 
 struct LibraryCommands: Commands {

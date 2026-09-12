@@ -127,6 +127,13 @@ final class AppModel {
 
     func retryDeviceConnection() { browser?.retry() }
 
+    func shutdown() {
+        sourceGeneration += 1
+        generation += 1
+        projectionTask?.cancel()
+        stopDeviceBrowsing()
+    }
+
     private func stopDeviceBrowsing() {
         browser?.stop()
         deviceTask?.cancel()
