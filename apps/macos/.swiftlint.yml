@@ -1,0 +1,31 @@
+included:
+  - App
+  - Packages/CloakRollCore/Sources
+excluded:
+  - Packages/CloakRollCore/.build
+  - build
+disabled_rules:
+  - trailing_comma
+  - todo
+  - opening_brace
+  - nesting
+  - function_parameter_count
+line_length:
+  warning: 140
+  error: 200
+  ignores_comments: true
+type_body_length:
+  warning: 400
+  error: 600
+file_length:
+  warning: 500
+  error: 800
+function_body_length:
+  warning: 80
+  error: 140
+identifier_name:
+  min_length: 1
+  max_length: 60
+  allowed_symbols: ["_"]
+cyclomatic_complexity:
+  warning: 15

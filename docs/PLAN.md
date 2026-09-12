@@ -122,7 +122,7 @@ Do not claim physical power-loss durability from a process-restart test.
 | Phase | Deliverable and acceptance gate | Status |
 | --- | --- | --- |
 | 0 Discovery | Reference inspection, architecture, validated public APIs and coherent implementation plan. | Complete |
-| 1 Foundation | macOS 14 app + package, mock library, native sidebar/grid/settings, purple tokens, prototype icon. Build, tests, lint; manually inspect 1,000+ assets, light/dark and empty states. | In progress |
+| 1 Foundation | macOS 14 app + package, mock library, native sidebar/grid/settings, purple tokens, prototype icon. Build, tests, lint; manually inspect 1,000+ assets, light/dark and empty states. | Complete |
 | 2 Detection | Public ImageCaptureCore adapter, serial lifecycle, normalized device/trust/lock/unavailable states. Real unplug → plug → disconnect → reconnect evidence required. No downloads. | Planned |
 | 3 Catalog | Real metadata and related resources, photos/videos/RAW/Live Photo evidence, sorting, lazy API thumbnails. Real library visible without downloading originals. | Planned |
 | 4 Thumbnails | Bounded memory/disk cache, versioned invalidation + eviction, visible priority, prefetch and cancellation. Rapid scrolling/reconnect memory and USB concurrency checks. | Planned |
@@ -150,3 +150,7 @@ devices/destinations and verification failure. Hardware matrices stay separate f
 ### Phase 0 — complete
 
 Architecture/reference audit and Apple documentation + SDK checks completed. An isolated API probe typechecked for macOS 14; no device calls executed. Original presentation must be explicitly selected, fingerprint is macOS 15+, and macOS cannot call iOS browser authorization APIs. Gate passed: no unresolved compile-time assumption blocks basic enumeration.
+
+### Phase 1 — complete
+
+Native shell, headless models/catalog, 1,200-item sample library, selection, search/sort/grouping, Info, Settings, purple tokens and prototype icon implemented. Warning-free Debug build, strict lint and 33 core tests pass. Native light/dark and keyboard/scroll/empty-state checks passed after fixes. See `verification/PHASE-1.md` for exact evidence and limits. No device API was called in this phase. Next: Phase 2 physical discovery.

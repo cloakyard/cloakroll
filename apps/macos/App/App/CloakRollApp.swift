@@ -1,0 +1,69 @@
+import AppKit
+import SwiftUI
+
+@main
+struct CloakRollApp: App {
+    @State private var model = AppModel()
+
+    init() {
+        #if DEBUG
+        if ProcessInfo.processInfo.arguments.contains("--verify-dark-appearance") {
+            NSApplication.shared.appearance = NSAppearance(named: .darkAqua)
+        } else if ProcessInfo.processInfo.arguments.contains("--verify-light-appearance") {
+            NSApplication.shared.appearance = NSAppearance(named: .aqua)
+        }
+        #endif
+    }
+
+    var body: some Scene {
+        Window("CloakRoll", id: "main") {
+            RootView()
+                .environment(model)
+                .tint(Design.accent)
+                .frame(minWidth: 860, minHeight: 560)
+                .task { await model.bootstrap() }
+        }
+        .defaultSize(width: 1_100, height: 740)
+        .commands { LibraryCommands(model: model) }
+
+        Settings {
+            SettingsView()
+                .environment(model)
+                .tint(Design.accent)
+        }
+    }
+}
+
+struct LibraryCommands: Commands {
+    let model: AppModel
+    @Environment(\.openSettings) private var openSettings
+
+    var body: some Commands {
+        CommandGroup(replacing: .appInfo) {
+            Button("About CloakRoll") {
+                model.settingsTab = .about
+                openSettings()
+            }
+        }
+        CommandMenu("Library") {
+            Button("Show Info") { model.showSelectedInfo() }
+                .keyboardShortcut("i", modifiers: .command)
+                .disabled(model.selection.selectedIDs.isEmpty)
+            Button("Deselect All") { model.clearSelection() }
+                .keyboardShortcut("a", modifiers: [.command, .shift])
+                .disabled(model.selection.selectedIDs.isEmpty)
+        }
+        #if DEBUG
+        CommandMenu("Development") {
+            Button("Sample Library · 20 Items") { Task { await model.loadSample(count: 20) } }
+            Button("Sample Library · 1,200 Items") { Task { await model.loadSample(count: 1_200) } }
+            Button("Sample Library · 100,000 Items") { Task { await model.loadSample(count: 100_000) } }
+            Divider()
+            Button("No Device") { Task { await model.loadSample(count: 0, state: .disconnected) } }
+            Button("Restricted Device") { Task { await model.loadSample(count: 0, state: .restricted) } }
+            Button("Disconnected Library") { model.deviceState = .unavailable }
+            Button("Sample Backup Progress") { model.sampleProgress.toggle() }
+        }
+        #endif
+    }
+}
