@@ -7,8 +7,8 @@ gate have passed. Phase 3's real metadata and lazy thumbnails have passed physic
 acceptance. The app also includes clearly labeled sample media,
 chronological groups, filtering, selection, media info and Settings. **It does not back up files yet.**
 Follow [the implementation plan](docs/PLAN.md) for actual progress and verification evidence.
-The latest [Liquid Glass UI audit](docs/verification/UI-LIQUID-GLASS.md) covers native slider
-interaction, toolbar/menu behavior, system sheets, contrast and older-macOS fallback limits.
+The latest [UI and performance audit](docs/verification/UI-PRESETS-PERFORMANCE.md) covers fixed
+thumbnail sizes, the cleaner sidebar, native menus and faster cancellable catalog preparation.
 
 The intended workflow is a USB-connected iPhone → available originals → user-selected Mac or
 external-drive folder → verified incremental backup. No account, analytics or cloud processing.

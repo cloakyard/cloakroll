@@ -6,6 +6,8 @@ struct ViewOptionsButton: View {
     var body: some View {
         @Bindable var model = model
         Menu {
+            ThumbnailSizePicker(selection: $model.thumbnailSize)
+            Divider()
             Picker("Sort by", selection: $model.sort) {
                 Text("Newest First").tag(CatalogSort.newestFirst)
                 Text("Oldest First").tag(CatalogSort.oldestFirst)
@@ -19,6 +21,6 @@ struct ViewOptionsButton: View {
         } label: {
             Label("View Options", systemImage: "square.grid.2x2")
         }
-        .help("Sort and group photos and videos")
+        .help("Thumbnail size, sorting and grouping")
     }
 }

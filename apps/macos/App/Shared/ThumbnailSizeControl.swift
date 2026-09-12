@@ -1,34 +1,35 @@
 import SwiftUI
 
-struct ThumbnailSizeControl: View {
-    @Binding var size: Double
+enum ThumbnailSize: String, CaseIterable, Identifiable {
+    case small, medium, large
 
-    var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("Thumbnail size")
-            ThumbnailSizeSlider(size: $size)
+    var id: Self { self }
+
+    var title: String {
+        switch self {
+        case .small: "Small"
+        case .medium: "Medium"
+        case .large: "Large"
+        }
+    }
+
+    var minimumCellWidth: Double {
+        switch self {
+        case .small: 96
+        case .medium: 144
+        case .large: 200
         }
     }
 }
 
-/// The system owns pointer tracking, keyboard editing, focus and the current OS appearance.
-struct ThumbnailSizeSlider: View {
-    @Binding var size: Double
+struct ThumbnailSizePicker: View {
+    @Binding var selection: ThumbnailSize
 
     var body: some View {
-        Slider(value: $size, in: 84...200) {
-            Text("Thumbnail size")
-        } minimumValueLabel: {
-            Image(systemName: "photo")
-                .imageScale(.small)
-                .foregroundStyle(.secondary)
-                .accessibilityLabel("Smaller thumbnails")
-        } maximumValueLabel: {
-            Image(systemName: "photo")
-                .imageScale(.large)
-                .foregroundStyle(.secondary)
-                .accessibilityLabel("Larger thumbnails")
+        Picker("Thumbnail size", selection: $selection) {
+            ForEach(ThumbnailSize.allCases) { size in
+                Text(size.title).tag(size)
+            }
         }
-        .labelsHidden()
     }
 }

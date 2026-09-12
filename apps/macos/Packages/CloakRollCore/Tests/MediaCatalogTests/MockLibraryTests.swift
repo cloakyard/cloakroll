@@ -31,10 +31,10 @@ struct MockLibraryTests {
         #expect(library.backupDates.isEmpty)
     }
 
-    @Test func largeProjectionPreservesEveryAssetAndCompanion() async {
+    @Test func largeProjectionPreservesEveryAssetAndCompanion() async throws {
         let library = MockLibrary.make(count: 100_000)
         let start = ContinuousClock.now
-        let snapshot = await CatalogProjector().project(
+        let snapshot = try await CatalogProjector().project(
             assets: library.assets,
             statuses: library.statuses,
             backupDates: library.backupDates,
@@ -53,9 +53,9 @@ struct MockLibraryTests {
     }
 
     @Test(arguments: [1_024, 2_001])
-    func automaticGroupingScalesWithoutLosingItems(count: Int) async {
+    func automaticGroupingScalesWithoutLosingItems(count: Int) async throws {
         let library = MockLibrary.make(count: count)
-        let snapshot = await CatalogProjector().project(
+        let snapshot = try await CatalogProjector().project(
             assets: library.assets, statuses: library.statuses, backupDates: library.backupDates, query: CatalogQuery()
         )
         #expect(snapshot.filteredCount == count)

@@ -13,7 +13,8 @@ final class AppModel {
     var search = "" { didSet { scheduleProjection() } }
     var sort: CatalogSort = .newestFirst { didSet { scheduleProjection() } }
     var grouping: CatalogGrouping = .automatic { didSet { scheduleProjection() } }
-    var cellSize = 132.0
+    var thumbnailSize = ThumbnailSize.medium
+    var cellSize: Double { thumbnailSize.minimumCellWidth }
     var snapshot = CatalogSnapshot.empty
     var selection = MediaSelection()
     private(set) var activeID: String?
@@ -281,7 +282,13 @@ final class AppModel {
 
     private func project(generation requestedGeneration: Int) async {
         let query = CatalogQuery(filter: filter, search: search, sort: sort, grouping: grouping)
-        let result = await projector.project(assets: assets, statuses: statuses, backupDates: backupDates, query: query)
+        let result: CatalogSnapshot
+        do {
+            result = try await projector.project(assets: assets, statuses: statuses, backupDates: backupDates, query: query)
+        } catch {
+            // Superseded projections stop promptly and never publish an empty replacement.
+            return
+        }
         guard !Task.isCancelled, generation == requestedGeneration else { return }
         snapshot = result
         if query != lastProjectedQuery {

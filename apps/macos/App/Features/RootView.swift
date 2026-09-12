@@ -49,12 +49,6 @@ struct LibraryToolbar: ToolbarContent {
     @Environment(AppModel.self) private var model
 
     var body: some ToolbarContent {
-        @Bindable var model = model
-        ToolbarItem(placement: .automatic) {
-            ThumbnailSizeSlider(size: $model.cellSize)
-                .frame(width: 200)
-                .help("Thumbnail size")
-        }
         ToolbarItem(placement: .automatic) {
             ViewOptionsButton()
         }

@@ -2,6 +2,7 @@ import Foundation
 import MediaModels
 
 /// Prepares a complete immutable view of the library away from the UI actor.
+/// Superseded requests throw CancellationError without publishing a partial snapshot.
 public actor CatalogProjector {
     public init() {}
 
@@ -12,7 +13,8 @@ public actor CatalogProjector {
         query: CatalogQuery,
         now: Date = Date(),
         calendar: Calendar = .current
-    ) async -> CatalogSnapshot {
+    ) async throws -> CatalogSnapshot {
+        try Task.checkCancellation()
         let recentStart = calendar.date(byAdding: .day, value: -6, to: calendar.startOfDay(for: now)) ?? now
         let search = query.search.trimmingCharacters(in: .whitespacesAndNewlines)
         var counts = Dictionary(uniqueKeysWithValues: LibraryFilter.allCases.map { ($0, 0) })
@@ -21,7 +23,8 @@ public actor CatalogProjector {
         var filtered: [MediaAsset] = []
         filtered.reserveCapacity(assets.count)
 
-        for asset in assets {
+        for (index, asset) in assets.enumerated() {
+            if index.isMultiple(of: 256) { try Task.checkCancellation() }
             let status = statuses[asset.id] ?? .notBackedUp
             let isRecent = status == .backedUp && backupDates[asset.id].map {
                 $0 >= recentStart && $0 <= now
@@ -38,7 +41,11 @@ public actor CatalogProjector {
             filtered.append(asset)
         }
 
-        filtered.sort { left, right in
+        try Task.checkCancellation()
+        var comparisons = 0
+        try filtered.sort { left, right in
+            comparisons += 1
+            if comparisons.isMultiple(of: 1_024) { try Task.checkCancellation() }
             switch (left.createdAt, right.createdAt) {
             case let (leftDate?, rightDate?) where leftDate != rightDate:
                 return query.sort == .newestFirst ? leftDate > rightDate : leftDate < rightDate
@@ -51,8 +58,9 @@ public actor CatalogProjector {
             }
         }
 
+        try Task.checkCancellation()
         let grouping = Self.resolvedGrouping(query.grouping, count: filtered.count)
-        let sections = Self.sections(for: filtered, grouping: grouping, calendar: calendar)
+        let sections = try Self.sections(for: filtered, grouping: grouping, calendar: calendar)
         return CatalogSnapshot(
             sections: sections,
             counts: counts,
@@ -112,7 +120,7 @@ public actor CatalogProjector {
         for assets: [MediaAsset],
         grouping: CatalogGrouping,
         calendar: Calendar
-    ) -> [MediaSection] {
+    ) throws -> [MediaSection] {
         let component: Calendar.Component
         switch grouping {
         case .automatic, .day: component = .day
@@ -121,9 +129,23 @@ public actor CatalogProjector {
         }
         var dates: [Date?] = []
         var groups: [[MediaAsset]] = []
+        var interval: DateInterval?
         // Sorted dates form contiguous calendar buckets. Append directly without a second sort.
-        for asset in assets {
-            let bucket = asset.createdAt.flatMap { calendar.dateInterval(of: component, for: $0)?.start }
+        for (index, asset) in assets.enumerated() {
+            if index.isMultiple(of: 256) { try Task.checkCancellation() }
+            let bucket: Date?
+            if let date = asset.createdAt {
+                // DateInterval.contains includes its end; calendar buckets must be half-open
+                // so midnight belongs to the following day in either sort direction.
+                if let current = interval, date >= current.start, date < current.end {
+                    bucket = current.start
+                } else {
+                    interval = calendar.dateInterval(of: component, for: date)
+                    bucket = interval?.start
+                }
+            } else {
+                bucket = nil
+            }
             if !groups.isEmpty, dates.last == .some(bucket) {
                 groups[groups.count - 1].append(asset)
             } else {
@@ -131,6 +153,7 @@ public actor CatalogProjector {
                 groups.append([asset])
             }
         }
+        try Task.checkCancellation()
         return zip(dates, groups).map { date, assets in
             let key = date.map { String($0.timeIntervalSince1970) } ?? "unknown"
             return MediaSection(id: "\(grouping.rawValue):\(key)", date: date, assets: assets, grouping: grouping)

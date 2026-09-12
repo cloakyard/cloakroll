@@ -26,16 +26,6 @@ struct SidebarView: View {
         }
         .listStyle(.sidebar)
         .navigationTitle("CloakRoll")
-        .safeAreaInset(edge: .bottom) {
-            HStack(spacing: 6) {
-                Image(systemName: "lock.shield")
-                Text("Private by nature.")
-            }
-            .font(.caption)
-            .foregroundStyle(.secondary)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(16)
-        }
     }
 
     private var selection: Binding<LibraryFilter?> {

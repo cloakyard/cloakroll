@@ -13,15 +13,15 @@ struct CatalogProjectorTests {
         return calendar
     }
 
-    @Test func emptyCatalogHasEverySidebarCount() async {
-        let snapshot = await CatalogProjector().project(
+    @Test func emptyCatalogHasEverySidebarCount() async throws {
+        let snapshot = try await CatalogProjector().project(
             assets: [], statuses: [:], backupDates: [:], query: CatalogQuery()
         )
         #expect(snapshot == .empty)
         #expect(snapshot.counts.count == LibraryFilter.allCases.count)
     }
 
-    @Test func backupCountsRemainConservativeAndIndependentOfSearch() async {
+    @Test func backupCountsRemainConservativeAndIndependentOfSearch() async throws {
         let assets = [
             asset("photo", kind: .photo),
             asset("live", kind: .livePhoto),
@@ -32,7 +32,7 @@ struct CatalogProjectorTests {
         let statuses: [String: BackupStatus] = [
             "live": .backedUp, "raw": .uncertain, "video": .failed, "other": .backedUp
         ]
-        let snapshot = await CatalogProjector().project(
+        let snapshot = try await CatalogProjector().project(
             assets: assets,
             statuses: statuses,
             backupDates: ["live": now, "other": now.addingTimeInterval(-30 * 86_400)],
@@ -53,9 +53,9 @@ struct CatalogProjectorTests {
     }
 
     @Test(arguments: LibraryFilter.allCases)
-    func eachFilterMatchesItsFullCatalogCount(filter: LibraryFilter) async {
+    func eachFilterMatchesItsFullCatalogCount(filter: LibraryFilter) async throws {
         let library = MockLibrary.make(count: 1_024, now: now)
-        let snapshot = await CatalogProjector().project(
+        let snapshot = try await CatalogProjector().project(
             assets: library.assets,
             statuses: library.statuses,
             backupDates: library.backupDates,
@@ -67,7 +67,7 @@ struct CatalogProjectorTests {
         #expect(snapshot.orderedIDs.count == Set(snapshot.orderedIDs).count)
     }
 
-    @Test func searchesCompanionsWithoutSplittingTheAsset() async {
+    @Test func searchesCompanionsWithoutSplittingTheAsset() async throws {
         let paired = MediaAsset(
             id: "paired", deviceID: "device",
             resources: [
@@ -76,7 +76,7 @@ struct CatalogProjectorTests {
             ],
             kind: .livePhoto, createdAt: now
         )
-        let snapshot = await CatalogProjector().project(
+        let snapshot = try await CatalogProjector().project(
             assets: [paired, asset("other")], statuses: [:], backupDates: [:],
             query: CatalogQuery(search: "  CAFE.mov\n")
         )
@@ -86,7 +86,7 @@ struct CatalogProjectorTests {
     }
 
     @Test(arguments: [CatalogSort.newestFirst, .oldestFirst])
-    func unknownDatesSortLastAndEqualDatesHaveStableIDs(sort: CatalogSort) async {
+    func unknownDatesSortLastAndEqualDatesHaveStableIDs(sort: CatalogSort) async throws {
         let date = now
         let assets = [
             asset("z", date: nil), asset("b", date: date), asset("a", date: date),
@@ -94,15 +94,16 @@ struct CatalogProjectorTests {
         ]
         let query = CatalogQuery(sort: sort)
         let projector = CatalogProjector()
-        let first = await projector.project(assets: assets, statuses: [:], backupDates: [:], query: query)
-        let second = await projector.project(assets: assets.reversed(), statuses: [:], backupDates: [:], query: query)
+        let first = try await projector.project(assets: assets, statuses: [:], backupDates: [:], query: query)
+        let second = try await projector.project(assets: assets.reversed(), statuses: [:], backupDates: [:], query: query)
         #expect(first == second)
         #expect(first.orderedIDs == (sort == .newestFirst ? ["a", "b", "old", "y", "z"] : ["old", "a", "b", "y", "z"]))
         #expect(first.sections.last?.date == nil)
         #expect(first.sections.last?.id == "day:unknown")
     }
 
-    @Test func daylightSavingTransitionUsesCalendarDays() async throws {
+    @Test(arguments: [CatalogSort.newestFirst, .oldestFirst])
+    func daylightSavingTransitionUsesCalendarDays(sort: CatalogSort) async throws {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = try #require(TimeZone(identifier: "America/Los_Angeles"))
         let dates = try [
@@ -112,8 +113,8 @@ struct CatalogProjectorTests {
             DateComponents(year: 2026, month: 3, day: 9)
         ].map { try #require(calendar.date(from: $0)) }
         let assets = dates.enumerated().map { asset(String($0.offset), date: $0.element) }
-        let snapshot = await CatalogProjector().project(
-            assets: assets, statuses: [:], backupDates: [:], query: CatalogQuery(grouping: .day), calendar: calendar
+        let snapshot = try await CatalogProjector().project(
+            assets: assets, statuses: [:], backupDates: [:], query: CatalogQuery(sort: sort, grouping: .day), calendar: calendar
         )
         #expect(snapshot.sections.map { $0.assets.count } == [1, 2, 1])
         #expect(snapshot.sections.map(\.id).count == Set(snapshot.sections.map(\.id)).count)
@@ -122,21 +123,22 @@ struct CatalogProjectorTests {
         #expect(calendar.component(.hour, from: transition) == 0)
     }
 
-    @Test func monthAndYearGroupingKeepBoundaryAndUnknownSeparate() async throws {
+    @Test(arguments: [CatalogSort.newestFirst, .oldestFirst])
+    func monthAndYearGroupingKeepBoundaryAndUnknownSeparate(sort: CatalogSort) async throws {
         let before = try #require(calendar.date(from: DateComponents(year: 2025, month: 12, day: 31, hour: 23)))
         let after = try #require(calendar.date(from: DateComponents(year: 2026, month: 1, day: 1)))
         let later = try #require(calendar.date(from: DateComponents(year: 2026, month: 2, day: 1)))
         let assets = [asset("before", date: before), asset("after", date: after), asset("later", date: later), asset("unknown", date: nil)]
         let projector = CatalogProjector()
-        let months = await projector.project(
-            assets: assets, statuses: [:], backupDates: [:], query: CatalogQuery(grouping: .month), calendar: calendar
+        let months = try await projector.project(
+            assets: assets, statuses: [:], backupDates: [:], query: CatalogQuery(sort: sort, grouping: .month), calendar: calendar
         )
-        let years = await projector.project(
-            assets: assets, statuses: [:], backupDates: [:], query: CatalogQuery(grouping: .year), calendar: calendar
+        let years = try await projector.project(
+            assets: assets, statuses: [:], backupDates: [:], query: CatalogQuery(sort: sort, grouping: .year), calendar: calendar
         )
         #expect(months.sections.map { $0.assets.count } == [1, 1, 1, 1])
-        #expect(years.sections.map { $0.assets.count } == [2, 1, 1])
-        #expect(years.sections.first?.assets.map(\.id) == ["later", "after"])
+        #expect(years.sections.map { $0.assets.count } == (sort == .newestFirst ? [2, 1, 1] : [1, 2, 1]))
+        #expect(years.sections.first?.assets.map(\.id) == (sort == .newestFirst ? ["later", "after"] : ["before"]))
         #expect(Set(months.sections.map(\.id)).isDisjoint(with: Set(years.sections.map(\.id))))
     }
 
@@ -149,7 +151,7 @@ struct CatalogProjectorTests {
         let assets = ids.map { asset($0) }
         var statuses = Dictionary(uniqueKeysWithValues: ids.map { ($0, BackupStatus.backedUp) })
         statuses["uncertain"] = .uncertain
-        let snapshot = await CatalogProjector().project(
+        let snapshot = try await CatalogProjector().project(
             assets: assets,
             statuses: statuses,
             backupDates: ["start": start, "before": start.addingTimeInterval(-1), "now": now,
@@ -162,7 +164,7 @@ struct CatalogProjectorTests {
         #expect(snapshot.counts[.recentlyBackedUp] == 2)
     }
 
-    @Test func aggregateBytesDoNotOverflow() async {
+    @Test func aggregateBytesDoNotOverflow() async throws {
         let large = (0..<2).map { index in
             MediaAsset(
                 id: "\(index)", deviceID: "device",
@@ -170,7 +172,7 @@ struct CatalogProjectorTests {
                 kind: .video, createdAt: nil
             )
         }
-        let snapshot = await CatalogProjector().project(
+        let snapshot = try await CatalogProjector().project(
             assets: large, statuses: [:], backupDates: [:], query: CatalogQuery()
         )
         #expect(snapshot.newBytes == Int64.max)

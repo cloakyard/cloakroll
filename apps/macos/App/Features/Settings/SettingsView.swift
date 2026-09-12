@@ -21,8 +21,8 @@ struct SettingsView: View {
         @Bindable var model = model
         return Form {
             Section {
-                ThumbnailSizeControl(size: $model.cellSize)
-                    .padding(.vertical, 4)
+                ThumbnailSizePicker(selection: $model.thumbnailSize)
+                    .pickerStyle(.menu)
             } header: {
                 Text("Browsing")
             } footer: {

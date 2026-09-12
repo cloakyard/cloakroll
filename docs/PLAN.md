@@ -246,3 +246,15 @@ filename search, sorting and scrolling were inspected. Disconnection and recover
 No original files were downloaded. See `verification/PHASE-3.md` for aggregate evidence and
 coverage limits. Commit the requested fixed-size UI and catalog responsiveness stage next,
 then proceed to Phase 4 thumbnail caching and scheduling.
+
+### Fixed-size UI and catalog responsiveness — complete
+
+Removed the slider and its endpoint icons; Small/Medium/Large presets are available in the native
+View Options menu and Settings, with Medium as default. Removed the sidebar privacy tagline and
+reserved footer space. Real thumbnail layouts were inspected at compact and standard widths.
+
+Catalog projection now cooperatively cancels obsolete work and reuses calendar intervals while
+grouping. An isolated optimized 100,000-item projection improved from a 199.665 ms median to
+161.196 ms with identical output. 113 core and 12 hosted app tests, normal build, strict lint and
+signature verification pass. See `verification/UI-PRESETS-PERFORMANCE.md` for exact scope.
+This refinement is ready to commit before Phase 4 caching work begins.

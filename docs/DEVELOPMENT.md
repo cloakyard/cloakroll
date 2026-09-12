@@ -58,9 +58,9 @@ sidebar focus, small-window layout, Settings, light and dark appearance. Keep sc
 timing evidence under `docs/verification`. SwiftUI previews cover empty, mixed, large,
 restricted, disconnected and illustrative in-progress states.
 
-Thumbnail sizing uses the toolbar's native continuous slider; View Options is the native
-sort/group menu. Check pointer drags and track clicks as well as accessibility values. See
-`verification/UI-LIQUID-GLASS.md` for the latest UI audit and remaining accessibility checks.
+View Options contains native Small/Medium/Large thumbnail-size choices alongside sort and group
+menus. Settings uses the same size picker. Medium is the launch default. Check all three choices
+at compact and standard widths; see `verification/UI-PRESETS-PERFORMANCE.md` for current evidence.
 
 ## Hardware gates and release limits
 
