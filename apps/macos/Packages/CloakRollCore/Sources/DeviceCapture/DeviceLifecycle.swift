@@ -46,6 +46,13 @@ struct DeviceLifecycle {
         connection = DeviceConnection(device: connection.device, state: state, message: message)
     }
 
+    mutating func closed(token: UUID, message: String) {
+        guard activeToken == token else { return }
+        // A closed session no longer owns usable camera handles. Unlock callbacks from it must
+        // not revive readiness; retry opens a new session and a fresh resource namespace.
+        connection = DeviceConnection(device: connection.device, state: .unavailable, message: message)
+    }
+
     mutating func removed(token: UUID) {
         guard activeToken == token else { return }
         reset()

@@ -3,12 +3,15 @@ import ImageCaptureCore
 import MediaModels
 import OSLog
 
-/// Owns ImageCaptureCore objects on the main actor and emits value-only connection state.
-/// Phase 2 opens sessions only: no metadata, thumbnail or original download requests.
+/// Owns ImageCaptureCore objects on the main actor and emits value-only connection/catalog state.
+/// Enumeration reads supplied file properties; no metadata, thumbnail or original requests.
 @MainActor
-public final class DeviceBrowserService: DeviceBrowsing {
+public final class DeviceBrowserService: DeviceMediaSource {
     public let events: AsyncStream<DeviceEvent>
+    public let catalogs: AsyncStream<DeviceMediaSnapshot>
     private let continuation: AsyncStream<DeviceEvent>.Continuation
+    private let catalogContinuation: AsyncStream<DeviceMediaSnapshot>.Continuation
+    private let catalog: CameraCatalog
     private let logger = Logger(subsystem: "com.cloakroll.core", category: "DeviceCapture")
     private var browser: ICDeviceBrowser?
     private var browserDelegate: CaptureBrowserDelegate?
@@ -24,6 +27,10 @@ public final class DeviceBrowserService: DeviceBrowsing {
         let stream = AsyncStream<DeviceEvent>.makeStream(bufferingPolicy: .bufferingNewest(16))
         events = stream.stream
         continuation = stream.continuation
+        let catalogs = AsyncStream<DeviceMediaSnapshot>.makeStream(bufferingPolicy: .bufferingNewest(1))
+        self.catalogs = catalogs.stream
+        catalogContinuation = catalogs.continuation
+        catalog = CameraCatalog { catalogs.continuation.yield($0) }
     }
 
     public func start() {
@@ -112,6 +119,10 @@ public final class DeviceBrowserService: DeviceBrowsing {
         selected.delegate = delegate
         preferOriginals(selected)
         lifecycle.begin(device: value, token: token)
+        catalog.begin(
+            sessionID: token, deviceID: value.id, percent: Int(selected.contentCatalogPercentCompleted),
+            iCloudPhotosEnabled: selected.iCloudPhotosEnabled
+        )
         lifecycle.accessChanged(token: token, restricted: selected.isAccessRestrictedAppleDevice)
         publish()
         logger.info("Opening mobile camera session; identity kind: \(identity.kind.rawValue, privacy: .public)")
@@ -127,12 +138,31 @@ public final class DeviceBrowserService: DeviceBrowsing {
                 "The device session could not open. Unlock your iPhone, reconnect it, then try again."
             }
             lifecycle.opened(token: token, errorMessage: message, restricted: camera.isAccessRestrictedAppleDevice)
+            if lifecycle.connection.state == .unavailable { catalog.interrupt(sessionID: token) }
         case .closed(let error):
             logDeviceError(error)
-            lifecycle.failed(token: token, message: "The connection closed. Reconnect and unlock your iPhone, then try again.")
+            catalog.interrupt(sessionID: token)
+            lifecycle.closed(token: token, message: "The connection closed. Reconnect and unlock your iPhone, then try again.")
         case .ready:
             lifecycle.accessChanged(token: token, restricted: camera.isAccessRestrictedAppleDevice)
             lifecycle.ready(token: token)
+        case .catalogReady:
+            lifecycle.accessChanged(token: token, restricted: camera.isAccessRestrictedAppleDevice)
+            lifecycle.ready(token: token)
+            catalog.complete(
+                (camera.contents ?? []) + (camera.mediaFiles ?? []), sessionID: token,
+                percent: Int(camera.contentCatalogPercentCompleted), iCloudPhotosEnabled: camera.iCloudPhotosEnabled
+            )
+        case .itemsAdded(let reference), .itemsRenamed(let reference):
+            catalog.add(
+                reference.items, sessionID: token, percent: Int(camera.contentCatalogPercentCompleted),
+                iCloudPhotosEnabled: camera.iCloudPhotosEnabled
+            )
+        case .itemsRemoved(let reference):
+            catalog.remove(
+                reference.items, sessionID: token, percent: Int(camera.contentCatalogPercentCompleted),
+                iCloudPhotosEnabled: camera.iCloudPhotosEnabled
+            )
         case .removed:
             removeCandidate(ObjectIdentifier(camera))
             return
@@ -144,6 +174,7 @@ public final class DeviceBrowserService: DeviceBrowsing {
         case .failed(let error):
             logDeviceError(error)
             lifecycle.failed(token: token, message: "The connection was interrupted. Reconnect and unlock your iPhone, then try again.")
+            if lifecycle.connection.state == .unavailable { catalog.interrupt(sessionID: token) }
         }
         publish()
     }
@@ -152,7 +183,6 @@ public final class DeviceBrowserService: DeviceBrowsing {
         candidates[key] = nil
         candidateOrder.removeAll { $0 == key }
         guard let camera, ObjectIdentifier(camera) == key else { return }
-        if let token = lifecycle.activeToken { lifecycle.removed(token: token) }
         retireCamera()
         publish()
         connectNextIfNeeded()
@@ -160,11 +190,21 @@ public final class DeviceBrowserService: DeviceBrowsing {
 
     private func retireCamera() {
         // Invalidate the session token before a close can deliver any late events.
+        if let token = lifecycle.activeToken { catalog.interrupt(sessionID: token) }
         lifecycle.reset()
         camera?.delegate = nil
         camera?.requestCloseSession()
         camera = nil
         cameraDelegate = nil
+    }
+
+    /// Internal seam for the next phase's bounded thumbnail provider. Handles remain actor-owned.
+    func catalogFile(for resourceID: String, sessionID: UUID) throws -> ICCameraFile {
+        guard lifecycle.activeToken == sessionID else { throw MediaSourceError.staleSession }
+        guard lifecycle.connection.state == .ready, camera?.hasOpenSession == true else {
+            throw MediaSourceError.unavailable
+        }
+        return try catalog.file(for: resourceID, sessionID: sessionID)
     }
 
     private func preferOriginals(_ camera: ICCameraDevice) {
@@ -189,5 +229,6 @@ public final class DeviceBrowserService: DeviceBrowsing {
 
     deinit {
         continuation.finish()
+        catalogContinuation.finish()
     }
 }

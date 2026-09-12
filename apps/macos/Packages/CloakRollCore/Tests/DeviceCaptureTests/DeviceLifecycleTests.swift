@@ -361,4 +361,24 @@ struct DeviceLifecycleTests {
         #expect(lifecycle.connection.device == nil)
         #expect(lifecycle.activeToken == nil)
     }
+
+    @Test("Closing a restricted session is terminal until retry creates a new session")
+    func closedRestrictedSessionCannotRecoverWithoutRetry() {
+        var lifecycle = DeviceLifecycle()
+        let token = UUID()
+        lifecycle.begin(device: device(), token: token)
+        lifecycle.accessChanged(token: token, restricted: true)
+        lifecycle.ready(token: token)
+        lifecycle.closed(token: token, message: "Session closed")
+        lifecycle.accessChanged(token: token, restricted: false)
+        lifecycle.ready(token: token)
+        lifecycle.opened(token: token, errorMessage: nil, restricted: false)
+        #expect(lifecycle.connection.state == .unavailable)
+        let retryToken = UUID()
+        lifecycle.begin(device: device(), token: retryToken)
+        lifecycle.opened(token: retryToken, errorMessage: nil, restricted: false)
+        lifecycle.ready(token: retryToken)
+        lifecycle.closed(token: token, message: "Stale close")
+        #expect(lifecycle.connection.state == .ready)
+    }
 }

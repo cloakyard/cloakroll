@@ -11,6 +11,16 @@ struct CaptureDeviceReference: @unchecked Sendable {
     @MainActor var device: ICDevice { storage }
 }
 
+/// Retains a callback batch until the main actor can normalize it; no framework properties are
+/// inspected by the callback queue and these handles never leave DeviceCapture.
+struct CaptureItemsReference: @unchecked Sendable {
+    private let storage: [ICCameraItem]
+
+    init(_ items: [ICCameraItem]) { storage = items }
+
+    @MainActor var items: [ICCameraItem] { storage }
+}
+
 enum BrowserCallback: Sendable {
     case added(CaptureDeviceReference)
     case removed(ObjectIdentifier)
@@ -54,6 +64,10 @@ enum CameraCallback: Sendable {
     case opened(CaptureError?)
     case closed(CaptureError?)
     case ready
+    case catalogReady
+    case itemsAdded(CaptureItemsReference)
+    case itemsRemoved(CaptureItemsReference)
+    case itemsRenamed(CaptureItemsReference)
     case removed
     case accessChanged(restricted: Bool)
     case capabilitiesChanged
@@ -64,7 +78,7 @@ enum CameraCallback: Sendable {
     }
 }
 
-/// Framework entry points only forward immutable events. No file metadata or thumbnails are requested.
+/// Framework entry points only forward events. No file metadata or thumbnails are requested.
 final class CaptureCameraDelegate: NSObject, ICCameraDeviceDelegate {
     private let receive: @Sendable (CameraCallback) -> Void
 
@@ -89,7 +103,7 @@ final class CaptureCameraDelegate: NSObject, ICCameraDeviceDelegate {
 
     func deviceDidBecomeReady(_ device: ICDevice) { receive(.ready) }
 
-    func deviceDidBecomeReady(withCompleteContentCatalog device: ICCameraDevice) { receive(.ready) }
+    func deviceDidBecomeReady(withCompleteContentCatalog device: ICCameraDevice) { receive(.catalogReady) }
 
     func cameraDeviceDidRemoveAccessRestriction(_ device: ICDevice) { receive(.accessChanged(restricted: false)) }
 
@@ -97,11 +111,17 @@ final class CaptureCameraDelegate: NSObject, ICCameraDeviceDelegate {
 
     func cameraDeviceDidChangeCapability(_ camera: ICCameraDevice) { receive(.capabilitiesChanged) }
 
-    func cameraDevice(_ camera: ICCameraDevice, didAdd items: [ICCameraItem]) {}
+    func cameraDevice(_ camera: ICCameraDevice, didAdd items: [ICCameraItem]) {
+        receive(.itemsAdded(CaptureItemsReference(items)))
+    }
 
-    func cameraDevice(_ camera: ICCameraDevice, didRemove items: [ICCameraItem]) {}
+    func cameraDevice(_ camera: ICCameraDevice, didRemove items: [ICCameraItem]) {
+        receive(.itemsRemoved(CaptureItemsReference(items)))
+    }
 
-    func cameraDevice(_ camera: ICCameraDevice, didRenameItems items: [ICCameraItem]) {}
+    func cameraDevice(_ camera: ICCameraDevice, didRenameItems items: [ICCameraItem]) {
+        receive(.itemsRenamed(CaptureItemsReference(items)))
+    }
 
     func cameraDevice(_ camera: ICCameraDevice, didReceivePTPEvent eventData: Data) {}
 

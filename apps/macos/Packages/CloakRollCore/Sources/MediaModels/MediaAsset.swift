@@ -36,6 +36,7 @@ public struct MediaAsset: Identifiable, Hashable, Codable, Sendable {
     public let duration: Double?
     public let pixelWidth: Int?
     public let pixelHeight: Int?
+    public let primaryResourceID: String?
 
     public init(
         id: String,
@@ -45,7 +46,8 @@ public struct MediaAsset: Identifiable, Hashable, Codable, Sendable {
         createdAt: Date?,
         duration: Double? = nil,
         pixelWidth: Int? = nil,
-        pixelHeight: Int? = nil
+        pixelHeight: Int? = nil,
+        primaryResourceID: String? = nil
     ) {
         self.id = id
         self.deviceID = deviceID
@@ -55,9 +57,14 @@ public struct MediaAsset: Identifiable, Hashable, Codable, Sendable {
         self.duration = duration
         self.pixelWidth = pixelWidth
         self.pixelHeight = pixelHeight
+        self.primaryResourceID = primaryResourceID ?? resources.first?.id
     }
 
-    public var filename: String { resources.first?.filename ?? "Untitled" }
+    public var primaryResource: MediaResource? {
+        resources.first { $0.id == primaryResourceID } ?? resources.first
+    }
+
+    public var filename: String { primaryResource?.filename ?? "Untitled" }
 
     public var byteCount: Int64 {
         resources.reduce(0) { sum, resource in

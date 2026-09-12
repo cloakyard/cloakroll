@@ -9,9 +9,9 @@ struct LibraryView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            if model.isSample { sampleNotice }
-            if model.deviceState == .unavailable && !model.assets.isEmpty { disconnectNotice }
-            if model.assets.isEmpty && model.isProjecting {
+            if model.isSample { sampleNotice } else { LiveLibraryNotice() }
+            if model.deviceState != .ready && !model.assets.isEmpty { disconnectNotice }
+            if model.assets.isEmpty && (model.isProjecting || (model.isCatalogLoading && model.deviceState == .ready)) {
                 ProgressView("Preparing library…").frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if model.assets.isEmpty {
                 DeviceEmptyView().frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -102,7 +102,7 @@ struct LibraryView: View {
                     )
                     .frame(width: 1, height: 1)
                 }
-                .onChange(of: model.snapshot.orderedIDs.first) {
+                .onChange(of: model.scrollReset) {
                     scroll.scrollTo(LibraryScrollAnchor.top, anchor: .top)
                 }
             }
@@ -162,7 +162,7 @@ struct DeviceEmptyView: View {
         case .restricted: "Unlock your iPhone"
         case .opening: "Connecting to your iPhone"
         case .unavailable: "iPhone unavailable"
-        case .ready: model.isSample ? "No Media Available" : "Your iPhone is connected"
+        case .ready: model.mediaScanState == .complete || model.isSample ? "No Media Available" : "Your iPhone is connected"
         }
     }
 
@@ -173,7 +173,7 @@ struct DeviceEmptyView: View {
         case .restricted: "Unlock your iPhone and, if asked, tap Trust to allow this Mac to access its photos and videos."
         case .opening: "Keep your iPhone connected and unlocked."
         case .unavailable: "Connect and unlock your iPhone to continue."
-        case .ready: model.isSample
+        case .ready: model.isSample || model.mediaScanState == .complete
             ? "There are no photos or videos available from this device."
             : "Connected over USB. Your originals stay on your iPhone."
         }

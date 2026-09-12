@@ -25,6 +25,12 @@ final class AppModel {
     var infoAsset: MediaAsset?
     var settingsTab = SettingsTab.general
     var sampleProgress = false
+    private(set) var catalogSessionID: UUID?
+    private(set) var mediaScanState: MediaScanState?
+    private(set) var mediaScanPercent: Int?
+    private(set) var iCloudPhotosEnabled = false
+    private(set) var isCatalogPreparing = false
+    private(set) var scrollReset = 0
     private(set) var assets: [MediaAsset] = []
     private(set) var statuses: [String: BackupStatus] = [:]
 
@@ -39,6 +45,8 @@ final class AppModel {
     @ObservationIgnored private let makeBrowser: @MainActor () -> any DeviceBrowsing
     @ObservationIgnored private var browser: (any DeviceBrowsing)?
     @ObservationIgnored private var deviceTask: Task<Void, Never>?
+    @ObservationIgnored private var catalogLoader: LiveCatalogLoader?
+    @ObservationIgnored private var lastProjectedQuery: CatalogQuery?
 
     init(makeBrowser: @escaping @MainActor () -> any DeviceBrowsing = { DeviceBrowserService() }) {
         self.makeBrowser = makeBrowser
@@ -66,6 +74,7 @@ final class AppModel {
 
     func loadSample(count: Int, state: DeviceViewState = .ready) async {
         stopDeviceBrowsing()
+        resetCatalogState()
         sourceGeneration += 1
         let requestedSource = sourceGeneration
         generation += 1
@@ -90,12 +99,15 @@ final class AppModel {
         clearSelection()
         infoAsset = nil
         sampleProgress = false
+        scrollReset += 1
         generation += 1
         await project(generation: generation)
     }
 
     func startLive() {
+        started = true
         stopDeviceBrowsing()
+        resetCatalogState()
         sourceGeneration += 1
         generation += 1
         projectionTask?.cancel()
@@ -108,6 +120,7 @@ final class AppModel {
         backupDates = [:]
         lookup = [:]
         snapshot = .empty
+        scrollReset += 1
         clearSelection()
         infoAsset = nil
         device = nil
@@ -115,6 +128,13 @@ final class AppModel {
         deviceMessage = nil
         let service = makeBrowser()
         browser = service
+        if let source = service as? any DeviceMediaSource {
+            catalogLoader = LiveCatalogLoader(
+                source: source,
+                onReceive: { [weak self] in self?.receiveCatalog($0) },
+                onPrepared: { [weak self] in self?.applyCatalog($0) }
+            )
+        }
         let events = service.events
         deviceTask = Task { [weak self] in
             for await event in events {
@@ -135,10 +155,47 @@ final class AppModel {
     }
 
     private func stopDeviceBrowsing() {
+        catalogLoader?.stop()
+        catalogLoader = nil
         browser?.stop()
         deviceTask?.cancel()
         deviceTask = nil
         browser = nil
+    }
+
+    var isCatalogLoading: Bool { mediaScanState == .scanning || isCatalogPreparing }
+
+    private func resetCatalogState() {
+        catalogSessionID = nil
+        mediaScanState = nil
+        mediaScanPercent = nil
+        iCloudPhotosEnabled = false
+        isCatalogPreparing = false
+    }
+
+    private func receiveCatalog(_ source: DeviceMediaSnapshot) {
+        guard !isSample else { return }
+        catalogSessionID = source.sessionID
+        mediaScanState = source.state
+        mediaScanPercent = source.percentComplete
+        iCloudPhotosEnabled = source.iCloudPhotosEnabled == true
+        isCatalogPreparing = true
+    }
+
+    private func applyCatalog(_ prepared: PreparedDeviceCatalog) {
+        guard !isSample, prepared.source.sessionID == catalogSessionID else { return }
+        isCatalogPreparing = false
+        // Keep the previous device's catalog useful while the same phone reconnects. A complete
+        // empty catalog or a different phone always replaces it rather than claiming stale media.
+        if prepared.assets.isEmpty, prepared.source.state != .complete,
+           assets.first?.deviceID == prepared.source.deviceID { return }
+        if let previousDevice = assets.first?.deviceID, previousDevice != prepared.source.deviceID {
+            scrollReset += 1
+        }
+        assets = prepared.assets
+        lookup = prepared.lookup
+        if let infoAsset { self.infoAsset = lookup[infoAsset.id] }
+        scheduleProjection()
     }
 
     private func apply(_ event: DeviceEvent) {
@@ -211,6 +268,10 @@ final class AppModel {
         let result = await projector.project(assets: assets, statuses: statuses, backupDates: backupDates, query: query)
         guard !Task.isCancelled, generation == requestedGeneration else { return }
         snapshot = result
+        if query != lastProjectedQuery {
+            lastProjectedQuery = query
+            scrollReset += 1
+        }
         selection.reconcile(with: result.orderedIDs)
         if let activeID, !result.orderedIDs.contains(activeID) {
             self.activeID = nil

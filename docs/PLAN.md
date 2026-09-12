@@ -124,7 +124,7 @@ Do not claim physical power-loss durability from a process-restart test.
 | 0 Discovery | Reference inspection, architecture, validated public APIs and coherent implementation plan. | Complete |
 | 1 Foundation | macOS 14 app + package, mock library, native sidebar/grid/settings, purple tokens, prototype icon. Build, tests, lint; manually inspect 1,000+ assets, light/dark and empty states. | Complete |
 | 2 Detection | Public ImageCaptureCore adapter, serial lifecycle, normalized device/trust/lock/unavailable states. Real unplug → plug → disconnect → reconnect evidence required. No downloads. | Complete |
-| 3 Catalog | Real metadata and related resources, photos/videos/RAW/Live Photo evidence, sorting, lazy API thumbnails. Real library visible without downloading originals. | Planned |
+| 3 Catalog | Real metadata and related resources, photos/videos/RAW/Live Photo evidence, sorting, lazy API thumbnails. Real library visible without downloading originals. | In progress |
 | 4 Thumbnails | Bounded memory/disk cache, versioned invalidation + eviction, visible priority, prefetch and cancellation. Rapid scrolling/reconnect memory and USB concurrency checks. | Planned |
 | 5 Backup | Folder picker/bookmarks, Year/Month paths, original-component queue, staging, progress and no-overwrite collision policy. Selected/all real photos and videos copied. | Planned |
 | 6 Incremental | GRDB schema/migrations, device/destination-scoped matching, session history, new/backed-up/recent filters. Reconnect old library + newly captured items checked. | Planned |
@@ -201,3 +201,13 @@ light/dark, 100,000-item count widths, slider range/keyboard, Info and empty sta
 All 56 core and 4 hosted app tests, strict lint and a normal warning-free build pass. See
 `verification/UI-REFINEMENT.md` for the exact evidence and accessibility/runtime limitations.
 Next: Phase 3 metadata first, then lazy public thumbnails, with separate stage commits.
+
+### Phase 3 — metadata stage implemented; physical acceptance pending
+
+Session-scoped camera registry, coalesced full catalog snapshots, conservative classification and
+related-resource assembly, background presentation preparation and scan/coverage UI are implemented.
+99 core and 9 hosted app tests pass. Normal sandbox build, strict lint and signature checks pass.
+The physical phone is attached in IORegistry; its rebuilt-app discovery/catalog check awaits unlock
+and reconnect. See `verification/PHASE-3.md`. No original or thumbnail calls in this metadata stage.
+Next within this phase: lazy thumbnail integration and physical catalog acceptance; do not advance
+to Phase 4 until the real library and scrolling gate passes.
