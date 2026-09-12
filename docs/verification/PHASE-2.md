@@ -1,6 +1,6 @@
 # Phase 2 verification — 12 September 2026
 
-Status: software verification complete; physical disconnect/reconnect gate pending final evidence.
+Status: COMPLETE. Software and normal-sandbox physical disconnect/reconnect gate verified.
 
 ## Implemented
 
@@ -60,3 +60,19 @@ A normal Quit was manually observed to emit Stopped camera discovery at 13:49:45
 build and strict lint pass. A privacy-safe notice now records whether a camera discovery callback
 was accepted, without device names or identifiers, to distinguish missing callbacks from filtering.
 No additional sandbox permissions were added. The app was reopened for the pending hardware check.
+
+## Physical gate completed — 12 September 2026
+
+The normal app process launched after the final non-test build was observed through the complete
+physical cycle: ready at 13:57:37.012 → disconnected at 13:57:56.784 → camera rediscovered at
+13:58:00.519 → access restricted → ready at 13:59:22.088. The live accessibility tree then showed
+the correct iPhone name and Connected. Logs contain the same process ID through the cycle; app
+restart was not substituted for physical removal. Personal identifiers are omitted here.
+
+The app signature was inspected with only sandbox, USB, Photos Library and Debug get-task-allow
+entitlements. No test-host temporary filesystem/Mach exceptions were present in that normal build.
+A fresh validation reran all 56 core and 4 hosted app tests successfully, then restored the normal
+app build; build completed without warnings/errors. The Phase 2 gate is now complete.
+
+User-directed UI refinement is the next gate before Phase 3: toolbar sizing, sidebar density,
+state hierarchy and light/dark/small-window visual checks, with a separate verified commit.

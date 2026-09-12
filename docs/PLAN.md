@@ -123,7 +123,7 @@ Do not claim physical power-loss durability from a process-restart test.
 | --- | --- | --- |
 | 0 Discovery | Reference inspection, architecture, validated public APIs and coherent implementation plan. | Complete |
 | 1 Foundation | macOS 14 app + package, mock library, native sidebar/grid/settings, purple tokens, prototype icon. Build, tests, lint; manually inspect 1,000+ assets, light/dark and empty states. | Complete |
-| 2 Detection | Public ImageCaptureCore adapter, serial lifecycle, normalized device/trust/lock/unavailable states. Real unplug → plug → disconnect → reconnect evidence required. No downloads. | In progress |
+| 2 Detection | Public ImageCaptureCore adapter, serial lifecycle, normalized device/trust/lock/unavailable states. Real unplug → plug → disconnect → reconnect evidence required. No downloads. | Complete |
 | 3 Catalog | Real metadata and related resources, photos/videos/RAW/Live Photo evidence, sorting, lazy API thumbnails. Real library visible without downloading originals. | Planned |
 | 4 Thumbnails | Bounded memory/disk cache, versioned invalidation + eviction, visible priority, prefetch and cancellation. Rapid scrolling/reconnect memory and USB concurrency checks. | Planned |
 | 5 Backup | Folder picker/bookmarks, Year/Month paths, original-component queue, staging, progress and no-overwrite collision policy. Selected/all real photos and videos copied. | Planned |
@@ -180,3 +180,14 @@ Native shell, headless models/catalog, 1,200-item sample library, selection, sea
 Public USB camera adapter, stable-identity normalization, connection reducer and app integration implemented. Core initially passed 50 tests; app integration passed 4 hosted tests. Real hardware discovery identified the attached iPhone and revealed an access-restriction recovery bug, now being corrected before the gate. No original or thumbnail requests have been made. Restore-to-iPhone is independently documented as backlog only.
 
 Phase 2 follow-up: 56 core and 4 hosted app tests now pass; warning-free normal build and strict lint pass. Real restricted → ready recovery observed and corrected. Normal sandbox entitlements verified after rebuilding without test-host additions. Physical ready → disconnect → reconnect gate remains pending; see `verification/PHASE-2.md`. Phase 3 has not started.
+
+### Phase 2 — complete; UI refinement gate added
+
+A normal sandboxed app process recorded physical ready → disconnected → rediscovered/restricted
+→ ready between 13:57 and 13:59 on 12 September. The live UI confirms Connected. All 56 core and
+4 hosted app tests pass; normal build is warning-free. See `verification/PHASE-2.md`.
+
+Before Phase 3, complete the user's explicit UI quality pass: replace the cramped thumbnail-size
+slider, audit hierarchy/spacing/unsupported actions, verify keyboard/accessibility and minimum
+window width in light/dark appearance. Commit this refinement as its own stage. Git was initialized
+at project creation; continue committing each verified stage and recording actual evidence.
