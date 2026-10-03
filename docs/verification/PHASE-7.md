@@ -140,3 +140,35 @@ each preparation loop, and successful uncancelled registration of 100 originals.
 test seam introduces no public API or timing-based sleep. Compiler warnings/errors and
 whitespace checks are clear. Logs: `/tmp/cloakroll-preparation-cancellation-core.log`.
 This validates preparation cancellation, not an interrupted physical USB request.
+
+## 3 October — disconnect and quit refinement
+
+The next regression stage explicitly distinguishes these boundaries:
+
+| Boundary | Required behavior |
+| --- | --- |
+| iPhone disappears during a companion download | Keep the completed original; leave the logical item incomplete. Retain the source slot and destination lease until the actual callback settles. |
+| Retired source reports late success or progress | Never publish or count those bytes, or apply an old callback to the replacement session. Preserve uncertain partial files. |
+| Retry after reconnect | Require a fresh catalog and local verification. Reuse only verified matching originals; copy the unfinished component again. |
+| Stop or Quit during a download | Request cancellation once, await source settlement and journal finalization, then release access and permit termination. |
+| Concurrent access to a stale saved folder | Serialize bookmark refresh, give each operation its own lease, and reject explicit reselection without leaking scopes. |
+| Folder failure before the engine starts | Retain an incomplete summary and the intended selection so retry remains available. |
+
+The normal ed55d96 app was observed connected with 2,067 logical items / 3,994 original resources,
+four backed-up logical items, and seven existing sessions. A fresh private baseline covers all
+sixteen destination files / 3,286,761,691 bytes; zero unresolved journal entries were present.
+These observations establish the starting state, not unplug-during-transfer acceptance.
+
+The coordinator/engine regression passes in both source-retirement-only and app-style cancellation
+cases. A generated Live Photo's first original remains verified while a second original's late
+success is rejected; no second publication or verified callback occurs. A replacement session
+cannot acquire the busy source slot, old progress/completion callbacks cannot alter the new run,
+and a fresh local verification allows retry to reuse the first component and copy only the second.
+The preserved partial and ownership marker remain untouched. No production core change was
+needed after this audit; the new dependency is test-only.
+
+All **288 core tests pass**, including 71 DeviceCapture tests and 43 engine tests. No compiler
+warnings/errors or whitespace issues were reported. Logs:
+`/tmp/cloakroll-disconnect-core-focused.log` and `/tmp/cloakroll-disconnect-core.log`.
+These are generated source callbacks, not physical cable-removal acceptance. App presentation,
+folder-acquisition and quit-lifecycle validation for this stage is recorded separately below.

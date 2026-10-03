@@ -46,7 +46,7 @@ let package = Package(
         ),
         .testTarget(
             name: "DeviceCaptureTests",
-            dependencies: ["DeviceCapture", "MediaModels"],
+            dependencies: ["DeviceCapture", "MediaModels", "BackupEngine"],
             swiftSettings: [.swiftLanguageMode(.v6)]
         ),
         .testTarget(
