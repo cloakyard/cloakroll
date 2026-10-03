@@ -53,6 +53,9 @@ final class BackupDestinationStore {
     @ObservationIgnored private let selectFolder: @MainActor () async -> URL?
     @ObservationIgnored private let saveRecord: @MainActor (Data) throws -> Void
     @ObservationIgnored private var readinessGeneration = 0
+    @ObservationIgnored private var selectionGeneration = 0
+    @ObservationIgnored private var acquisitionTail: Task<Void, Never>?
+    @ObservationIgnored private var acquisitionID: UUID?
 
     init(
         defaults: UserDefaults = .standard,
@@ -92,6 +95,7 @@ final class BackupDestinationStore {
             guard selection?.id == previous?.id else { throw BackupDestinationError.selectionChanged }
             try persist(record)
             selection = record
+            selectionGeneration += 1
             readinessGeneration += 1
             readiness = .unchecked
             await checkFolder(allowWhileChoosing: true)
@@ -105,18 +109,49 @@ final class BackupDestinationStore {
     }
 
     func acquireLease() async throws -> DestinationLease {
-        guard let original = selection else { throw BackupDestinationError.noSelection }
+        guard let destinationID = selection?.id else { throw BackupDestinationError.noSelection }
         readinessGeneration += 1
         let generation = readinessGeneration
+        let selectionGeneration = selectionGeneration
+        let preceding = acquisitionTail
+        let identifier = UUID()
+        let acquisition = Task {
+            // Each operation needs an independently owned lease, but bookmark refresh must
+            // finish before another operation captures the selected record.
+            if let preceding { await preceding.value }
+            try Task.checkCancellation()
+            guard self.selectionGeneration == selectionGeneration, let original = selection else {
+                throw BackupDestinationError.selectionChanged
+            }
+            return try await acquire(original, selectionGeneration: selectionGeneration)
+        }
+        acquisitionID = identifier
+        let tail = Task { _ = await acquisition.result }
+        acquisitionTail = tail
+        defer {
+            if acquisitionID == identifier {
+                acquisitionTail = nil
+                acquisitionID = nil
+            }
+        }
         do {
-            let lease = try await acquire(original)
-            if isCurrentCheck(generation, destinationID: original.id) {
+            let lease = try await withTaskCancellationHandler {
+                try await acquisition.value
+            } onCancel: { acquisition.cancel() }
+            // The queue must drop its task-result ownership before the caller owns the lease.
+            // Await this operation's tail, never a later caller's mutable acquisitionTail.
+            await tail.value
+            if Task.isCancelled {
+                lease.release()
+                throw CancellationError()
+            }
+            if isCurrentCheck(generation, destinationID: destinationID) {
                 readiness = .available
                 errorMessage = nil
             }
             return lease
         } catch {
-            if isCurrentCheck(generation, destinationID: original.id) {
+            if isCurrentCheck(generation, destinationID: destinationID) {
                 readiness = error is CancellationError ? .unchecked : .unavailable(Self.message(for: error))
                 if !(error is CancellationError) { errorMessage = Self.message(for: error) }
             }
@@ -159,13 +194,15 @@ final class BackupDestinationStore {
         readinessGeneration == generation && selection?.id == destinationID
     }
 
-    private func acquire(_ original: BackupDestination) async throws -> DestinationLease {
+    private func acquire(_ original: BackupDestination, selectionGeneration: Int) async throws -> DestinationLease {
         let operations = operations
         let acquired = try await Self.work { try operations.acquire(original) }
         var handedOff = false
         defer { if !handedOff { acquired.lease.release() } }
         try Task.checkCancellation()
-        guard selection == original else { throw BackupDestinationError.selectionChanged }
+        guard self.selectionGeneration == selectionGeneration, selection == original else {
+            throw BackupDestinationError.selectionChanged
+        }
         if acquired.record != original {
             try persist(acquired.record)
             selection = acquired.record

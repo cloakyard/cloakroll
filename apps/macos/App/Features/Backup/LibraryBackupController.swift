@@ -6,9 +6,15 @@ import Observation
 
 @MainActor @Observable
 final class LibraryBackupController {
+    enum StopReason: Equatable { case user, sourceUnavailable }
+
     struct Attempt {
         let assets: [MediaAsset]
         let sessionID: UUID
+
+        func matches(sessionID: UUID?, currentAsset: (String) -> MediaAsset?) -> Bool {
+            self.sessionID == sessionID && assets.allSatisfy { currentAsset($0.id) == $0 }
+        }
     }
 
     let destination: BackupDestinationStore
@@ -16,6 +22,8 @@ final class LibraryBackupController {
     private(set) var snapshot: BackupSnapshot?
     private(set) var isBusy = false
     private(set) var isStopping = false
+    private(set) var stopReason: StopReason?
+    private(set) var wasInterrupted = false
     private(set) var lastAttempt: Attempt?
     private(set) var isCheckingHistory = false
     private(set) var historyErrorMessage: String?
@@ -42,6 +50,8 @@ final class LibraryBackupController {
         if destination.selection?.id != previous {
             snapshot = nil
             lastAttempt = nil
+            stopReason = nil
+            wasInterrupted = false
             history = LibraryBackupHistory()
             onStatusesChanged?()
         }
@@ -58,6 +68,8 @@ final class LibraryBackupController {
         }
         isBusy = true
         isStopping = false
+        stopReason = nil
+        wasInterrupted = false
         errorMessage = nil
         lastAttempt = Attempt(assets: assets, sessionID: sessionID)
         snapshot = BackupSnapshot(phase: .preparing, totalAssets: assets.count)
@@ -65,7 +77,16 @@ final class LibraryBackupController {
     }
 
     func cancel() {
-        guard isBusy else { return }
+        requestStop(reason: .user)
+    }
+
+    func sourceBecameUnavailable() {
+        requestStop(reason: .sourceUnavailable)
+    }
+
+    private func requestStop(reason: StopReason) {
+        guard isBusy, !isStopping else { return }
+        stopReason = reason
         isStopping = true
         runTask?.cancel()
         if let engine { Task { await engine.cancel() } }
@@ -77,6 +98,8 @@ final class LibraryBackupController {
     func dismissSummary() {
         guard !isBusy else { return }
         snapshot = nil
+        stopReason = nil
+        wasInterrupted = false
     }
 
     func revealDestination() async {
@@ -139,14 +162,16 @@ final class LibraryBackupController {
                 }, download: download
             )
             monitor.cancel()
+            result = BackupResult(snapshot: terminalSnapshot(result.snapshot), records: result.records)
             if let journal {
                 do {
                     let terminal = result.snapshot
                     try await Task { try await journal.store.finishSession(id: journal.id, result: terminal) }.value
                 } catch {
+                    wasInterrupted = false
                     var terminal = result.snapshot
                     terminal.phase = .failed
-                    terminal.message = "The files were saved, but the backup history couldn’t be finalized. Try again."
+                    terminal.message = "Backup history couldn’t be finalized. Try again to check saved originals and finish the backup."
                     result = BackupResult(snapshot: terminal, records: result.records)
                 }
             }
@@ -155,11 +180,19 @@ final class LibraryBackupController {
             onStatusesChanged?()
             if let persistence { try? await Task { try await persistence.refreshSessions() }.value }
         } catch is CancellationError {
-            snapshot = BackupSnapshot(phase: .cancelled, totalAssets: assets.count)
+            snapshot = terminalSnapshot(BackupSnapshot(phase: .cancelled, totalAssets: assets.count))
         } catch {
-            snapshot = nil
-            errorMessage = error.localizedDescription
+            snapshot = BackupSnapshot(phase: .failed, totalAssets: assets.count, message: error.localizedDescription)
         }
+    }
+
+    private func terminalSnapshot(_ value: BackupSnapshot) -> BackupSnapshot {
+        guard value.phase == .cancelled, stopReason == .sourceUnavailable else { return value }
+        wasInterrupted = true
+        var result = value
+        result.phase = .failed
+        result.message = "The iPhone became unavailable during the backup."
+        return result
     }
 
     private func takeDestinationError() {

@@ -282,7 +282,7 @@ final class AppModel {
             deviceState = connection.state
             deviceMessage = connection.message
             if connection.state != .ready {
-                backup.cancel()
+                backup.sourceBecameUnavailable()
                 backup.suspendHistory()
             } else {
                 backup.retryHistoryCheck()

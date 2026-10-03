@@ -35,6 +35,7 @@ struct LibraryCommands: Commands {
         }
         CommandGroup(replacing: .help) {
             Button("CloakRoll Help") { showHelp(.gettingStarted) }
+            Button("If a Backup Is Interrupted…") { showHelp(.interruptedBackups) }
             Button("About USB Availability…") { showHelp(.usbAvailability) }
         }
         #if DEBUG

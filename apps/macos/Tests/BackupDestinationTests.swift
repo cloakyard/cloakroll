@@ -162,7 +162,9 @@ struct BackupDestinationTests {
         let store = BackupDestinationStore(defaults: storage.value, operations: probe.operations)
         var abandoned: DestinationLease? = try await store.acquireLease()
         #expect(abandoned != nil)
+        weak let observedLease = abandoned
         abandoned = nil
+        #expect(observedLease == nil) // No queued task may retain the returned lease past this call.
         #expect(probe.counts.stopped == 1)
         let lease = try await store.acquireLease()
         await withTaskGroup(of: Void.self) { group in
@@ -442,6 +444,135 @@ struct BackupDestinationTests {
         #expect(probe.counts.started == 2 && probe.counts.stopped == 2)
     }
 
+    @Test func concurrentRealLeasesSerializeStaleRefreshAndKeepIndependentScopes() async throws {
+        let original = Self.record()
+        let storage = try DestinationTestDefaults(record: original)
+        let probe = DestinationOperationProbe()
+        let gate = DestinationAcquisitionGate()
+        defer { gate.releaseAll() }
+        var operations = probe.operations
+        operations.resolveBookmark = { _ in ResolvedBackupBookmark(url: Self.folder, isStale: true) }
+        operations.validateFolder = { _ in try gate.validate() }
+        let store = BackupDestinationStore(defaults: storage.value, operations: operations)
+        let first = Task { try await store.acquireLease() }
+        try await gate.waitForCalls(1)
+        var secondRequested = false
+        let second = Task {
+            secondRequested = true
+            return try await store.acquireLease()
+        }
+        try await waitForPersistentState { secondRequested }
+        #expect(gate.numberOfCalls == 1 && probe.counts.started == 1)
+        gate.release(0)
+        let firstLease = try await first.value
+        defer { firstLease.release() }
+        try await gate.waitForCalls(2)
+        #expect(probe.counts.started == 2 && probe.counts.stopped == 0)
+        gate.release(1)
+        let secondLease = try await second.value
+        secondLease.release()
+        #expect(probe.counts.stopped == 1)
+        #expect(firstLease.destinationID == secondLease.destinationID && firstLease !== secondLease)
+        #expect(store.selection?.id == original.id && store.selection?.bookmarkData != original.bookmarkData)
+        #expect(store.readiness == .available && store.errorMessage == nil)
+        firstLease.release()
+        #expect(probe.counts.started == probe.counts.stopped)
+    }
+
+    @Test func cancelledQueuedLeaseDoesNoAccessAndLetsTheNextCallerProceed() async throws {
+        let storage = try DestinationTestDefaults(record: Self.record())
+        let probe = DestinationOperationProbe()
+        let gate = DestinationAcquisitionGate()
+        defer { gate.releaseAll() }
+        var operations = probe.operations
+        operations.validateFolder = { _ in try gate.validate() }
+        let store = BackupDestinationStore(defaults: storage.value, operations: operations)
+        let first = Task { try await store.acquireLease() }
+        try await gate.waitForCalls(1)
+        var cancelledRequested = false
+        let cancelled = Task {
+            cancelledRequested = true
+            return try await store.acquireLease()
+        }
+        try await waitForPersistentState { cancelledRequested }
+        cancelled.cancel()
+        var finalRequested = false
+        let final = Task {
+            finalRequested = true
+            return try await store.acquireLease()
+        }
+        try await waitForPersistentState { finalRequested }
+        #expect(gate.numberOfCalls == 1)
+        gate.release(0)
+        let firstLease = try await first.value
+        firstLease.release()
+        await #expect(throws: CancellationError.self) { _ = try await cancelled.value }
+        try await gate.waitForCalls(2)
+        gate.release(1)
+        let finalLease = try await final.value
+        finalLease.release()
+        #expect(store.readiness == .available && store.errorMessage == nil)
+        #expect(probe.counts.started == 2 && probe.counts.stopped == 2)
+    }
+
+    @Test func cancelledActiveLeaseReleasesItsScopeBeforeTheNextAcquisition() async throws {
+        let storage = try DestinationTestDefaults(record: Self.record())
+        let probe = DestinationOperationProbe()
+        let gate = DestinationAcquisitionGate()
+        defer { gate.releaseAll() }
+        var operations = probe.operations
+        operations.validateFolder = { _ in try gate.validate() }
+        let store = BackupDestinationStore(defaults: storage.value, operations: operations)
+        let first = Task { try await store.acquireLease() }
+        try await gate.waitForCalls(1)
+        let next = Task { try await store.acquireLease() }
+        first.cancel()
+        gate.release(0)
+        await #expect(throws: CancellationError.self) { _ = try await first.value }
+        try await gate.waitForCalls(2)
+        #expect(probe.counts.started == 2 && probe.counts.stopped == 1)
+        gate.release(1)
+        let nextLease = try await next.value
+        nextLease.release()
+        #expect(store.readiness == .available && store.errorMessage == nil)
+        #expect(probe.counts.started == probe.counts.stopped)
+    }
+
+    @Test(arguments: [false, true])
+    func reselectingAFolderInvalidatesInFlightAndQueuedAcquisitions(sameFolder: Bool) async throws {
+        let original = Self.record()
+        let storage = try DestinationTestDefaults(record: original)
+        let probe = DestinationOperationProbe()
+        let gate = DestinationCheckGate()
+        defer { gate.release() }
+        let chosen = sameFolder ? Self.folder : URL(fileURLWithPath: "/Volumes/Other/Backup", isDirectory: true)
+        var operations = probe.operations
+        operations.resolveBookmark = { data in
+            let value = String(decoding: data, as: UTF8.self)
+            let url = value.hasPrefix("new:") ? URL(fileURLWithPath: String(value.dropFirst(4))) : Self.folder
+            return ResolvedBackupBookmark(url: url, isStale: true)
+        }
+        operations.validateFolder = { _ in try gate.validateFirst() }
+        let store = BackupDestinationStore(defaults: storage.value, operations: operations, selectFolder: { chosen })
+        let first = Task { try await store.acquireLease() }
+        try await gate.waitUntilEntered()
+        var nextRequested = false
+        let next = Task {
+            nextRequested = true
+            return try await store.acquireLease()
+        }
+        try await waitForPersistentState { nextRequested }
+        #expect(await store.chooseFolder())
+        let selected = try #require(store.selection)
+        #expect((selected.id == original.id) == sameFolder)
+        #expect(store.readiness == .available)
+        gate.release()
+        await #expect(throws: BackupDestinationError.selectionChanged) { _ = try await first.value }
+        await #expect(throws: BackupDestinationError.selectionChanged) { _ = try await next.value }
+        #expect(store.selection == selected && store.readiness == .available && store.errorMessage == nil)
+        #expect(probe.counts.started == probe.counts.stopped)
+    }
+
     private nonisolated static let folder = URL(fileURLWithPath: "/Volumes/Test/Backup", isDirectory: true)
 
     private static func record(path: String = folder.path) -> BackupDestination {
@@ -552,6 +683,8 @@ private final class DestinationAcquisitionGate: @unchecked Sendable {
     private var entered = 0
     private var released: Set<Int> = []
     private var allReleased = false
+
+    var numberOfCalls: Int { condition.withLock { entered } }
 
     init(failingCall: Int? = nil) { self.failingCall = failingCall }
 

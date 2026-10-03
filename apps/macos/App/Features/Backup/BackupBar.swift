@@ -13,8 +13,7 @@ struct BackupBar: View {
                 Button("Stop") { model.backup.cancel() }
                     .disabled(model.backup.isStopping)
             } else if let snapshot = model.backup.snapshot, isTerminal(snapshot.phase) {
-                terminalSummary(snapshot)
-                terminalActions(snapshot)
+                terminalContent(snapshot)
             } else {
                 idleSummary
                 idleActions
@@ -71,7 +70,7 @@ struct BackupBar: View {
                 ProgressView(value: progressBytes(snapshot), total: Double(snapshot.expectedBytes))
                     .accessibilityLabel("Backup progress")
             }
-            Text(snapshot.currentFilename ?? destinationCaption)
+            Text(model.backup.isStopping ? "Finishing the current operation…" : snapshot.currentFilename ?? destinationCaption)
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
@@ -79,6 +78,19 @@ struct BackupBar: View {
                 .help(snapshot.currentFilename ?? destinationCaption)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func terminalContent(_ snapshot: BackupSnapshot) -> some View {
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: 16) {
+                terminalSummary(snapshot).frame(minWidth: 220)
+                terminalActions(snapshot).fixedSize()
+            }
+            VStack(alignment: .leading, spacing: 12) {
+                terminalSummary(snapshot)
+                terminalActions(snapshot)
+            }
+        }
     }
 
     private func terminalSummary(_ snapshot: BackupSnapshot) -> some View {
@@ -98,6 +110,12 @@ struct BackupBar: View {
                     .lineLimit(2)
                     .help(message)
             }
+            if snapshot.phase != .completed, let message = model.backupRetryState.message {
+                Text(message)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -107,11 +125,26 @@ struct BackupBar: View {
             Button("Show in Finder") { Task { await model.backup.revealDestination() } }
                 .disabled(model.backup.destination.selection == nil)
             if snapshot.phase != .completed {
-                Button("Try Again") { model.retryLastBackup() }
-                    .disabled(!model.canRetryBackup)
-                    .help("Retry the items from this backup.")
+                retryAction
             }
             Button("Done") { model.backup.dismissSummary() }
+        }
+    }
+
+    @ViewBuilder private var retryAction: some View {
+        switch model.backupRetryState {
+        case .ready:
+            Button("Try Again") { model.retryLastBackup() }
+                .help("Retry these items. Saved originals are checked before reuse.")
+        case .chooseItems:
+            Button("Choose Items") {
+                model.clearSelection()
+                model.backup.dismissSummary()
+            }
+        case .showLibrary:
+            Button("Show Library") { model.navigation = .library(model.filter) }
+        case .connectDevice, .readingLibrary, .checkingHistory, .historyUnavailable, .choosingFolder:
+            EmptyView()
         }
     }
 
@@ -159,7 +192,8 @@ struct BackupBar: View {
     }
 
     private func terminalTitle(_ phase: BackupPhase) -> String {
-        switch phase {
+        if model.backup.wasInterrupted, phase == .failed { return "Backup Interrupted" }
+        return switch phase {
         case .completed: "Backup Complete"
         case .cancelled: "Backup Stopped"
         default: "Backup Incomplete"

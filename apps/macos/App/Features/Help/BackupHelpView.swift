@@ -1,12 +1,13 @@
 import SwiftUI
 
 enum BackupHelpTopic: String {
-    case gettingStarted, usbAvailability
+    case gettingStarted, usbAvailability, interruptedBackups
 
     var title: String {
         switch self {
         case .gettingStarted: "Backing Up Your iPhone"
         case .usbAvailability: "USB Availability"
+        case .interruptedBackups: "Interrupted Backups"
         }
     }
 }
@@ -22,6 +23,7 @@ struct BackupHelpView: View {
                 switch topic {
                 case .gettingStarted: gettingStarted
                 case .usbAvailability: usbAvailability
+                case .interruptedBackups: interruptedBackups
                 }
             }
             .formStyle(.grouped)
@@ -59,7 +61,45 @@ struct BackupHelpView: View {
                     .foregroundStyle(.secondary)
             }
             Section {
+                Button("If a Backup Is Interrupted…") { selectTopic(.interruptedBackups) }
                 Button("About USB Availability…") { selectTopic(.usbAvailability) }
+            }
+        }
+    }
+
+    private var interruptedBackups: some View {
+        Group {
+            Section("If Your iPhone Disconnects") {
+                Text("Reconnect and unlock your iPhone, then wait for the library and backup checks to finish.")
+                Text("Choose the items to back up again. Saved originals are checked and reused when they still match.")
+                    .foregroundStyle(.secondary)
+            }
+            Section("What Was Saved") {
+                Text("""
+                Originals already saved stay in your backup folder. An item is marked backed up \
+                only after all its available originals have been verified.
+                """)
+                Text("""
+                An unfinished original may need to be copied again from the beginning. \
+                Backup History shows how many items and originals were verified.
+                """)
+                    .foregroundStyle(.secondary)
+            }
+            Section("If the Backup Drive Is Unavailable") {
+                Text("Reconnect the drive, then open Backup in Settings and check the folder. Free up space if the drive is full.")
+                Text("CloakRoll won’t switch to a different folder automatically.")
+                    .foregroundStyle(.secondary)
+            }
+            Section("Stop or Quit During a Backup") {
+                Text("Choose Stop or press Command-period. CloakRoll waits for the current file operation to settle before stopping.")
+                Text("""
+                Quitting also waits for the backup to stop. Keep the backup drive connected \
+                until CloakRoll finishes stopping or quits.
+                """)
+                    .foregroundStyle(.secondary)
+            }
+            Section {
+                Button("How to Back Up Your iPhone…") { selectTopic(.gettingStarted) }
             }
         }
     }

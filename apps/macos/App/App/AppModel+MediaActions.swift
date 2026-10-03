@@ -33,9 +33,8 @@ extension AppModel {
     }
 
     var canRetryBackup: Bool {
-        guard isViewingLibrary, backupSourceAvailable, let attempt = backup.lastAttempt,
-              attempt.sessionID == catalogSessionID else { return false }
-        return attempt.assets.allSatisfy { currentAsset(id: $0.id) == $0 }
+        guard isViewingLibrary, backupSourceAvailable, let attempt = backup.lastAttempt else { return false }
+        return attempt.matches(sessionID: catalogSessionID, currentAsset: currentAsset(id:))
     }
 
     func retryLastBackup() {

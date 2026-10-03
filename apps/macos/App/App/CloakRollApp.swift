@@ -52,14 +52,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var isWaitingToQuit = false
 
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        requestTermination { sender.reply(toApplicationShouldTerminate: $0) }
+    }
+
+    /// Keeps the AppKit reply at the edge so lifecycle tests never terminate their host.
+    func requestTermination(reply: @escaping @MainActor (Bool) -> Void) -> NSApplication.TerminateReply {
+        guard !isWaitingToQuit else { return .terminateLater }
         guard let backup, backup.isBusy else { return .terminateNow }
-        if !isWaitingToQuit {
-            isWaitingToQuit = true
-            backup.cancel()
-            Task {
-                await backup.waitUntilStopped()
-                sender.reply(toApplicationShouldTerminate: true)
-            }
+        isWaitingToQuit = true
+        backup.cancel()
+        Task {
+            await backup.waitUntilStopped()
+            isWaitingToQuit = false
+            reply(true)
         }
         return .terminateLater
     }

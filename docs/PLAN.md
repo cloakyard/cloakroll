@@ -419,3 +419,21 @@ and signature checks pass with no compiler warnings or new entitlements/dependen
 remaining acceptance checks; no full phase is promoted based on software tests or sample media.
 Next: physical transfer interruption/retry and instrumented reconnect/cache checks when the
 iPhone is exposed, external-volume failure checks, then remaining accessibility/icon/release work.
+
+### 3 October — interruption recovery refinement verified; physical gates remain open
+
+Added coordinator/engine and persistent app regressions for the user's unplug-during-backup
+scenario: physical callback ownership, partial Live Photo completion, late success/progress,
+fresh-session retry, and deferred Quit. Fixed concurrent real bookmark refresh and exact lease
+handoff ownership. Failed preparation retains its summary/selection; source-caused cancellation
+is distinct from user Stop, with current-session retry or reconnect/reselection guidance.
+Progress and Stop remain reachable from Backup History. Native interruption help is implemented.
+
+All 288 core and 86 hosted app tests pass. The normal Debug build, strict lint, whitespace and
+signature checks pass. Light/dark help, scrolling, keyboard dismissal, offline history and saved
+folder checks were inspected; see `verification/PHASE-7.md` and `verification/PHASE-8.md`.
+The phone was exposed at the start, but the final normal app receives no camera discovery callback
+despite USB inventory seeing the phone. No physical transfer was initiated in this stage. All
+sixteen existing destination files remain unchanged and no new session/journal entry was created.
+Physical unplug/Stop/Quit, external-drive failure, reconnect/cache and remaining UI/runtime gates
+remain explicitly open; no full phase was promoted based on controlled callbacks.

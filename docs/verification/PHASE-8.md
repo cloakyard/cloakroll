@@ -181,3 +181,41 @@ and [Image Capture documentation](https://support.apple.com/guide/image-capture/
 
 Local logs: `/tmp/cloakroll-help-readiness-app-tests-final.log`,
 `/tmp/cloakroll-help-readiness-normal-build-final.log`. The app is left running its normal build.
+
+## 3 October — interruption and retry refinement
+
+Backup preparation errors now retain a terminal summary and the exact intended selection.
+Explicit Stop and source-caused cancellation remain distinct: the latter retains verified
+counts, presents Backup Interrupted, and finalizes persistent history as Incomplete. If a
+source failure reaches the controller before a device-state event, its original error stays
+Incomplete; the current connection state still supplies reconnect guidance. A fully completed
+backup is not downgraded by a later disconnect.
+
+Try Again is offered only when the session and complete selected asset metadata still match.
+After reconnecting or a catalog change, Choose Items returns to the current library without
+matching stale runtime IDs or filenames. Temporary connection/catalog/history states explain
+the next step instead of displaying an unusable retry button. Active progress and terminal
+summaries stay visible in Backup History, which offers Show Library when further action is needed.
+The bar uses native buttons, system progress, an adaptive horizontal/vertical layout, and the
+existing system bottom-bar treatment with macOS 14 fallback.
+
+Interrupted Backups is available through the native Help menu and getting-started guidance.
+It explains saved versus unfinished originals, reconnect/reselection, unavailable/full drives,
+and waiting for Stop or Quit to settle. No companion app, source mutation, network service,
+schema migration or new entitlement was introduced.
+
+Validation: all 86 hosted app tests, 288 core tests, strict lint, a warning-free normal Debug
+build, whitespace and signature checks pass. Independent review found and corrected temporary
+lease retention by the acquisition queue; no additional transfer or completion-counting flaw
+was found. Actual app checks covered the new Help menu entry, light/dark native sheet layout,
+scrolling to the final section, return navigation to getting-started guidance, and Escape/Return
+dismissal. The modified detail container still shows the seven real offline history sessions
+with native source-list/navigation styling. Saved-folder checks pass automatically on entering
+Backup Settings and on explicit Check Folder. System appearance, General Settings and the live
+All Photos view were restored; Medium remains selected.
+
+The final app has no exposed iPhone library, so active/terminal bar interaction and pixel-level
+failure-state checks with physical transfers remain pending. Controller/persistence behavior is
+covered by generated callback tests, not substituted for hardware acceptance. Full VoiceOver,
+system contrast variants, macOS 14 runtime and final icon remain open. No personal screenshots
+or media were added to the repository. Logs are listed in the Phase 7 refinement appendix.

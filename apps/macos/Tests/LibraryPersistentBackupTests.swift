@@ -115,11 +115,12 @@ struct LibraryPersistentBackupTests {
         #expect(!controller.isCheckingHistory)
         #expect(scope.counts.active == 1)
         let changed = PersistentLibraryCatalog(sessionID: old.source.sessionID, contextFolder: "101APPLE")
-        try await fixture.accept(changed, controller: controller)
-        #expect(scope.counts.active == 1)
+        controller.acceptCatalog(source: changed.source, assets: [changed.asset], device: changed.device)
+        #expect(controller.isCheckingHistory && scope.counts.active == 1)
         #expect(controller.projection(assets: [changed.asset], sessionID: changed.source.sessionID).statuses.isEmpty)
+        // The replacement lease waits for the cancelled physical acquisition to settle.
         gate.release()
-        try await waitForPersistentState { scope.counts.active == 0 }
+        try await waitForPersistentState { !controller.isCheckingHistory && scope.counts.active == 0 }
         #expect(controller.projection(assets: [changed.asset], sessionID: changed.source.sessionID).statuses.isEmpty)
         #expect(controller.historyErrorMessage == nil)
     }
@@ -157,7 +158,9 @@ struct LibraryPersistentBackupTests {
         }
         await fixture.controller.waitUntilStopped()
         #expect(try await fixture.persistence.store().recentSessions().isEmpty)
-        #expect(fixture.controller.errorMessage != nil)
+        #expect(fixture.controller.snapshot?.phase == .failed)
+        #expect(fixture.controller.snapshot?.message != nil)
+        #expect(fixture.controller.errorMessage == nil)
         #expect(fixture.controller.projection(assets: [changed], sessionID: catalog.source.sessionID).statuses.isEmpty)
         #expect(fixture.destinationFixture.scope.counts.active == 0)
     }

@@ -138,10 +138,12 @@ struct LibraryBackupRecoveryTests {
         try await waitForPersistentState { gate.entered }
         #expect(scope.counts.active == 1)
         let changed = PersistentLibraryCatalog(prefix: "new", contextFolder: "101APPLE")
-        try await fixture.library.accept(changed, controller: controller)
+        controller.acceptCatalog(source: changed.source, assets: [changed.asset], device: changed.device)
+        #expect(controller.isCheckingHistory && scope.counts.active == 1)
         #expect(controller.projection(assets: [changed.asset], sessionID: changed.source.sessionID).statuses.isEmpty)
+        // Keep the old scope until its physical call settles, then let the new check proceed.
         gate.release()
-        try await waitForPersistentState { scope.counts.active == 0 }
+        try await waitForPersistentState { !controller.isCheckingHistory && scope.counts.active == 0 }
         #expect(controller.projection(assets: [changed.asset], sessionID: changed.source.sessionID).statuses.isEmpty)
         #expect(controller.projection(assets: [old.asset], sessionID: old.source.sessionID).statuses.isEmpty)
         #expect(controller.historyErrorMessage == nil)

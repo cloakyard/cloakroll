@@ -10,18 +10,20 @@ struct RootView: View {
             SidebarView()
                 .navigationSplitViewColumnWidth(min: 200, ideal: 224, max: 300)
         } detail: {
-            switch model.navigation {
-            case .library:
-                LibraryView()
-                    .navigationTitle(model.filter.title)
-                    .searchable(text: $model.search, isPresented: $model.searchPresented,
-                                placement: .toolbar, prompt: "Search photos and videos")
-                    .toolbar { LibraryToolbar() }
-                    .modifier(BackupBarPlacement(isVisible: !model.assets.isEmpty || model.backup.snapshot != nil))
-            case .backupHistory:
-                BackupHistoryView()
-                    .navigationTitle("Backup History")
+            Group {
+                switch model.navigation {
+                case .library:
+                    LibraryView()
+                        .navigationTitle(model.filter.title)
+                        .searchable(text: $model.search, isPresented: $model.searchPresented,
+                                    placement: .toolbar, prompt: "Search photos and videos")
+                        .toolbar { LibraryToolbar() }
+                case .backupHistory:
+                    BackupHistoryView()
+                        .navigationTitle("Backup History")
+                }
             }
+            .modifier(BackupBarPlacement(isVisible: model.showsBackupBar))
         }
         .sheet(item: $model.presentation) { presentation in
             switch presentation {

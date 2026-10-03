@@ -172,3 +172,39 @@ warnings/errors or whitespace issues were reported. Logs:
 `/tmp/cloakroll-disconnect-core-focused.log` and `/tmp/cloakroll-disconnect-core.log`.
 These are generated source callbacks, not physical cable-removal acceptance. App presentation,
 folder-acquisition and quit-lifecycle validation for this stage is recorded separately below.
+
+Real bookmark acquisition is now serialized only through access preparation and bookmark refresh;
+each caller then owns an independent lease. A selection generation rejects explicit reselection
+even when the same folder was chosen. Advisory checks still cannot mutate the saved bookmark.
+Queued cancellation does no folder access, an active cancelled acquisition retains its scope until
+the worker settles, and the request's own bookkeeping task must release its result ownership
+before the lease is returned. Caller deinitialization and explicit release remain balanced.
+
+Quit coordination has an injected AppKit reply boundary. Generated persistent backup tests verify
+that repeated Quit requests share one pending reply, a partly completed Live Photo stays incomplete,
+the source's late success or failure settles before scope release, the cancelled session is finalized,
+and its unresolved companion intent remains available before termination is permitted. The tests
+never terminate the host app or call physical USB APIs.
+
+Two older history tests initially timed out because they awaited a new acquisition before releasing
+the intentionally blocked old acquisition. Their ordering now exercises the serialized contract:
+initiate a replacement, assert the old scope and absent new evidence, release the old operation,
+then await the new check and verify stale evidence was not applied. The original invariants remain.
+
+Final validation: **86 hosted app tests pass**, including persistent partial-item retry,
+first-stop-cause ordering, early-folder failure/retry, stale-metadata rejection, concurrent leases,
+queued/active cancellation, explicit same/different-folder reselection, immediate lease deinit,
+and deferred/repeated Quit. All **288 core tests** remain passing. The warning-free normal build,
+strict lint, whitespace and actual signature/entitlement checks pass. No dependency, schema or
+entitlement change was required for the app refinements.
+
+At the final normal-app check, USB inventory still sees a phone, but ImageCaptureCore has only
+reported starting discovery/disconnected; it has not supplied a camera callback. A discovery
+retry did not expose the library. The requested human-coordinated unplug test did not run.
+Fresh independent hashes confirm all sixteen baseline files / 3,286,761,691 bytes remain
+unchanged, seven sessions remain, and unresolved journal count is still zero. No physical Stop,
+Quit, unplug, external-drive or reconnect acceptance is claimed from this stage.
+
+Local logs: `/tmp/cloakroll-disconnect-app-tests.log` (initial ordering failures),
+`/tmp/cloakroll-disconnect-app-tests-final.log` (86 passing),
+`/tmp/cloakroll-disconnect-normal-build.log` (normal build success).
