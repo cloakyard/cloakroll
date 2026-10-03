@@ -9,7 +9,7 @@ extension BackupEngine {
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.sortedKeys]
         let value = BackupSourceSignature(asset: asset, resource: resource)
-        return try SHA256.hash(data: encoder.encode(value)).map { String(format: "%02x", $0) }.joined()
+        return try HexEncoding.lowercase(SHA256.hash(data: encoder.encode(value)))
     }
 
     /// Rekeys a conservatively matched stored candidate to the current catalog. The caller must

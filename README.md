@@ -15,6 +15,8 @@ Follow [the implementation plan](docs/PLAN.md) for actual progress and verificat
 The [native UI refinement evidence](docs/verification/PHASE-8.md) covers history, menu parity,
 remembered preferences and compact light/dark layout checks. Small, Medium and Large thumbnail
 presets remain the only size controls.
+The [scale performance evidence](docs/verification/PHASE-9.md) records generated 10k/50k/100k
+catalog measurements and improvements to identity preparation and history matching.
 
 The intended workflow is a USB-connected iPhone → available originals → user-selected Mac or
 external-drive folder → verified incremental backup. No account, analytics or cloud processing.

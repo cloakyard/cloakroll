@@ -177,11 +177,14 @@ struct BackupJournalTests {
             try await store.recordVerified(sessionID: id, record: record)
             try await store.finishSession(id: id, result: BackupSnapshot(phase: .failed, transferredBytes: 3))
         }
-        // v2 is strictly additive. Removing only that migration recreates the actual unchanged
-        // v1 schema and populated rows, rather than testing a hand-written lookalike schema.
+        // Later migrations are strictly additive. Removing their table/index recreates the
+        // actual unchanged v1 schema and populated rows, rather than a hand-written lookalike.
         try await directory.database().write { db in
             try db.execute(sql: "DROP TABLE backup_journal")
-            try db.execute(sql: "DELETE FROM grdb_migrations WHERE identifier = 'v2_publication_journal'")
+            try db.execute(sql: "DROP INDEX session_resource_asset_lookup")
+            try db.execute(sql: """
+                DELETE FROM grdb_migrations WHERE identifier IN ('v2_publication_journal', 'v3_session_asset_lookup')
+                """)
         }
         let migrated = try await BackupStore(databaseURL: directory.databaseURL)
         let session = try #require(try await migrated.recentSessions().first)
@@ -191,6 +194,6 @@ struct BackupJournalTests {
         #expect(try await migrated.pendingJournal(destinationID: fixture.destinationID).isEmpty)
         #expect(try await directory.journalCounts().pending == 0)
         let migrations = try await directory.database().read { try String.fetchAll($0, sql: "SELECT identifier FROM grdb_migrations") }
-        #expect(migrations == ["v1_original_backup_history", "v2_publication_journal"])
+        #expect(migrations == ["v1_original_backup_history", "v2_publication_journal", "v3_session_asset_lookup"])
     }
 }

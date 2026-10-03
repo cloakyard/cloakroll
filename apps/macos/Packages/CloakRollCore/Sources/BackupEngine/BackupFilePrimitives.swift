@@ -1,6 +1,7 @@
 import CryptoKit
 import Darwin
 import Foundation
+import MediaModels
 
 enum BackupFileError: Error, Equatable, Sendable {
     case unsafePath
@@ -153,7 +154,7 @@ struct BackupFileEvidence: Sendable {
               final.st_ctimespec.tv_sec == initial.st_ctimespec.tv_sec,
               final.st_ctimespec.tv_nsec == initial.st_ctimespec.tv_nsec else { throw BackupFileError.changedDuringVerification }
         return BackupFileEvidence(
-            bytes: bytes, sha256: hasher.finalize().map { String(format: "%02x", $0) }.joined(),
+            bytes: bytes, sha256: HexEncoding.lowercase(hasher.finalize()),
             device: initial.st_dev, inode: initial.st_ino,
             birthSeconds: initial.st_birthtimespec.tv_sec, birthNanoseconds: initial.st_birthtimespec.tv_nsec,
             modifiedSeconds: final.st_mtimespec.tv_sec, modifiedNanoseconds: final.st_mtimespec.tv_nsec,

@@ -15,6 +15,10 @@ enum BackupStoreSchema {
         // Append migrations after this baseline; never erase data when a schema changes.
         migrator.registerMigration("v1_original_backup_history", migrate: createBaseline)
         migrator.registerMigration("v2_publication_journal", migrate: createJournal)
+        migrator.registerMigration("v3_session_asset_lookup") { db in
+            // Completion checks concern one logical asset, not every resource in a large run.
+            try db.execute(sql: "CREATE INDEX session_resource_asset_lookup ON session_resource(session_id, runtime_asset_id)")
+        }
         try migrator.migrate(queue)
         try queue.write { db in
             try db.execute(

@@ -58,6 +58,6 @@ struct BackupRegistration: Sendable {
     }
 
     static func valid(canonical: String, digest: String) -> Bool {
-        !canonical.isEmpty && SHA256.hash(data: Data(canonical.utf8)).map { String(format: "%02x", $0) }.joined() == digest
+        !canonical.isEmpty && HexEncoding.lowercase(SHA256.hash(data: Data(canonical.utf8))) == digest
     }
 }

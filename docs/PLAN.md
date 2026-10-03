@@ -133,7 +133,7 @@ Do not claim physical power-loss durability from a process-restart test.
 | 6 Incremental | GRDB schema/migrations, device/destination-scoped matching, session history, new/backed-up/recent filters. Reconnect old library + newly captured items checked. | In progress |
 | 7 Reliability | Size and digest evidence, disconnect/full disk/retry/cancel/relaunch tests and real interruptions. No incomplete success or unrelated file overwrite. | In progress |
 | 8 Polish | Onboarding, info/search/sort/context menus/shortcuts, cloud availability copy, external volume UX, accessibility and final icon. Compare all screens to CloakDrop. | In progress |
-| 9 Performance | Generated 10k/50k/100k catalogs; timed catalog/matching/startup, bounded thumbnails, measured main-thread/scrolling and database behavior. | Planned |
+| 9 Performance | Generated 10k/50k/100k catalogs; timed catalog/matching/startup, bounded thumbnails, measured main-thread/scrolling and database behavior. | In progress |
 | 10 Release | Privacy/entitlement/sandbox review, Release build/lint/tests, docs/screenshots, signing/notarization with verified identity. | Planned |
 
 ## Feature backlog — restore to a new iPhone
@@ -361,3 +361,27 @@ were exercised. Compact light and standard expanded light/dark layouts passed af
 history-note wrapping and separator alignment. Full VoiceOver, system accessibility variants,
 macOS 14 runtime checks, final icon and remaining product/hardware polish are pending. Phase 8 is
 not yet accepted or complete.
+
+
+### Phase 9 — scale measurements and targeted improvements started
+
+The native history and preferences stage was committed as `cee5bdc` before performance edits.
+Generated Release probes now cover 10k, 50k and 100k catalogs. Measurements identified expensive
+hexadecimal formatting, a missing logical-asset completion index and whole-history candidate
+materialization. Optimize those paths while preserving exact identities and every relevant
+historical ambiguity check. See `verification/PHASE-9.md` for method, results and remaining gates.
+
+
+### Phase 9 — measured metadata/history stage verified; app/hardware stress pending
+
+Exact digest encoding, indexed logical completion, bounded candidate reads and the empty-history
+fast path are implemented. All 284 core and 62 hosted app tests, strict lint, normal build and
+signature checks pass. Independent review preserved Swift Unicode identity comparison and every
+relevant historical conflict. A reproducible generated Release probe is checked in under
+`apps/macos/scripts/PerformanceProbe`.
+
+At 100k items, measured identity preparation improved from 9.086 to 3.769 seconds, full candidate
+lookup from 3.752 to 2.256 seconds, and whole-probe peak RSS from 1,264 to 760 MiB. The separate
+empty-destination check is now 0.246 ms. See `verification/PHASE-9.md` for all three sizes, exact
+methods and limits. These are headless generated metadata results; physical media throughput,
+instrumented main-thread/scroll latency and sustained real-media cache memory remain pending.

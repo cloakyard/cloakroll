@@ -110,7 +110,7 @@ evidence, not media bytes. Never commit a real database, its journal files or pe
 opens and migrates off the main actor, then marks previously running sessions interrupted while
 retaining verified records. Keep one application-owned instance per database URL and coalesce
 concurrent opens; reopening during another instance's active run would interrupt its history.
-Append migrations after `v2_publication_journal`; do not edit an applied migration, reset a
+Append migrations after `v3_session_asset_lookup`; do not edit an applied migration, reset a
 schema on mismatch or replace an unreadable database with an empty one.
 
 The complete original catalog is converted to `BackupCatalogIdentity` off the main actor.
@@ -119,6 +119,13 @@ canonical matches to current runtime addresses, and calls `BackupVerification.va
 while retaining the destination lease. Candidate metadata never directly publishes a backed-up
 badge. Every component must pass fresh local path, destination, size and SHA-256 checks first.
 Keep these identities independent of thumbnail cache keys, PTP handles and filename-only matching.
+
+Candidate reads batch at most 64 requested identities, seek indexed digests, then compare full
+canonical strings using Swift equality. Keep every eligible historical record in conflict
+detection and compute current duplicate counts before batching. Never replace this with the
+newest row alone. The indexed empty-destination check must remain after publication recovery.
+Run the generated Release scale probe from `apps/macos/scripts/PerformanceProbe` for repeatable
+10k/50k/100k metadata measurements; see its README and `verification/PHASE-9.md` for limits.
 
 Before an original run, call `beginSession` with its selected assets and complete-catalog identity.
 Wire `onStaged` to `recordStaging` and `onPublication` to `recordPublication` before source writes

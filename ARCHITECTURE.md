@@ -118,6 +118,13 @@ stored local size and digest are checked again before projecting backed-up statu
 destination changes cancel stale checks, and changed canonical evidence invalidates in-memory
 retry records too. The destination lease remains held until its check or transfer settles.
 
+Candidate reading seeks indexed asset/resource digests in batches of 64, then compares full
+canonical identities with the existing Swift text semantics. A cursor accumulates every eligible
+historical conflict while retaining one newest record per requested resource. Duplicate current
+identities are rejected across the whole catalog before batching. Matching remains inside one
+database read snapshot. A composite session/asset index bounds each logical completion lookup.
+Shared hexadecimal encoding preserves the exact existing SHA-256 strings and persisted keys.
+
 Phase 7 journals owned staging before source writes and exact file evidence/final-path intent
 before each exclusive rename. File identity is checked again across the database await.
 Verified-record insertion, resource counters and intent resolution share a transaction. On

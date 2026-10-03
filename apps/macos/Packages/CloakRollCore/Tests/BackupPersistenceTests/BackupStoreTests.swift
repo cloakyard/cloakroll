@@ -45,7 +45,7 @@ struct BackupStoreTests {
         let migrations = try await directory.database().read { db in
             try String.fetchAll(db, sql: "SELECT identifier FROM grdb_migrations")
         }
-        #expect(migrations == ["v1_original_backup_history", "v2_publication_journal"])
+        #expect(migrations == ["v1_original_backup_history", "v2_publication_journal", "v3_session_asset_lookup"])
     }
 
     @Test func duplicateResourceCallbackIsIdempotentAndPartialAssetCannotComplete() async throws {

@@ -19,7 +19,7 @@ public enum ThumbnailReuseIndex {
         for (signature, candidate) in candidates {
             guard candidate.count == 1, resourceCounts[candidate.resourceID] == 1,
                   let data = try? encoder.encode(signature) else { continue }
-            result[candidate.resourceID] = SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
+            result[candidate.resourceID] = HexEncoding.lowercase(SHA256.hash(data: data))
         }
         return result
     }
