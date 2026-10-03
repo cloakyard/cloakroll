@@ -50,23 +50,14 @@ struct MediaCell: View {
         .accessibilityLabel("\(asset.filename), \(asset.kind.title), \(model.status(for: asset).title)")
         .accessibilityValue(selected ? "Selected" : "Not selected")
         .accessibilityAddTraits(selected ? [.isSelected] : [])
+        .accessibilityActions {
+            MediaItemActions(asset: asset, model: model, showsDivider: false)
+        }
         .help("\(asset.filename) · \(Format.bytes(asset.byteCount))")
         .simultaneousGesture(TapGesture(count: 2).onEnded { model.infoAsset = asset })
         .contextMenu {
-            if model.canBackUp(asset: asset) {
-                Button(contextBackupTitle) { model.backUpFromContext(asset: asset) }
-                Divider()
-            }
-            Button("Show Info") { model.infoAsset = asset }
-            Button("Copy Filename") {
-                NSPasteboard.general.clearContents()
-                NSPasteboard.general.setString(asset.filename, forType: .string)
-            }
+            MediaItemActions(asset: asset, model: model, showsDivider: true)
         }
-    }
-
-    private var contextBackupTitle: String {
-        selected && model.selection.selectedIDs.count > 1 ? "Back Up Selected Items" : "Back Up Item"
     }
 
     @ViewBuilder private var mediaBadge: some View {
@@ -91,6 +82,30 @@ struct MediaCell: View {
                 .symbolRenderingMode(.palette)
                 .foregroundStyle(.white, .black.opacity(0.65))
         }
+    }
+}
+
+/// Shared action content keeps context-menu and assistive actions consistent.
+private struct MediaItemActions: View {
+    let asset: MediaAsset
+    let model: AppModel
+    let showsDivider: Bool
+
+    var body: some View {
+        if model.canBackUp(asset: asset) {
+            Button(backupTitle) { model.backUpFromContext(asset: asset) }
+            if showsDivider { Divider() }
+        }
+        Button("Show Info") { model.infoAsset = asset }
+        Button("Copy Filename") {
+            NSPasteboard.general.clearContents()
+            NSPasteboard.general.setString(asset.filename, forType: .string)
+        }
+    }
+
+    private var backupTitle: String {
+        model.selection.selectedIDs.contains(asset.id) && model.selection.selectedIDs.count > 1
+            ? "Back Up Selected Items" : "Back Up Item"
     }
 }
 

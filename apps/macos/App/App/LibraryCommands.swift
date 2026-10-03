@@ -3,6 +3,7 @@ import SwiftUI
 struct LibraryCommands: Commands {
     let model: AppModel
     @Environment(\.openSettings) private var openSettings
+    @Environment(\.openWindow) private var openWindow
 
     var body: some Commands {
         CommandGroup(replacing: .appInfo) {
@@ -32,9 +33,18 @@ struct LibraryCommands: Commands {
         CommandMenu("Library") {
             LibraryActionItems(model: model)
         }
+        CommandGroup(replacing: .help) {
+            Button("CloakRoll Help") { showHelp(.gettingStarted) }
+            Button("About USB Availability…") { showHelp(.usbAvailability) }
+        }
         #if DEBUG
         DevelopmentCommands(model: model)
         #endif
+    }
+
+    private func showHelp(_ topic: BackupHelpTopic) {
+        openWindow(id: "main")
+        model.presentation = .help(topic)
     }
 }
 
@@ -59,6 +69,7 @@ private struct LibraryActionItems: View {
         }
         .disabled(!model.isViewingLibrary)
         Button("Stop Backup") { model.backup.cancel() }
+            .keyboardShortcut(".", modifiers: .command)
             .disabled(!model.backup.isBusy || model.backup.isStopping)
         Divider()
         Button("Refresh Backup History") {

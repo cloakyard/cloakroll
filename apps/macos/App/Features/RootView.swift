@@ -23,9 +23,15 @@ struct RootView: View {
                     .navigationTitle("Backup History")
             }
         }
-        .sheet(item: $model.infoAsset) { asset in
-            MediaInfoView(asset: asset)
-                .environment(model)
+        .sheet(item: $model.presentation) { presentation in
+            switch presentation {
+            case .mediaInfo(let asset):
+                MediaInfoView(asset: asset)
+                    .environment(model)
+            case .help(let topic):
+                BackupHelpView(topic: topic) { model.presentation = .help($0) }
+                    .id(topic)
+            }
         }
         .alert("Backup Unavailable", isPresented: Binding(
             get: { model.backup.errorMessage != nil },

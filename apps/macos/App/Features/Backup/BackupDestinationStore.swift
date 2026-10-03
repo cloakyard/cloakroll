@@ -10,6 +10,18 @@ struct BackupDestination: Codable, Sendable, Equatable, Identifiable {
     let bookmarkData: Data
 }
 
+/// A recent access check for presentation only. Every operation still acquires its own lease.
+enum BackupDestinationReadiness: Equatable {
+    case unchecked, checking, available
+    case unavailable(String)
+
+    var isChecking: Bool { self == .checking }
+    var message: String? {
+        if case .unavailable(let message) = self { return message }
+        return nil
+    }
+}
+
 enum BackupDestinationError: Error, LocalizedError, Equatable {
     case noSelection, accessDenied, unavailable, notDirectory, notWritable
     case bookmarkCreationFailed, persistenceFailed, selectionChanged
@@ -36,9 +48,11 @@ final class BackupDestinationStore {
     private(set) var selection: BackupDestination?
     private(set) var isChoosing = false
     private(set) var errorMessage: String?
+    private(set) var readiness = BackupDestinationReadiness.unchecked
     @ObservationIgnored private let operations: BackupDestinationOperations
     @ObservationIgnored private let selectFolder: @MainActor () async -> URL?
     @ObservationIgnored private let saveRecord: @MainActor (Data) throws -> Void
+    @ObservationIgnored private var readinessGeneration = 0
 
     init(
         defaults: UserDefaults = .standard,
@@ -78,6 +92,9 @@ final class BackupDestinationStore {
             guard selection?.id == previous?.id else { throw BackupDestinationError.selectionChanged }
             try persist(record)
             selection = record
+            readinessGeneration += 1
+            readiness = .unchecked
+            await checkFolder(allowWhileChoosing: true)
             return true
         } catch is CancellationError {
             return false
@@ -89,24 +106,72 @@ final class BackupDestinationStore {
 
     func acquireLease() async throws -> DestinationLease {
         guard let original = selection else { throw BackupDestinationError.noSelection }
-        let operations = operations
+        readinessGeneration += 1
+        let generation = readinessGeneration
         do {
-            let acquired = try await Self.work { try operations.acquire(original) }
-            var handedOff = false
-            defer { if !handedOff { acquired.lease.release() } }
-            try Task.checkCancellation()
-            guard selection == original else { throw BackupDestinationError.selectionChanged }
-            if acquired.record != original {
-                try persist(acquired.record)
-                selection = acquired.record
+            let lease = try await acquire(original)
+            if isCurrentCheck(generation, destinationID: original.id) {
+                readiness = .available
+                errorMessage = nil
             }
-            errorMessage = nil
-            handedOff = true
-            return acquired.lease
+            return lease
         } catch {
-            if !(error is CancellationError) { errorMessage = Self.message(for: error) }
+            if isCurrentCheck(generation, destinationID: original.id) {
+                readiness = error is CancellationError ? .unchecked : .unavailable(Self.message(for: error))
+                if !(error is CancellationError) { errorMessage = Self.message(for: error) }
+            }
             throw error
         }
+    }
+
+    /// An explicit check has inline status, and never opens a picker, mounts a drive or writes
+    /// a test file. A cached Available result is never used to authorize a later operation.
+    func checkFolder() async {
+        await checkFolder(allowWhileChoosing: false)
+    }
+
+    private func checkFolder(allowWhileChoosing: Bool) async {
+        guard let original = selection, !isChoosing || allowWhileChoosing else { return }
+        readinessGeneration += 1
+        let generation = readinessGeneration
+        readiness = .checking
+        let operations = operations
+        do {
+            // Advisory checks never persist refreshed bookmarks. A concurrent real lease
+            // owns that update, and must not be invalidated by a presentation-only check.
+            try await Self.work {
+                let acquired = try operations.acquire(original)
+                acquired.lease.release()
+            }
+            try Task.checkCancellation()
+            guard isCurrentCheck(generation, destinationID: original.id) else { return }
+            guard selection == original else { readiness = .unchecked; return }
+            readiness = .available
+            errorMessage = nil
+        } catch {
+            guard isCurrentCheck(generation, destinationID: original.id) else { return }
+            guard selection == original else { readiness = .unchecked; return }
+            readiness = error is CancellationError ? .unchecked : .unavailable(Self.message(for: error))
+        }
+    }
+
+    private func isCurrentCheck(_ generation: Int, destinationID: UUID) -> Bool {
+        readinessGeneration == generation && selection?.id == destinationID
+    }
+
+    private func acquire(_ original: BackupDestination) async throws -> DestinationLease {
+        let operations = operations
+        let acquired = try await Self.work { try operations.acquire(original) }
+        var handedOff = false
+        defer { if !handedOff { acquired.lease.release() } }
+        try Task.checkCancellation()
+        guard selection == original else { throw BackupDestinationError.selectionChanged }
+        if acquired.record != original {
+            try persist(acquired.record)
+            selection = acquired.record
+        }
+        handedOff = true
+        return acquired.lease
     }
 
     private func persist(_ record: BackupDestination) throws {

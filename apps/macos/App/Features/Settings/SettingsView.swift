@@ -52,9 +52,27 @@ struct SettingsView: View {
                         .textSelection(.enabled)
                         .lineLimit(2)
                         .truncationMode(.middle)
+                    LabeledContent("Status") {
+                        DestinationReadinessLabel(readiness: model.backup.destination.readiness)
+                    }
+                    if let message = model.backup.destination.readiness.message {
+                        Text(message)
+                            .font(.callout)
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
                 }
-                Button(model.backup.destination.selection == nil ? "Choose Folder…" : "Change Folder…") {
-                    Task { await model.backup.chooseDestination() }
+                HStack {
+                    Button(model.backup.destination.selection == nil ? "Choose Folder…" : "Change Folder…") {
+                        Task { await model.backup.chooseDestination() }
+                    }
+                    Spacer()
+                    if model.backup.destination.selection != nil {
+                        Button(model.backup.destination.readiness.message == nil ? "Check Folder" : "Try Again") {
+                            Task { await model.backup.checkDestination() }
+                        }
+                        .disabled(model.backup.destination.readiness.isChecking)
+                    }
                 }
                 .disabled(model.isSample || model.backup.isBusy || model.backup.destination.isChoosing)
             }
@@ -69,6 +87,10 @@ struct SettingsView: View {
             }
         }
         .formStyle(.grouped)
+        .task {
+            guard !model.isSample, !model.backup.isBusy else { return }
+            await model.backup.checkDestination()
+        }
     }
 
     private var about: some View {

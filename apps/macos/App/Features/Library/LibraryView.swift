@@ -154,6 +154,11 @@ struct DeviceEmptyView: View {
             if !model.isSample && (model.deviceState == .restricted || model.deviceState == .unavailable) {
                 Button("Try Again") { model.retryDeviceConnection() }
             }
+            if !model.isSample {
+                Button(model.deviceState == .ready ? "About USB Availability…" : "Connection Help…") {
+                    model.presentation = .help(model.deviceState == .ready ? .usbAvailability : .gettingStarted)
+                }
+            }
         }
     }
 
@@ -174,9 +179,14 @@ struct DeviceEmptyView: View {
         case .restricted: "Unlock your iPhone and, if asked, tap Trust to allow this Mac to access its photos and videos."
         case .opening: "Keep your iPhone connected and unlocked."
         case .unavailable: "Connect and unlock your iPhone to continue."
-        case .ready: model.isSample || model.mediaScanState == .complete
-            ? "There are no photos or videos available from this device."
-            : "Connected over USB. Your originals stay on your iPhone."
+        case .ready:
+            if model.isSample {
+                "There are no items in this sample library."
+            } else if model.mediaScanState == .complete {
+                "No photos or videos are currently available over USB."
+            } else {
+                "Connected over USB. Your originals stay on your iPhone."
+            }
         }
     }
 }

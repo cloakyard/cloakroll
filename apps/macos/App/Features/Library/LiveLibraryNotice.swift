@@ -31,10 +31,11 @@ struct LiveLibraryNotice: View {
                 }
             }
             if model.iCloudPhotosEnabled {
-                Label {
-                    Text("iCloud Photos is on. Some originals may not be available over USB.")
-                } icon: {
-                    Image(systemName: "icloud")
+                HStack(alignment: .firstTextBaseline, spacing: 12) {
+                    Label("iCloud Photos is on. Some originals may not be available over USB.", systemImage: "icloud")
+                        .fixedSize(horizontal: false, vertical: true)
+                    Spacer(minLength: 8)
+                    Button("About USB Availability…") { model.presentation = .help(.usbAvailability) }
                 }
             }
         }

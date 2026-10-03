@@ -404,3 +404,18 @@ Preparation cancellation refinement is implemented and passes all 287 core tests
 now cooperates with Stop during metadata validation, with no database rows or source calls on
 pre-cancelled requests. Physical source ownership and interruption gates remain unchanged; see
 `verification/PHASE-7.md`. UI help and destination checks are being verified as the next stage.
+
+### 3 October — contextual help and destination readiness stage verified
+
+Optional native connection/USB-availability help, shared media context/accessibility actions,
+Command-period Stop, and offline folder checks/retry are implemented. The native Settings
+layout was refined to fit its existing window; light/dark UI and direct accessibility Info action
+were inspected. Cached readiness remains advisory, and overlapping bookmark refreshes cannot
+be changed by a stale folder check. Successful retry also unblocks failed library history.
+
+All 287 core and 76 hosted app tests pass. The final normal Debug build, strict lint, whitespace
+and signature checks pass with no compiler warnings or new entitlements/dependencies. See
+`verification/PHASE-8.md` for actual UI evidence and limits. Phases 4/6/7/8/9 retain their explicit
+remaining acceptance checks; no full phase is promoted based on software tests or sample media.
+Next: physical transfer interruption/retry and instrumented reconnect/cache checks when the
+iPhone is exposed, external-volume failure checks, then remaining accessibility/icon/release work.

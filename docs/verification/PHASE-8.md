@@ -122,3 +122,62 @@ do not establish behavior on macOS 14 or every accessibility configuration.
 No additional source-transfer, external-volume or physical interruption result is implied by the
 offline history and preference checks above. Restore to a new iPhone remains backlog-only under
 the no-extra-iPhone-app requirement.
+
+## 3 October — contextual help and destination checks
+
+Optional help is available from the native Help menu and connection/empty-library states.
+Getting Started explains connection, folder choice, originals and the current-view backup scope.
+USB Availability explains that exposed items can differ from the iPhone Photos library, that
+Optimize Storage can omit cloud originals, and that locked Hidden items are omitted on supported
+macOS versions. Explicit Apple guidance links are available; the app adds no network service.
+A completed selected backup does not claim complete iCloud coverage. Help and Media Info share
+one presentation state so their sheets cannot compete. The grouped, scrollable native form
+uses system surfaces and controls without a mandatory onboarding flow.
+
+Media cells expose Show Info, Copy Filename and applicable backup actions to accessibility,
+using the same action content as their context menus. Stop Backup uses Command-period.
+Backup Settings can check the saved folder without an iPhone and retry an unavailable folder.
+The sidebar reports the last check quietly; cached readiness never authorizes a transfer.
+Each operation still resolves its bookmark, validates access and owns its security scope.
+Generation checks discard stale readiness results; scopes are balanced on failure/cancellation.
+No disk-space API, new entitlement or dependency is introduced. Physical external-drive
+removal/read-only checks remain distinct from injected failure tests.
+
+Design references: Apple's [Onboarding guidance](https://developer.apple.com/design/human-interface-guidelines/onboarding),
+[Liquid Glass adoption](https://developer.apple.com/documentation/technologyoverviews/adopting-liquid-glass),
+[keyboard conventions](https://developer.apple.com/design/human-interface-guidelines/keyboards),
+and [VoiceOver action parity](https://developer.apple.com/help/app-store-connect/manage-app-accessibility/voiceover-evaluation-criteria).
+USB copy follows [Apple's unavailable-photo guidance](https://support.apple.com/en-us/102302)
+and [Image Capture documentation](https://support.apple.com/guide/image-capture/image-capture-imgcp1003/mac).
+
+### Verification of this stage
+
+- **76 hosted app tests pass**, including two help-presentation tests and destination readiness
+  cases for absent selection, denied/read-only/unavailable folders, retry, stale completion,
+  cancellation, exact security-scope balancing, and retry of blocked history without rescanning
+  healthy history. Two stale-bookmark acquisition orderings and a failed stale completion are
+  deterministic regressions. Review found and corrected bookmark-refresh interference; advisory
+  checks now never persist refreshed bookmarks. Initial tests also caught cleanup on MainActor;
+  the entire advisory acquire/validate/release operation now runs in its detached worker.
+- **287 core tests pass**, including the separate preparation-cancellation stage. Final normal
+  Debug build, strict SwiftLint, whitespace and signature checks pass with no compiler warnings.
+  The final entitlement set matches the existing normal sandboxed Debug app, without test-host
+  additions. No dependency, schema or source-transfer option changed in this UI stage.
+- Normal app UI: connection help opens from the empty state; both Help-menu entry points work;
+  topic switches keep one sheet; USB guidance scrolls to its final link/button; Escape and Return
+  dismiss as intended. Light/dark help, the 860-point main window/sidebar and Backup Settings were
+  inspected. The final Settings refinement puts folder actions on one native row so all content
+  fits without scrolling at the existing window size. Real saved-folder checks succeed both
+  automatically on Settings entry and through Check Folder while no iPhone is exposed.
+- A generated 20-item library was used **only for accessibility presentation**: cells expose
+  Copy Filename and Show Info as named actions, and invoking Show Info directly opens the correct
+  media sheet. Sample backup remains unavailable. This does not replace a physical transfer or
+  a complete VoiceOver audit. Live mode, System appearance, Medium size and General Settings were
+  restored after inspection. No personal-media screenshot was saved in the repository.
+- At the end of UI verification the app reported No iPhone Connected. A final unlock request was
+  sent; no additional successful physical Stop/retry result is claimed. Hardware interruption,
+  instrumented reconnect/cache reuse, physical external-drive failures, full VoiceOver/contrast
+  combinations, macOS 14 runtime and final-icon acceptance remain open.
+
+Local logs: `/tmp/cloakroll-help-readiness-app-tests-final.log`,
+`/tmp/cloakroll-help-readiness-normal-build-final.log`. The app is left running its normal build.

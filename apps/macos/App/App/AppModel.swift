@@ -27,7 +27,7 @@ final class AppModel {
     var isSample = false
     var deviceMessage: String?
     var isProjecting = false
-    var infoAsset: MediaAsset?
+    var presentation: LibraryPresentation?
     var settingsTab = SettingsTab.general { didSet { preferences.save(settingsTab) } }
     var sampleProgress = false
     private(set) var catalogSessionID: UUID?
