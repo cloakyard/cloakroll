@@ -32,8 +32,8 @@ struct BackupCancellationTests {
         #expect(result.snapshot.phase == .cancelled)
         #expect(result.records.isEmpty)
         #expect(result.snapshot.completedAssets == 0)
-        #expect(FileManager.default.fileExists(atPath: staged.path) == false)
-        #expect(try FileManager.default.contentsOfDirectory(atPath: destination.path).isEmpty)
+        #expect(FileManager.default.fileExists(atPath: staged.path))
+        #expect(FileManager.default.fileExists(atPath: staged.deletingLastPathComponent().appendingPathComponent(".owner").path))
     }
 
     @Test func aConcurrentRunIsRejectedWhileTheFirstSourceIsStillActive() async throws {

@@ -64,7 +64,7 @@ struct BackupEngineTests {
         #expect(result.snapshot.phase == .failed)
         #expect(result.snapshot.verifiedResources == 0)
         #expect(result.records.isEmpty)
-        #expect(try FileManager.default.contentsOfDirectory(atPath: destination.path).isEmpty)
+        #expect(try FileManager.default.contentsOfDirectory(atPath: destination.path).allSatisfy { $0.hasPrefix(".cloakroll-staging-") })
     }
 
     @Test(arguments: [Data([1, 2]), Data([1, 2, 3, 4])])
@@ -118,6 +118,8 @@ struct BackupEngineTests {
         #expect(result.records.isEmpty)
         #expect(result.snapshot.completedAssets == 0)
         #expect(try Data(contentsOf: sentinel) == Data([42]))
-        #expect(try FileManager.default.contentsOfDirectory(atPath: destination.path) == ["unrelated.txt"])
+        let names = try FileManager.default.contentsOfDirectory(atPath: destination.path)
+        #expect(names.count == 2)
+        #expect(names.contains { $0.hasPrefix(".cloakroll-staging-") })
     }
 }

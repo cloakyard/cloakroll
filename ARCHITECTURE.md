@@ -118,10 +118,14 @@ stored local size and digest are checked again before projecting backed-up statu
 destination changes cancel stale checks, and changed canonical evidence invalidates in-memory
 retry records too. The destination lease remains held until its check or transfer settles.
 
-Phase 6 records success after filesystem publication. A process crash between publication and
-the database commit can leave a preserved, unregistered original. Phase 7 must add a durable
-publication journal and evidence-based reconciliation; the current retry conservatively creates
-another exclusive copy. No power-loss durability claim is made.
+Phase 7 journals owned staging before source writes and exact file evidence/final-path intent
+before each exclusive rename. File identity is checked again across the database await.
+Verified-record insertion, resource counters and intent resolution share a transaction. On
+reopening, exact published originals can be recovered using inode/device/birth/modification
+evidence plus a freshly read size and digest. Staged and uncertain files remain preserved and
+unverified; they are not automatically published or deleted. A retry may create another copy
+of those unfinished components. Interrupted sessions remain interrupted even when saved
+components are recovered. No physical power-loss durability claim is made.
 
 ## Native presentation and privacy
 

@@ -103,7 +103,7 @@ evidence, not media bytes. Never commit a real database, its journal files or pe
 opens and migrates off the main actor, then marks previously running sessions interrupted while
 retaining verified records. Keep one application-owned instance per database URL and coalesce
 concurrent opens; reopening during another instance's active run would interrupt its history.
-Append migrations after `v1_original_backup_history`; do not edit an applied migration, reset a
+Append migrations after `v2_publication_journal`; do not edit an applied migration, reset a
 schema on mismatch or replace an unreadable database with an empty one.
 
 The complete original catalog is converted to `BackupCatalogIdentity` off the main actor.
@@ -114,13 +114,20 @@ badge. Every component must pass fresh local path, destination, size and SHA-256
 Keep these identities independent of thumbnail cache keys, PTP handles and filename-only matching.
 
 Before an original run, call `beginSession` with its selected assets and complete-catalog identity.
-Wire the engine's `onVerified` callback to `recordVerified`; the engine independently awaits that
+Wire `onStaged` to `recordStaging` and `onPublication` to `recordPublication` before source writes
+and exclusive publication. Wire the engine's `onVerified` callback to `recordVerified`; the engine independently awaits that
 transaction after exclusive file finalization, even when UI cancellation has arrived. Await
 `finishSession` before reporting the terminal history outcome. Preserve finalized originals and
-truthful partial records on failure. The durable prepublication journal and crash reconciliation
-are still Phase 7 work; a renamed file with no committed record remains an unverified orphan.
+truthful partial records on failure. Before current-catalog candidate matching, inspect pending
+non-running journal entries for the selected destination using `BackupRecovery.inspect`. Only
+fresh `.published` evidence can call `reconcilePublication`; await its transaction while holding
+the lease. Staged/unknown files remain unverified and preserved, including ownership markers.
+Do not clean up a `.cloakroll-staging-*` directory by name alone or treat it as a successful backup.
 
 Use temporary caller-supplied database/destination URLs for tests. Hosted tests disable the default
 application store and inject their own fixture storage. Check [Phase 6 evidence](verification/PHASE-6.md)
 for the latest automated, native UI and physical acceptance results; reopening fixtures never
 substitutes for the real device/reconnect gate.
+
+See [Phase 7 evidence](verification/PHASE-7.md) for interruption boundaries, journal/migration
+tests and the limits of generated-fixture process-exit tests versus physical USB/power loss.

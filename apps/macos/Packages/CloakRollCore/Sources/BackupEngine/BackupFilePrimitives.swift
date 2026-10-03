@@ -16,7 +16,14 @@ extension BackupFileError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .unsafePath: "The backup path contains an unsafe or unavailable folder."
-        case .unavailable(let code): "The backup drive could not complete the file operation (\(code))."
+        case .unavailable(let code):
+            switch code {
+            case ENOSPC, EDQUOT: "The backup drive is full. Free some space or choose another folder, then try again."
+            case EROFS: "The backup drive is read-only. Choose a writable folder, then try again."
+            case EACCES, EPERM: "CloakRoll can’t access the backup folder. Choose the folder again, then try again."
+            case ENOENT, ENODEV, ENXIO, ESTALE: "The backup drive or folder is unavailable. Reconnect the drive or choose the folder again."
+            default: "The backup drive couldn’t complete the file operation. Check the drive and try again."
+            }
         case .unexpectedDownload: "The iPhone returned an unexpected download location."
         case .invalidFile: "The downloaded original is not a regular file."
         case .sizeMismatch: "The downloaded original does not match its expected size."
@@ -61,6 +68,30 @@ final class BackupDescriptor: @unchecked Sendable {
         return result
     }
 
+    func sync() throws {
+        guard fsync(value) == 0 else { throw BackupFileError.unavailable(errno) }
+    }
+
+    func entries() throws -> Set<String> {
+        let copied = openat(value, ".", O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC)
+        guard copied >= 0 else { throw BackupFileError.unavailable(errno) }
+        guard let directory = fdopendir(copied) else {
+            Darwin.close(copied)
+            throw BackupFileError.unavailable(errno)
+        }
+        defer { closedir(directory) }
+        var names: Set<String> = []
+        errno = 0
+        while let entry = readdir(directory) {
+            let name = withUnsafePointer(to: &entry.pointee.d_name) {
+                $0.withMemoryRebound(to: CChar.self, capacity: Int(MAXNAMLEN) + 1) { String(cString: $0) }
+            }
+            if name != "." && name != ".." { names.insert(name) }
+        }
+        guard errno == 0 else { throw BackupFileError.unavailable(errno) }
+        return names
+    }
+
     func path() throws -> URL {
         var buffer = [CChar](repeating: 0, count: Int(MAXPATHLEN))
         guard fcntl(value, F_GETPATH, &buffer) == 0 else { throw BackupFileError.unavailable(errno) }
@@ -79,6 +110,8 @@ struct BackupFileEvidence: Sendable {
     let sha256: String
     let device: dev_t
     let inode: ino_t
+    let birthSeconds: Int
+    let birthNanoseconds: Int
     let modifiedSeconds: Int
     let modifiedNanoseconds: Int
     let changedSeconds: Int
@@ -87,6 +120,7 @@ struct BackupFileEvidence: Sendable {
     func matches(_ status: stat, includingChangeTime: Bool = true) -> Bool {
         (status.st_mode & S_IFMT) == S_IFREG && status.st_nlink == 1 && status.st_size == bytes
             && status.st_dev == device && status.st_ino == inode
+            && status.st_birthtimespec.tv_sec == birthSeconds && status.st_birthtimespec.tv_nsec == birthNanoseconds
             && status.st_mtimespec.tv_sec == modifiedSeconds && status.st_mtimespec.tv_nsec == modifiedNanoseconds
             && (!includingChangeTime || (status.st_ctimespec.tv_sec == changedSeconds && status.st_ctimespec.tv_nsec == changedNanoseconds))
     }
@@ -121,8 +155,17 @@ struct BackupFileEvidence: Sendable {
         return BackupFileEvidence(
             bytes: bytes, sha256: hasher.finalize().map { String(format: "%02x", $0) }.joined(),
             device: initial.st_dev, inode: initial.st_ino,
+            birthSeconds: initial.st_birthtimespec.tv_sec, birthNanoseconds: initial.st_birthtimespec.tv_nsec,
             modifiedSeconds: final.st_mtimespec.tv_sec, modifiedNanoseconds: final.st_mtimespec.tv_nsec,
             changedSeconds: final.st_ctimespec.tv_sec, changedNanoseconds: final.st_ctimespec.tv_nsec
+        )
+    }
+
+    var identity: BackupFileIdentity {
+        BackupFileIdentity(
+            device: Int64(device), inode: UInt64(inode), birthSeconds: Int64(birthSeconds), birthNanoseconds: Int64(birthNanoseconds),
+            modifiedSeconds: Int64(modifiedSeconds), modifiedNanoseconds: Int64(modifiedNanoseconds),
+            changedSeconds: Int64(changedSeconds), changedNanoseconds: Int64(changedNanoseconds)
         )
     }
 }

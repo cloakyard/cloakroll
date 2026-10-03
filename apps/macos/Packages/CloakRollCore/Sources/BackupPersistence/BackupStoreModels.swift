@@ -1,6 +1,19 @@
 import BackupEngine
 import Foundation
 
+/// Durable intent only. Neither a staged nor a publication row proves that a final file exists.
+public struct StoredBackupJournalEntry: Sendable, Equatable {
+    public let sessionID: UUID
+    public let staging: BackupStagingIntent
+    public let publication: BackupPublicationIntent?
+
+    public init(sessionID: UUID, staging: BackupStagingIntent, publication: BackupPublicationIntent?) {
+        self.sessionID = sessionID
+        self.staging = staging
+        self.publication = publication
+    }
+}
+
 /// A metadata match only. The local original must be revalidated before displaying backup status.
 public struct StoredBackupCandidate: Sendable, Equatable {
     public let assetID: String

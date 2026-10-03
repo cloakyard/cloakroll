@@ -128,6 +128,12 @@ final class LibraryBackupController {
             defer { monitor.cancel() }
             var result = try await engine.run(
                 assets: assets, sessionID: sessionID, destination: lease.url,
+                onStaged: { intent in
+                    if let journal { try await journal.store.recordStaging(sessionID: journal.id, intent: intent) }
+                },
+                onPublication: { intent in
+                    if let journal { try await journal.store.recordPublication(sessionID: journal.id, intent: intent) }
+                },
                 onVerified: { record in
                     if let journal { try await journal.store.recordVerified(sessionID: journal.id, record: record) }
                 }, download: download

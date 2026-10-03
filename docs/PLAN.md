@@ -131,7 +131,7 @@ Do not claim physical power-loss durability from a process-restart test.
 | 4 Thumbnails | Bounded memory/disk cache, versioned invalidation + eviction, visible priority, prefetch and cancellation. Rapid scrolling/reconnect memory and USB concurrency checks. | In progress |
 | 5 Backup | Folder picker/bookmarks, Year/Month paths, original-component queue, staging, progress and no-overwrite collision policy. Selected/all real photos and videos copied. | Complete (bounded physical import) |
 | 6 Incremental | GRDB schema/migrations, device/destination-scoped matching, session history, new/backed-up/recent filters. Reconnect old library + newly captured items checked. | In progress |
-| 7 Reliability | Size and digest evidence, disconnect/full disk/retry/cancel/relaunch tests and real interruptions. No incomplete success or unrelated file overwrite. | Planned |
+| 7 Reliability | Size and digest evidence, disconnect/full disk/retry/cancel/relaunch tests and real interruptions. No incomplete success or unrelated file overwrite. | In progress |
 | 8 Polish | Onboarding, info/search/sort/context menus/shortcuts, cloud availability copy, external volume UX, accessibility and final icon. Compare all screens to CloakDrop. | Planned |
 | 9 Performance | Generated 10k/50k/100k catalogs; timed catalog/matching/startup, bounded thumbnails, measured main-thread/scrolling and database behavior. | Planned |
 | 10 Release | Privacy/entitlement/sandbox review, Release build/lint/tests, docs/screenshots, signing/notarization with verified identity. | Planned |
@@ -315,3 +315,34 @@ USB inventory now shows no iPhone; reconnect and a new capture were requested. R
 backup/relaunch/new-item acceptance is pending and is not replaced by the automated fixture
 reopen tests. Phase 7 must close the documented publication-to-database crash gap; existing
 unrecorded originals are preserved and conservatively copied again rather than trusted by name.
+
+### Phase 7 — started 3 October 2026
+
+The repository was clean at `acaa98f` before the user's continuation request. Add durable staging
+and publication intents, then reconcile exact published originals after interruption using fresh
+local file identity, size and digest evidence. Never adopt a filename or identical-content
+replacement inode alone. Preserve uncertain files and truthful partial session status. Retain
+the pending Phase 4/6 hardware gates while implementing and verifying this reliability stage.
+
+In parallel, audit the next native product screens against current Apple design guidance and
+CloakDrop's read-only reference. Implement product refinements as a separate committed stage
+after the reliability baseline builds and passes its relevant tests.
+
+The physical Phase 6 follow-up copied three logical items/four originals (30,736,406 bytes),
+restored all three statuses after app relaunch and repeated with zero transferred bytes and
+unchanged destination hashes. The new-capture/cable-reconnect gate remains pending; see the
+3 October appendix in `verification/PHASE-6.md`.
+
+### Phase 7 — implemented; physical interruption checks pending
+
+Durable staging/publication intents, exact final-file recovery, atomic record/counter resolution,
+partial preservation and actionable storage errors are implemented. 266 core and 53 hosted app
+tests pass. Independent review found and fixed fractional-timestamp replay precision. Abrupt
+generated-fixture process exits before transfer, before publication and after publication reopen
+without false completion; published originals recover once. Strict lint, normal build and
+signature checks pass. See `verification/PHASE-7.md` for exact scope and preserved-staging limits.
+
+The phone is USB-visible but its library has not yet appeared in the new normal build after the
+requested reconnect. Keep physical cable/new-capture, transfer interruption, external drive and
+power-loss checks open. Proceed to the separately committed native product refinement stage,
+without calling these pending hardware gates complete.

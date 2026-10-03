@@ -14,6 +14,7 @@ enum BackupStoreSchema {
         var migrator = DatabaseMigrator()
         // Append migrations after this baseline; never erase data when a schema changes.
         migrator.registerMigration("v1_original_backup_history", migrate: createBaseline)
+        migrator.registerMigration("v2_publication_journal", migrate: createJournal)
         try migrator.migrate(queue)
         try queue.write { db in
             try db.execute(
@@ -22,6 +23,19 @@ enum BackupStoreSchema {
             )
         }
         return queue
+    }
+
+    private static func createJournal(_ db: Database) throws {
+        try db.execute(sql: """
+            CREATE TABLE backup_journal (
+                id TEXT PRIMARY KEY NOT NULL, session_id TEXT NOT NULL,
+                runtime_resource_id TEXT NOT NULL, staging_payload BLOB NOT NULL,
+                publication_payload BLOB, created_at DOUBLE NOT NULL, resolved_at DOUBLE,
+                UNIQUE(session_id, runtime_resource_id),
+                FOREIGN KEY(session_id, runtime_resource_id)
+                    REFERENCES session_resource(session_id, runtime_resource_id));
+            CREATE INDEX journal_pending ON backup_journal(session_id, resolved_at);
+            """)
     }
 
     private static func createBaseline(_ db: Database) throws {

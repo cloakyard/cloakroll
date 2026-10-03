@@ -76,6 +76,7 @@ final class LibraryBackupPersistence {
 
     func verifyHistory(context: PreparedBackupContext, lease: DestinationLease) async throws -> BackupResult {
         let store = try await store()
+        try await recoverPublishedOriginals(store: store, lease: lease)
         let candidates = try await store.candidates(
             deviceKey: context.identity.deviceKey, destinationID: lease.destinationID, identity: context.identity
         )
@@ -97,5 +98,21 @@ final class LibraryBackupPersistence {
         return try await BackupVerification.validateExisting(
             assets: assets, sessionID: sessionID, destination: lease.url, records: rebased
         )
+    }
+
+    private func recoverPublishedOriginals(store: BackupStore, lease: DestinationLease) async throws {
+        let entries = try await store.pendingJournal(destinationID: lease.destinationID)
+        for entry in entries {
+            try Task.checkCancellation()
+            guard let intent = entry.publication else { continue }
+            let recovery = try await BackupRecovery.inspect(destination: lease.url, intent: intent)
+            guard case .published(let record) = recovery else { continue }
+            try Task.checkCancellation()
+            // A proved published original owns this transaction through completion. The caller's
+            // destination lease remains open even if its catalog check is cancelled meanwhile.
+            try await Task {
+                try await store.reconcilePublication(sessionID: entry.sessionID, intent: intent, record: record)
+            }.value
+        }
     }
 }

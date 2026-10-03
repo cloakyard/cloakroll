@@ -127,7 +127,7 @@ struct BackupFileStoreTests {
         store.closeStaging()
     }
 
-    @Test func cleanupRemovesKnownPartialBytesButPreservesUnexpectedFiles() throws {
+    @Test func cleanupPreservesUnverifiedBytesUnexpectedFilesAndOwnershipMarker() throws {
         let root = try backupDirectory()
         defer { try? FileManager.default.removeItem(at: root) }
         let store = try BackupFileStore(destination: root, runID: UUID(), timeZone: .gmt)
@@ -137,7 +137,8 @@ struct BackupFileStoreTests {
         store.discard(staged)
         store.closeStaging()
         #expect(try Data(contentsOf: unknown) == Data([42]))
-        #expect(FileManager.default.fileExists(atPath: staged.directory.appendingPathComponent(staged.filename).path) == false)
+        #expect(try Data(contentsOf: staged.directory.appendingPathComponent(staged.filename)) == Data([1]))
+        #expect(FileManager.default.fileExists(atPath: staged.directory.deletingLastPathComponent().appendingPathComponent(".owner").path))
     }
 
     @Test func freshStatRejectsSameInodeChangesAfterHashing() throws {

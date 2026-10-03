@@ -7,6 +7,8 @@ public actor BackupEngine {
     public typealias Download = @Sendable (
         BackupDownloadRequest, @escaping @Sendable (DownloadProgress) -> Void
     ) async throws -> DownloadedOriginal
+    public typealias StagingHandler = @Sendable (BackupStagingIntent) async throws -> Void
+    public typealias PublicationHandler = @Sendable (BackupPublicationIntent) async throws -> Void
     public typealias VerificationHandler = @Sendable (VerifiedBackupResource) async throws -> Void
 
     public nonisolated let snapshots: AsyncStream<BackupSnapshot>
@@ -39,6 +41,7 @@ public actor BackupEngine {
     /// every verified partial component retained; an incomplete asset is never marked complete.
     public func run(
         assets: [MediaAsset], sessionID: UUID, destination: URL,
+        onStaged: @escaping StagingHandler = { _ in }, onPublication: @escaping PublicationHandler = { _ in },
         onVerified: @escaping VerificationHandler = { _ in }, download: @escaping Download
     ) async throws -> BackupResult {
         guard worker == nil else { throw BackupEngineError.busy }
@@ -48,7 +51,8 @@ public actor BackupEngine {
         currentTransfer = nil
         publish()
         let task = Task {
-            await execute(assets: assets, sessionID: sessionID, destination: destination, onVerified: onVerified, download: download)
+            await execute(assets: assets, sessionID: sessionID, destination: destination,
+                          onStaged: onStaged, onPublication: onPublication, onVerified: onVerified, download: download)
         }
         worker = task
         let result = await withTaskCancellationHandler {
@@ -75,6 +79,7 @@ public actor BackupEngine {
 
     private func execute(
         assets: [MediaAsset], sessionID: UUID, destination: URL,
+        onStaged: @escaping StagingHandler, onPublication: @escaping PublicationHandler,
         onVerified: @escaping VerificationHandler, download: @escaping Download
     ) async -> BackupResult {
         var store: BackupFileStore?
@@ -91,7 +96,8 @@ public actor BackupEngine {
                 for resource in asset.resources {
                     try Task.checkCancellation()
                     try await transfer(
-                        resource, asset: asset, sessionID: sessionID, store: store, onVerified: onVerified, download: download
+                        resource, asset: asset, sessionID: sessionID, store: store,
+                        onStaged: onStaged, onPublication: onPublication, onVerified: onVerified, download: download
                     )
                 }
                 // Every original component has already been finalized and recorded at this point.
@@ -104,6 +110,9 @@ public actor BackupEngine {
             state.currentFilename = nil
             state.currentResourceBytes = 0
             state.currentResourceExpectedBytes = 0
+        } catch BackupEngineError.journalFailed {
+            state.phase = .failed
+            state.message = BackupEngineError.journalFailed.errorDescription
         } catch BackupEngineError.persistenceFailed {
             // A failed record transaction remains a failure even if Stop arrived during it.
             state.phase = .failed
@@ -144,6 +153,7 @@ public actor BackupEngine {
 
     private func transfer(
         _ resource: MediaResource, asset: MediaAsset, sessionID: UUID, store: BackupFileStore,
+        onStaged: @escaping StagingHandler, onPublication: @escaping PublicationHandler,
         onVerified: @escaping VerificationHandler, download: @escaping Download
     ) async throws {
         state.currentFilename = resource.filename
@@ -169,6 +179,14 @@ public actor BackupEngine {
         }
         let staged = try await detached { try store.prepare(filename: resource.filename) }
         do {
+            guard let runID = state.runID else { throw BackupEngineError.invalidSelection }
+            let intent = BackupStagingIntent(
+                id: UUID(), runID: runID, assetID: asset.id, resourceID: resource.id, deviceID: asset.deviceID,
+                sourceSessionID: sessionID, filename: resource.filename, expectedByteCount: resource.byteCount,
+                sourceModifiedAt: resource.modifiedAt, sourceMetadataSignature: evidenceKey.sourceMetadataSignature,
+                destinationIdentity: store.destinationIdentity, stagingRelativePath: store.relativePath(staged)
+            )
+            try await journal { try await onStaged(intent) }
             try Task.checkCancellation()
             let transferID = UUID()
             currentTransfer = transferID
@@ -190,23 +208,40 @@ public actor BackupEngine {
             state.currentResourceBytes = resource.byteCount
             state.phase = .verifying
             publish()
-            let finalized = try await detached {
-                try store.verifyAndFinalize(
-                    staged, returnedURL: result.url, expectedByteCount: resource.byteCount, createdAt: asset.createdAt
-                )
+            let verifiedStage = try await detached {
+                try store.verifyStaged(staged, returnedURL: result.url, expectedByteCount: resource.byteCount, createdAt: asset.createdAt)
             }
-            let verified = VerifiedBackupResource(
-                assetID: asset.id, resourceID: resource.id, deviceID: asset.deviceID, sourceSessionID: sessionID,
-                filename: resource.filename, relativePath: finalized.relativePath, byteCount: finalized.byteCount,
-                sha256: finalized.sha256, verifiedAt: Date(), sourceModifiedAt: resource.modifiedAt,
-                destinationIdentity: store.destinationIdentity, sourceMetadataSignature: evidenceKey.sourceMetadataSignature
-            )
+            let verified = try await finalize(verifiedStage, intent: intent, store: store, onPublication: onPublication)
             try await record(verified, evidenceKey: evidenceKey, onVerified: onVerified)
         } catch {
             currentTransfer = nil
             await Task.detached(priority: .utility) { store.discard(staged) }.value
             throw error
         }
+    }
+
+    private func finalize(
+        _ staged: VerifiedStagedOriginal, intent: BackupStagingIntent, store: BackupFileStore,
+        onPublication: @escaping PublicationHandler
+    ) async throws -> VerifiedBackupResource {
+        for collision in 0..<10_000 {
+            try Task.checkCancellation()
+            let publication = store.publication(staged, staging: intent, collision: collision)
+            try await journal { try await onPublication(publication) }
+            try Task.checkCancellation()
+            let filename = BackupPathNaming.filename(staged.staged.filename, collision: collision)
+            if try await detached({ try store.publish(staged, filename: filename) }) != nil {
+                return publication.verifiedRecord
+            }
+        }
+        throw BackupFileError.tooManyCollisions
+    }
+
+    private func journal(_ operation: @escaping @Sendable () async throws -> Void) async throws {
+        // A cancellation cannot release the staging scope while a durable write is still in
+        // progress. After the write settles, the caller checks cancellation before source/rename.
+        let task = Task.detached(priority: .utility, operation: operation)
+        do { try await task.value } catch { throw BackupEngineError.journalFailed }
     }
 
     private func record(

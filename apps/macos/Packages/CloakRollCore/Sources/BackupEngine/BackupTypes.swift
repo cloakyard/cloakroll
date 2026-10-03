@@ -11,6 +11,7 @@ public enum BackupEngineError: Error, Equatable, Sendable {
     case invalidResourceSize
     case sourceSizeChanged
     case persistenceFailed
+    case journalFailed
 }
 
 extension BackupEngineError: LocalizedError {
@@ -20,6 +21,8 @@ extension BackupEngineError: LocalizedError {
         case .invalidSelection: "The selected media contains missing or ambiguous original resources."
         case .invalidResourceSize: "An original has no reliable size. Reconnect your iPhone and try again."
         case .sourceSizeChanged: "The original changed or its download format differs from the catalog. Refresh the library and try again."
+        case .journalFailed:
+            "Backup recovery information couldn’t be saved. The original wasn’t published. Check available storage and try again."
         case .persistenceFailed:
             "The original was saved, but its backup record couldn’t be stored. Try again to finish recording the backup."
         }

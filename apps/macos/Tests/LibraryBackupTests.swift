@@ -112,7 +112,13 @@ struct LibraryBackupTests {
         #expect(fixture.scope.counts.started == 1)
         #expect(fixture.scope.counts.stopped == 1)
         #expect(fixture.controller.projection(assets: [asset], sessionID: session).statuses.isEmpty)
-        #expect(try fixture.regularFiles().isEmpty)
+        // The source returned after Stop. These bytes were never verified, so preserve them
+        // inside owned staging instead of deleting a file using only its expected name.
+        let partial = staged.directory.appendingPathComponent(staged.filename)
+        let marker = staged.directory.deletingLastPathComponent().appendingPathComponent(".owner")
+        #expect(Set(try fixture.regularFiles().map(\.path)) == Set([partial.path, marker.path]))
+        #expect(try Data(contentsOf: partial) == Data([1, 2, 3]))
+        #expect(fixture.controller.snapshot?.verifiedResources == 0)
     }
 
     @Test func initialPickerCancellationNeverStartsADeviceRequestOrDestinationLease() async throws {

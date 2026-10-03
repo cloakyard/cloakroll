@@ -35,7 +35,42 @@ public actor BackupStore {
     public func recordVerified(sessionID: UUID, record: VerifiedBackupResource) async throws {
         do {
             try await database.write { db in
+                try BackupStoreJournal.validatePublication(db, sessionID: sessionID, record: record)
                 try BackupStoreWriting.record(db, sessionID: sessionID, record: record)
+                try BackupStoreJournal.resolve(db, sessionID: sessionID, resourceID: record.resourceID)
+            }
+        } catch { throw Self.failure(error) }
+    }
+
+    /// Persist owned staging before the source download starts.
+    public func recordStaging(sessionID: UUID, intent: BackupStagingIntent) async throws {
+        do {
+            try await database.write { db in try BackupStoreJournal.stage(db, sessionID: sessionID, intent: intent) }
+        } catch { throw Self.failure(error) }
+    }
+
+    /// Persist verified source-file identity and the exact proposed path before each exclusive rename.
+    public func recordPublication(sessionID: UUID, intent: BackupPublicationIntent) async throws {
+        do {
+            try await database.write { db in try BackupStoreJournal.publish(db, sessionID: sessionID, intent: intent) }
+        } catch { throw Self.failure(error) }
+    }
+
+    /// Excludes running sessions. The caller must retain destination access throughout local inspection.
+    public func pendingJournal(destinationID: UUID) async throws -> [StoredBackupJournalEntry] {
+        do {
+            return try await database.read { db in try BackupStoreJournal.pending(db, destinationID: destinationID) }
+        } catch { throw Self.failure(error) }
+    }
+
+    /// Call only with fresh BackupRecovery evidence for this exact saved intent. This does not
+    /// turn a failed, cancelled or interrupted session into a completed session.
+    public func reconcilePublication(
+        sessionID: UUID, intent: BackupPublicationIntent, record: VerifiedBackupResource
+    ) async throws {
+        do {
+            try await database.write { db in
+                try BackupStoreJournal.reconcile(db, sessionID: sessionID, intent: intent, record: record)
             }
         } catch { throw Self.failure(error) }
     }

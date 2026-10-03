@@ -46,9 +46,12 @@ enum BackupStoreWriting {
         return resourceID
     }
 
-    static func record(_ db: Database, sessionID: UUID, record: VerifiedBackupResource) throws {
+    static func record(
+        _ db: Database, sessionID: UUID, record: VerifiedBackupResource, recovering: Bool = false
+    ) throws {
         guard let session = try Row.fetchOne(db, sql: "SELECT * FROM backup_session WHERE id = ?", arguments: [sessionID.uuidString]),
-              session["status"] as String == "running" else { throw BackupStoreError.unknownSession }
+              recovering ? ["interrupted", "cancelled", "failed"].contains(session["status"] as String)
+                : session["status"] as String == "running" else { throw BackupStoreError.unknownSession }
         guard let registered = try Row.fetchOne(db, sql: """
             SELECT s.*, r.filename, r.expected_bytes FROM session_resource s JOIN resource r ON r.id = s.resource_id
             WHERE s.session_id = ? AND s.runtime_resource_id = ?
@@ -56,7 +59,7 @@ enum BackupStoreWriting {
         try validate(record, session: session, registered: registered)
         if let existing = try Row.fetchOne(db, sql: "SELECT * FROM backup_record WHERE session_id = ? AND runtime_resource_id = ?",
                                            arguments: [sessionID.uuidString, record.resourceID]) {
-            guard try BackupStoreReading.record(existing) == record else { throw BackupStoreError.invalidRecord }
+            guard try matchesStoredRecord(existing, record: record) else { throw BackupStoreError.invalidRecord }
             return
         }
         try db.execute(sql: """
@@ -78,6 +81,21 @@ enum BackupStoreWriting {
             UPDATE backup_session SET verified_resources = verified_resources + 1, verified_bytes = verified_bytes + ?,
                 completed_assets = completed_assets + ? WHERE id = ?
             """, arguments: [record.byteCount, complete ? 1 : 0, sessionID.uuidString])
+    }
+
+    private static func matchesStoredRecord(_ row: Row, record: VerifiedBackupResource) throws -> Bool {
+        // SQLite stores Unix-epoch doubles. Converting Foundation's reference-epoch doubles can
+        // round a fractional timestamp, so replay compares dates at that same stored precision.
+        // Source signatures, bytes, digests, names and paths still require exact equality.
+        let expected = VerifiedBackupResource(
+            assetID: record.assetID, resourceID: record.resourceID, deviceID: record.deviceID,
+            sourceSessionID: record.sourceSessionID, filename: record.filename, relativePath: record.relativePath,
+            byteCount: record.byteCount, sha256: record.sha256,
+            verifiedAt: Date(timeIntervalSince1970: record.verifiedAt.timeIntervalSince1970),
+            sourceModifiedAt: record.sourceModifiedAt.map { Date(timeIntervalSince1970: $0.timeIntervalSince1970) },
+            destinationIdentity: record.destinationIdentity, sourceMetadataSignature: record.sourceMetadataSignature
+        )
+        return try BackupStoreReading.record(row) == expected
     }
 
     private static func validate(_ record: VerifiedBackupResource, session: Row, registered: Row) throws {

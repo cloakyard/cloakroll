@@ -164,3 +164,23 @@ resources. A normal database cannot turn missing/ambiguous source metadata into 
 macOS 14 API availability is compiled; the current runtime is macOS 27. Full-library performance,
 physical external-volume removal/full disk, process-crash reconciliation and older-OS runtime
 behavior remain their explicit later gates.
+
+## 3 October 2026 — real persistent history follow-up
+
+The normal committed Phase 6 app (PID 8669) read a physical phone exposing 5,438 logical items:
+4,128 photos, 1,304 videos and six others; 2,936 photos include Live Photo companions. A selected
+photo, video and Live Photo produced **three complete logical items / four originals /
+30,736,406 bytes** in the previously chosen verification folder. SQLite committed all four
+component records and a completed session. Four serial original source calls settled.
+
+Quit/relaunch (PID 9525) retained the folder bookmark, read the phone again and restored exactly
+three backed-up items, leaving 5,435 new. The Backed Up filter showed those three items. Selecting
+them again completed with four verified originals and **zero transferred bytes**. An independent
+read-only check confirmed every recorded size and SHA-256 matched local bytes, all eleven files
+in the verification folder were unchanged, and no duplicate file was created. The original-call
+log contained no calls from the relaunched process during this repeat.
+
+This closes the bounded real import/relaunch/repeat checks; a new capture plus physical cable
+reconnect was requested and remains pending. It does not establish a full 132.56 GB library
+backup or the 10,000-item/new-capture acceptance scenario. The compact native complete/filter
+layout was inspected; personal media screenshots were not saved in the repository.

@@ -13,7 +13,8 @@ struct HistoryFixture {
 
     init(
         deviceValue: String = "device-one", sessionID: UUID = UUID(), destinationID: UUID = UUID(),
-        prefix: String = "old", motionBytes: Int64 = 5, persistent: Bool = true
+        prefix: String = "old", motionBytes: Int64 = 5, persistent: Bool = true,
+        date: Date = Date(timeIntervalSince1970: 100)
     ) {
         device = ConnectedDevice(identity: DeviceIdentity(kind: persistent ? .persistent : .sessionOnly, value: deviceValue), name: "iPhone")
         sourceSessionID = sessionID
@@ -21,10 +22,10 @@ struct HistoryFixture {
         assets = [MediaAsset(
             id: "\(prefix)-asset", deviceID: device.id,
             resources: [
-                MediaResource(id: "\(prefix)-still", filename: "IMG_0001.HEIC", byteCount: 3, modifiedAt: Date(timeIntervalSince1970: 100)),
+                MediaResource(id: "\(prefix)-still", filename: "IMG_0001.HEIC", byteCount: 3, modifiedAt: date),
                 MediaResource(id: "\(prefix)-motion", filename: "IMG_0001.MOV", byteCount: motionBytes)
             ],
-            kind: .livePhoto, createdAt: Date(timeIntervalSince1970: 100)
+            kind: .livePhoto, createdAt: date
         )]
     }
 
@@ -58,13 +59,15 @@ struct HistoryFixture {
                                      assets: assets, identity: identity(reusable: reusable))
     }
 
-    func record(_ index: Int = 0, byte: UInt8 = 1, path: String? = nil) throws -> VerifiedBackupResource {
+    func record(
+        _ index: Int = 0, byte: UInt8 = 1, path: String? = nil, verifiedAt: Date = Date(timeIntervalSince1970: 200)
+    ) throws -> VerifiedBackupResource {
         let asset = assets[0]
         let resource = asset.resources[index]
         return VerifiedBackupResource(
             assetID: asset.id, resourceID: resource.id, deviceID: device.id, sourceSessionID: sourceSessionID,
             filename: resource.filename, relativePath: path ?? "2026/09/\(resource.filename)", byteCount: resource.byteCount,
-            sha256: Self.digest(Data(repeating: byte, count: Int(resource.byteCount))), verifiedAt: Date(timeIntervalSince1970: 200),
+            sha256: Self.digest(Data(repeating: byte, count: Int(resource.byteCount))), verifiedAt: verifiedAt,
             sourceModifiedAt: resource.modifiedAt, destinationIdentity: "local-device:local-inode",
             sourceMetadataSignature: try BackupEngine.sourceSignature(asset: asset, resource: resource)
         )

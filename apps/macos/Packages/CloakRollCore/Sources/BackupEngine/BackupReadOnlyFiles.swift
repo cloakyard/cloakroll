@@ -41,7 +41,7 @@ struct BackupReadOnlyFiles: Sendable {
         } catch { return false }
     }
 
-    private static func namedFile(root: BackupDescriptor, relativePath: String) throws -> BackupDescriptor {
+    static func namedFile(root: BackupDescriptor, relativePath: String) throws -> BackupDescriptor {
         let components = relativePath.split(separator: "/", omittingEmptySubsequences: false).map(String.init)
         guard !components.isEmpty, components.allSatisfy(BackupDescriptor.isComponent), let filename = components.last else {
             throw BackupFileError.unsafePath
