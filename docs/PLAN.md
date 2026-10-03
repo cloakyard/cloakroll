@@ -132,7 +132,7 @@ Do not claim physical power-loss durability from a process-restart test.
 | 5 Backup | Folder picker/bookmarks, Year/Month paths, original-component queue, staging, progress and no-overwrite collision policy. Selected/all real photos and videos copied. | Complete (bounded physical import) |
 | 6 Incremental | GRDB schema/migrations, device/destination-scoped matching, session history, new/backed-up/recent filters. Reconnect old library + newly captured items checked. | In progress |
 | 7 Reliability | Size and digest evidence, disconnect/full disk/retry/cancel/relaunch tests and real interruptions. No incomplete success or unrelated file overwrite. | In progress |
-| 8 Polish | Onboarding, info/search/sort/context menus/shortcuts, cloud availability copy, external volume UX, accessibility and final icon. Compare all screens to CloakDrop. | Planned |
+| 8 Polish | Onboarding, info/search/sort/context menus/shortcuts, cloud availability copy, external volume UX, accessibility and final icon. Compare all screens to CloakDrop. | In progress |
 | 9 Performance | Generated 10k/50k/100k catalogs; timed catalog/matching/startup, bounded thumbnails, measured main-thread/scrolling and database behavior. | Planned |
 | 10 Release | Privacy/entitlement/sandbox review, Release build/lint/tests, docs/screenshots, signing/notarization with verified identity. | Planned |
 
@@ -346,3 +346,18 @@ The phone is USB-visible but its library has not yet appeared in the new normal 
 requested reconnect. Keep physical cable/new-capture, transfer interruption, external drive and
 power-loss checks open. Proceed to the separately committed native product refinement stage,
 without calling these pending hardware gates complete.
+
+### Phase 8 — native history and interaction stage verified; broader polish pending
+
+After the Phase 7 commit `415a134`, added offline Backup History with native disclosure rows,
+verified/transfer counts, safe destination context, loading/error/retry states and bounded recent
+sessions. Native menu/context commands, Find, view-option parity and remembered browsing/Settings
+choices are implemented. 62 hosted app tests, strict lint, a warning-free normal build and actual
+signature checks pass. See `verification/PHASE-8.md` for exact evidence and Apple design references.
+
+The normal app displayed the two real completed sessions offline, including the zero-transfer
+repeat. Search text selection, size/Settings persistence, history refresh and command availability
+were exercised. Compact light and standard expanded light/dark layouts passed after correcting
+history-note wrapping and separator alignment. Full VoiceOver, system accessibility variants,
+macOS 14 runtime checks, final icon and remaining product/hardware polish are pending. Phase 8 is
+not yet accepted or complete.

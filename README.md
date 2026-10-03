@@ -7,11 +7,14 @@ backs up selected or filtered originals into Year/Month folders, checking file s
 SHA-256 digests before reporting success. Bounded physical imports have covered photos, Live
 Photos, RAW and video. Persistent incremental history is implemented and tested; its physical
 reconnect/new-photo acceptance check remains pending. Thumbnail reconnect and broader reliability
-checks also remain open. The app includes clearly labeled sample media, chronological groups,
-filtering, selection, media info and Settings.
+checks also remain open. The app includes offline Backup History, remembered browsing choices,
+native search/menu actions, clearly labeled sample media, chronological groups, filtering,
+selection, media info and Settings. Interrupted publication recovery is implemented and tested
+with generated files; physical interruption checks remain pending.
 Follow [the implementation plan](docs/PLAN.md) for actual progress and verification evidence.
-The latest [UI and performance audit](docs/verification/UI-PRESETS-PERFORMANCE.md) covers fixed
-thumbnail sizes, the cleaner sidebar, native menus and faster cancellable catalog preparation.
+The [native UI refinement evidence](docs/verification/PHASE-8.md) covers history, menu parity,
+remembered preferences and compact light/dark layout checks. Small, Medium and Large thumbnail
+presets remain the only size controls.
 
 The intended workflow is a USB-connected iPhone → available originals → user-selected Mac or
 external-drive folder → verified incremental backup. No account, analytics or cloud processing.

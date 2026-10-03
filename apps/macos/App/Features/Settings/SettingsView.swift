@@ -1,7 +1,6 @@
-import BackupPersistence
 import SwiftUI
 
-enum SettingsTab: Hashable {
+enum SettingsTab: String {
     case general, backup, about
 }
 
@@ -57,7 +56,7 @@ struct SettingsView: View {
                 Button(model.backup.destination.selection == nil ? "Choose Folder…" : "Change Folder…") {
                     Task { await model.backup.chooseDestination() }
                 }
-                .disabled(model.backup.isBusy || model.backup.destination.isChoosing)
+                .disabled(model.isSample || model.backup.isBusy || model.backup.destination.isChoosing)
             }
             Section("Originals") {
                 LabeledContent("Media format", value: "Keep originals")
@@ -67,20 +66,6 @@ struct SettingsView: View {
                 Text("Previous backups are remembered for each iPhone and folder. Saved originals are checked before they are reused.")
                     .font(.callout)
                     .foregroundStyle(.secondary)
-            }
-            if let sessions = model.backup.persistence?.recentSessions, !sessions.isEmpty {
-                Section("Recent Backups") {
-                    ForEach(sessions.prefix(3), id: \.id) { session in
-                        HStack(alignment: .firstTextBaseline) {
-                            VStack(alignment: .leading, spacing: 3) {
-                                Text(session.startedAt, format: .dateTime.day().month(.abbreviated).hour().minute())
-                                Text(session.deviceName).font(.caption).foregroundStyle(.secondary)
-                            }
-                            Spacer()
-                            Text(sessionLabel(session)).foregroundStyle(.secondary)
-                        }
-                    }
-                }
             }
         }
         .formStyle(.grouped)
@@ -105,16 +90,6 @@ struct SettingsView: View {
             }
         }
         .formStyle(.grouped)
-    }
-
-    private func sessionLabel(_ session: StoredBackupSession) -> String {
-        switch session.status {
-        case .completed: "\(session.completedAssets.formatted()) \(session.completedAssets == 1 ? "item" : "items")"
-        case .running: "In Progress"
-        case .cancelled: "Stopped"
-        case .failed: "Incomplete"
-        case .interrupted: "Interrupted"
-        }
     }
 
     private var version: String {

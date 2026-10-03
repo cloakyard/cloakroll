@@ -16,12 +16,21 @@ struct PreparedBackupContext: Sendable {
 /// Coordinates persistent evidence, while the package owns SQL and safe local file verification.
 @MainActor @Observable
 final class LibraryBackupPersistence {
+    typealias SessionReader = @Sendable () async throws -> [StoredBackupSession]
+
     private(set) var recentSessions: [StoredBackupSession] = []
+    private(set) var isLoadingSessions = false
+    private(set) var sessionErrorMessage: String?
+    private(set) var hasLoadedSessions = false
     @ObservationIgnored private let databaseURL: URL
+    @ObservationIgnored private let readSessions: SessionReader?
     @ObservationIgnored private var opening: Task<BackupStore, Error>?
     @ObservationIgnored private var refreshGeneration = 0
 
-    init(databaseURL: URL) { self.databaseURL = databaseURL }
+    init(databaseURL: URL, readSessions: SessionReader? = nil) {
+        self.databaseURL = databaseURL
+        self.readSessions = readSessions
+    }
 
     static func appDefault() -> LibraryBackupPersistence? {
         if ProcessInfo.processInfo.environment["CLOAKROLL_TESTING"] == "1" { return nil }
@@ -44,10 +53,31 @@ final class LibraryBackupPersistence {
     func refreshSessions() async throws {
         refreshGeneration += 1
         let generation = refreshGeneration
-        let store = try await store()
-        let sessions = try await store.recentSessions(limit: 10)
-        try Task.checkCancellation()
-        if refreshGeneration == generation { recentSessions = sessions }
+        isLoadingSessions = true
+        sessionErrorMessage = nil
+        defer { if refreshGeneration == generation { isLoadingSessions = false } }
+        do {
+            let sessions: [StoredBackupSession]
+            if let readSessions { sessions = try await readSessions() } else {
+                sessions = try await store().recentSessions(limit: 100)
+            }
+            try Task.checkCancellation()
+            guard refreshGeneration == generation else { return }
+            recentSessions = sessions
+            hasLoadedSessions = true
+        } catch {
+            if refreshGeneration == generation, !(error is CancellationError) {
+                sessionErrorMessage = (error as? LocalizedError)?.errorDescription ?? "Backup history couldn’t be loaded. Try again."
+            }
+            throw error
+        }
+    }
+
+    /// Opens history independently of iPhone discovery. Concurrent initial loads share the
+    /// latest refresh; a failed request retains the last successfully loaded sessions.
+    func loadSessions() async {
+        guard !isLoadingSessions else { return }
+        do { try await refreshSessions() } catch { /* The observable error keeps retry available. */ }
     }
 
     nonisolated static func prepare(

@@ -10,11 +10,18 @@ struct RootView: View {
             SidebarView()
                 .navigationSplitViewColumnWidth(min: 200, ideal: 224, max: 300)
         } detail: {
-            LibraryView()
-                .navigationTitle(model.filter.title)
-                .searchable(text: $model.search, placement: .toolbar, prompt: "Search photos and videos")
-                .toolbar { LibraryToolbar() }
-                .modifier(BackupBarPlacement(isVisible: !model.assets.isEmpty || model.backup.snapshot != nil))
+            switch model.navigation {
+            case .library:
+                LibraryView()
+                    .navigationTitle(model.filter.title)
+                    .searchable(text: $model.search, isPresented: $model.searchPresented,
+                                placement: .toolbar, prompt: "Search photos and videos")
+                    .toolbar { LibraryToolbar() }
+                    .modifier(BackupBarPlacement(isVisible: !model.assets.isEmpty || model.backup.snapshot != nil))
+            case .backupHistory:
+                BackupHistoryView()
+                    .navigationTitle("Backup History")
+            }
         }
         .sheet(item: $model.infoAsset) { asset in
             MediaInfoView(asset: asset)

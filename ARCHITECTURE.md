@@ -134,6 +134,14 @@ The purple `AppAccent` has light/dark variants; selection, progress and status i
 as well as color. Motion respects accessibility preferences. The media grid is dense and lazy;
 details appear on demand. Standard Settings, toolbar controls and keyboard conventions remain native.
 
+Backup History is a separate sidebar destination and loads the latest 100 sessions without a
+connected phone or destination lease. Historical completion describes evidence from that run;
+current-library status still requires fresh local verification. Failed refreshes preserve the last
+loaded rows, with explicit retry. Finder actions require the selected destination's exact ID.
+Library actions and search stay scoped to library navigation; Stop Backup remains globally
+available while transferring. Shared native view menus and Settings persist size, sort, grouping
+and the selected Settings pane in local preferences, with independent defaults for invalid values.
+
 No account, telemetry, cloud processing or network entitlement is needed for core operation.
 No delete, mutation, conversion or two-way synchronization API is exposed. Debug sample catalogs
 are explicitly labeled and never create real backup records. Logs use OSLog categories with

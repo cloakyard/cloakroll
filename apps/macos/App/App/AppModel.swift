@@ -10,11 +10,14 @@ typealias DeviceViewState = DeviceConnectionState
 /// Presentation state and intents only. Catalog transformations belong to the headless projector.
 @MainActor @Observable
 final class AppModel {
-    var filter: LibraryFilter = .all { didSet { scheduleProjection() } }
+    var navigation = SidebarDestination.library(.all)
+    var isViewingLibrary: Bool { navigation != .backupHistory }
+    var filter: LibraryFilter = .all { didSet { navigation = .library(filter); scheduleProjection() } }
     var search = "" { didSet { scheduleProjection() } }
-    var sort: CatalogSort = .newestFirst { didSet { scheduleProjection() } }
-    var grouping: CatalogGrouping = .automatic { didSet { scheduleProjection() } }
-    var thumbnailSize = ThumbnailSize.medium
+    var searchPresented = false
+    var sort: CatalogSort = .newestFirst { didSet { preferences.save(sort); scheduleProjection() } }
+    var grouping: CatalogGrouping = .automatic { didSet { preferences.save(grouping); scheduleProjection() } }
+    var thumbnailSize = ThumbnailSize.medium { didSet { preferences.save(thumbnailSize) } }
     var cellSize: Double { thumbnailSize.minimumCellWidth }
     var snapshot = CatalogSnapshot.empty
     var selection = MediaSelection()
@@ -25,7 +28,7 @@ final class AppModel {
     var deviceMessage: String?
     var isProjecting = false
     var infoAsset: MediaAsset?
-    var settingsTab = SettingsTab.general
+    var settingsTab = SettingsTab.general { didSet { preferences.save(settingsTab) } }
     var sampleProgress = false
     private(set) var catalogSessionID: UUID?
     private(set) var mediaScanState: MediaScanState?
@@ -50,10 +53,16 @@ final class AppModel {
     @ObservationIgnored private var deviceTask: Task<Void, Never>?
     @ObservationIgnored private var catalogLoader: LiveCatalogLoader?
     @ObservationIgnored private var lastProjectedQuery: CatalogQuery?
+    @ObservationIgnored private let preferences: LibraryPreferences
     @ObservationIgnored let thumbnails = LibraryThumbnailController()
     @ObservationIgnored let backup = LibraryBackupController(persistence: LibraryBackupPersistence.appDefault())
 
-    init(makeBrowser: (@MainActor () -> any DeviceBrowsing)? = nil) {
+    init(makeBrowser: (@MainActor () -> any DeviceBrowsing)? = nil, preferences: LibraryPreferences = .standard) {
+        self.preferences = preferences
+        thumbnailSize = preferences.thumbnailSize
+        sort = preferences.sort
+        grouping = preferences.grouping
+        settingsTab = preferences.settingsTab
         if let makeBrowser {
             self.makeBrowser = makeBrowser
         } else {
@@ -81,6 +90,7 @@ final class AppModel {
         }
         #endif
         startLive()
+        await backup.persistence?.loadSessions()
     }
 
     func loadSample(count: Int, state: DeviceViewState = .ready) async {
@@ -165,38 +175,18 @@ final class AppModel {
         browser?.retry()
     }
 
-    var canBackUp: Bool {
-        backupSourceAvailable && (!selection.selectedIDs.isEmpty || snapshot.visibleNewCount > 0)
-    }
-
-    private var backupSourceAvailable: Bool {
+    var backupSourceAvailable: Bool {
         !isSample && deviceState == .ready && mediaScanState == .complete
             && !isCatalogPreparing && !isProjecting && !backup.isBusy && !backup.destination.isChoosing
             && !backup.isCheckingHistory && backup.historyErrorMessage == nil
             && catalogSessionID != nil && browser is any OriginalMediaDownloading
     }
 
-    func backUpCurrentSelection() {
-        guard canBackUp else { return }
-        let selected = selection.selectedIDs
-        let candidates = snapshot.sections.flatMap(\.assets).filter {
-            selected.isEmpty ? status(for: $0) != .backedUp : selected.contains($0.id)
-        }
-        startBackup(assets: candidates)
-    }
+    func currentAsset(id: String) -> MediaAsset? { lookup[id] }
 
-    var canRetryBackup: Bool {
-        guard backupSourceAvailable, let attempt = backup.lastAttempt, attempt.sessionID == catalogSessionID else { return false }
-        return attempt.assets.allSatisfy { lookup[$0.id] == $0 }
-    }
-
-    func retryLastBackup() {
-        guard canRetryBackup, let attempt = backup.lastAttempt else { return }
-        startBackup(assets: attempt.assets)
-    }
-
-    private func startBackup(assets: [MediaAsset]) {
-        guard let sessionID = catalogSessionID, let provider = browser as? any OriginalMediaDownloading else { return }
+    func startBackup(assets: [MediaAsset]) {
+        guard backupSourceAvailable, let sessionID = catalogSessionID,
+              let provider = browser as? any OriginalMediaDownloading else { return }
         backup.start(assets: assets, sessionID: sessionID) { request, progress in
             try await provider.downloadOriginal(
                 resourceID: request.resource.id, sessionID: request.sessionID,

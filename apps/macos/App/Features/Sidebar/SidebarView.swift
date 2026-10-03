@@ -16,6 +16,8 @@ struct SidebarView: View {
             }
             Section("Backup") {
                 ForEach([LibraryFilter.notBackedUp, .backedUp, .recentlyBackedUp], id: \.self) { row($0) }
+                Label("Backup History", systemImage: "clock.arrow.circlepath")
+                    .tag(SidebarDestination.backupHistory)
             }
             if model.isSample {
                 Section("Destination") {
@@ -44,8 +46,14 @@ struct SidebarView: View {
         .navigationTitle("CloakRoll")
     }
 
-    private var selection: Binding<LibraryFilter?> {
-        Binding(get: { model.filter }, set: { if let value = $0 { model.filter = value } })
+    private var selection: Binding<SidebarDestination?> {
+        Binding(get: { model.navigation }, set: { value in
+            switch value {
+            case .library(let filter): model.filter = filter
+            case .backupHistory: model.navigation = .backupHistory
+            case nil: break
+            }
+        })
     }
 
     private func row(_ filter: LibraryFilter) -> some View {
@@ -60,7 +68,7 @@ struct SidebarView: View {
                     .fixedSize()
             }
         }
-        .tag(filter)
+        .tag(SidebarDestination.library(filter))
         .accessibilityElement(children: .combine)
     }
 }

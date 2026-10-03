@@ -53,12 +53,20 @@ struct MediaCell: View {
         .help("\(asset.filename) · \(Format.bytes(asset.byteCount))")
         .simultaneousGesture(TapGesture(count: 2).onEnded { model.infoAsset = asset })
         .contextMenu {
+            if model.canBackUp(asset: asset) {
+                Button(contextBackupTitle) { model.backUpFromContext(asset: asset) }
+                Divider()
+            }
             Button("Show Info") { model.infoAsset = asset }
             Button("Copy Filename") {
                 NSPasteboard.general.clearContents()
                 NSPasteboard.general.setString(asset.filename, forType: .string)
             }
         }
+    }
+
+    private var contextBackupTitle: String {
+        selected && model.selection.selectedIDs.count > 1 ? "Back Up Selected Items" : "Back Up Item"
     }
 
     @ViewBuilder private var mediaBadge: some View {

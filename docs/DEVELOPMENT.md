@@ -59,8 +59,15 @@ timing evidence under `docs/verification`. Never commit personal media screensho
 restricted, disconnected and illustrative in-progress states.
 
 View Options contains native Small/Medium/Large thumbnail-size choices alongside sort and group
-menus. Settings uses the same size picker. Medium is the launch default. Check all three choices
-at compact and standard widths; see `verification/UI-PRESETS-PERFORMANCE.md` for current evidence.
+menus. Settings and the View menu use the same choices. Medium is the first-launch fallback;
+thumbnail size, sort, grouping and the last Settings pane are persisted locally. Check all three
+sizes at compact and standard widths, and relaunch after changing preferences. See
+`verification/UI-PRESETS-PERFORMANCE.md` and `verification/PHASE-8.md` for recorded evidence.
+
+The native menu bar exposes Find (⌘F), view choices, sidebar visibility, library/history navigation
+and the app's contextual actions. Verify that ⌘A remains text selection while search has focus,
+and that media actions are unavailable when viewing Backup History. The compact **Recent Backups**
+sidebar row filters the current library; **Backup History** opens the separate saved-session list.
 
 ## Hardware gates and release limits
 
@@ -131,3 +138,23 @@ substitutes for the real device/reconnect gate.
 
 See [Phase 7 evidence](verification/PHASE-7.md) for interruption boundaries, journal/migration
 tests and the limits of generated-fixture process-exit tests versus physical USB/power loss.
+
+## Offline history presentation
+
+Phase 8 loads recent sessions independently of device discovery. `LibraryBackupPersistence`
+publishes a bounded 100-session list with loading and error state; it retains the last successful
+list after failures and rejects obsolete query results. `loadSessions()` handles UI retry without
+throwing, while `refreshSessions()` remains an awaited throwing integration point for backup work.
+Initial concurrent UI loads are coalesced; completed queries preserve the single application store.
+
+History displays recorded session outcomes and counts. Opening this screen neither rechecks local
+originals nor creates a current-library backed-up status. Only the existing identity match and
+fresh file-verification path may do that. Show a destination's name/Finder action only when the
+currently selected destination identifier matches that session. Do not infer paths for another
+destination or open one merely because its folder name looks similar.
+
+Keep History on native list/disclosure controls and system surfaces. Library-only search, view
+options and the backup action bar belong to the library destination. Test offline/empty/error
+states, refresh races, long labels, expanded details and compact/standard light/dark layouts.
+[Phase 8 evidence](verification/PHASE-8.md) records the current checks and remaining accessibility,
+older-runtime, icon and hardware gates.
