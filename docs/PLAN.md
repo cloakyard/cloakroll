@@ -385,3 +385,17 @@ lookup from 3.752 to 2.256 seconds, and whole-probe peak RSS from 1,264 to 760 M
 empty-destination check is now 0.246 ms. See `verification/PHASE-9.md` for all three sizes, exact
 methods and limits. These are headless generated metadata results; physical media throughput,
 instrumented main-thread/scroll latency and sustained real-media cache memory remain pending.
+
+### 3 October — second-device hardware validation checkpoint
+
+The normal a007e84 app imported a Live Photo and two videos from a second physical phone;
+four original files passed independent size/SHA-256 checks. The Live Photo repeat transferred
+zero bytes. The eleven pre-existing destination files remained unchanged, with no unresolved
+journal entries. A genuinely new capture appeared Not Backed Up while three tested logical
+items remained Backed Up (2,067 total). See `verification/PHASE-7.md`. Transfer interruption,
+instrumented physical reconnect and sustained cache/memory acceptance remain pending; the
+videos completed before Stop could be exercised. No phase gate is promoted by these limits.
+
+Next bounded implementation stage: optional native connection/USB-availability help, accessible
+media actions, offline backup-folder readiness/retry, and cooperative cancellation during large
+backup registration. Preserve native system surfaces and macOS 14 fallbacks.

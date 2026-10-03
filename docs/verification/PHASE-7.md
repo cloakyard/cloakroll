@@ -89,3 +89,30 @@ with the connected phone after migration. Deliberate unplug during transfer, ext
 removal/full disk and app interruption remain pending unless evidence is appended below.
 
 No personal media, device identifier, database contents or screenshots belong in this document.
+
+## 3 October 2026 — second-device physical follow-up
+
+The normal a007e84 app (PID 29419) read a different physical phone exposing 2,066 logical
+items / 3,993 original resources. Its initial Backed Up count was zero in the existing destination,
+consistent with device-scoped history. One Live Photo copied two originals / 6,933,041 bytes.
+Repeating that selection verified both with zero transferred bytes and no additional source calls.
+Two bounded video selections copied 185,587,821 and 1,768,397,510 bytes respectively; each
+completed and fresh independent SHA-256/size checks passed. The app reported three backed-up
+logical items. All eight unique database-referenced originals passed independent verification,
+all eleven pre-existing destination files remained byte-for-byte unchanged, and the destination
+contained fifteen files / 2,152,695,355 bytes. No unresolved publication journal remained.
+
+The videos completed before the automation returned an actionable Stop control; these are
+successful import checks, **not cancellation acceptance**. Physical transfer interruption,
+external-drive removal/full disk, and app termination during USB transfer remain pending.
+
+After the user took a new photo, the same process observed 2,067 logical items / 3,994 resources:
+2,064 Not Backed Up and three Backed Up. The new photo was visibly Not Backed Up. The user
+reported a cable reconnect, but this observation window did not capture a disconnect/rediscovery
+transition, so physical reconnect/cache-reuse acceptance is not claimed from that report alone.
+
+Before the requested reconnect, thumbnail metrics were: 86 loads, zero active/queued/failed,
+34 encoded hits, 6,057,405 encoded bytes / 86 entries, zero disk hits, 6,094,561 disk bytes /
+86 entries, 164 decoded hits, 66 decodes and 49,526,976 decoded bytes / 66 entries. Framework
+outstanding work reached at most two and settled to zero. This bounded viewport observation
+does not establish a sustained memory plateau. Only aggregate evidence is retained here.
