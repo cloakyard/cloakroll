@@ -18,23 +18,34 @@ struct BackupRegistration: Sendable {
     let expectedBytes: Int64
     let components: [Component]
 
-    init(device: ConnectedDevice, sourceSessionID: UUID, assets: [MediaAsset], identity: BackupCatalogIdentity) throws {
+    init(
+        device: ConnectedDevice, sourceSessionID: UUID, assets: [MediaAsset], identity: BackupCatalogIdentity,
+        checkCancellation: () throws -> Void = { try Task.checkCancellation() }
+    ) throws {
+        try checkCancellation()
         guard !device.id.isEmpty, identity.deviceKey == device.id, identity.sessionID == sourceSessionID,
-              !assets.isEmpty, Set(assets.map(\.id)).count == assets.count else { throw BackupStoreError.invalidIdentity }
-        let reusable = identity.assets.values.filter(\.isReusableAcrossConnections)
-        guard Set(reusable.map(\.canonical)).count == reusable.count else { throw BackupStoreError.invalidIdentity }
+              !assets.isEmpty else { throw BackupStoreError.invalidIdentity }
+        var reusableIdentities: Set<String> = []
+        for assetIdentity in identity.assets.values {
+            try checkCancellation()
+            if assetIdentity.isReusableAcrossConnections,
+               !reusableIdentities.insert(assetIdentity.canonical).inserted { throw BackupStoreError.invalidIdentity }
+        }
         var components: [Component] = []
+        var assetIDs: Set<String> = []
         var resourceIDs: Set<String> = []
         var bytes: Int64 = 0
         for asset in assets {
-            guard asset.deviceID == device.id, !asset.resources.isEmpty,
+            try checkCancellation()
+            guard assetIDs.insert(asset.id).inserted, asset.deviceID == device.id, !asset.resources.isEmpty,
                   let assetIdentity = identity.assets[asset.id], assetIdentity.assetID == asset.id,
-                  Set(assetIdentity.resources.keys) == Set(asset.resources.map(\.id)),
+                  assetIdentity.resources.count == asset.resources.count,
                   Self.valid(canonical: assetIdentity.canonical, digest: assetIdentity.digest),
                   !assetIdentity.isReusableAcrossConnections || device.identity?.isPersistent == true else {
                 throw BackupStoreError.invalidIdentity
             }
             for resource in asset.resources {
+                try checkCancellation()
                 guard resource.byteCount > 0, resourceIDs.insert(resource.id).inserted,
                       let resourceIdentity = assetIdentity.resources[resource.id], resourceIdentity.resourceID == resource.id,
                       Self.valid(canonical: resourceIdentity.canonical, digest: resourceIdentity.digest),
@@ -50,6 +61,7 @@ struct BackupRegistration: Sendable {
                 ))
             }
         }
+        try checkCancellation()
         self.device = device
         self.sourceSessionID = sourceSessionID
         self.assetCount = assets.count

@@ -116,3 +116,27 @@ Before the requested reconnect, thumbnail metrics were: 86 loads, zero active/qu
 86 entries, 164 decoded hits, 66 decodes and 49,526,976 decoded bytes / 66 entries. Framework
 outstanding work reached at most two and settled to zero. This bounded viewport observation
 does not establish a sustained memory plateau. Only aggregate evidence is retained here.
+
+A final bounded 1,134,066,336-byte video also completed before its Stop menu command could
+be activated. Four logical items / five original files are now backed up from this phone.
+Independent verification passed for all nine unique database-referenced originals; all eleven
+pre-existing destination files remain unchanged. The destination has sixteen files /
+3,286,761,691 bytes and zero unresolved journal entries. History presents all seven completed
+sessions, including prior-device sessions, while current library status stays scoped to this phone.
+
+## Cooperative cancellation during preparation
+
+Backup registration now checks cancellation before validation and at each full-catalog identity,
+selected-asset and original-resource boundary, including its final return. The previous
+uncancellable collection passes are replaced by checked loops. Registration preserves identity
+uniqueness, exact component membership and existing validation. SQLite transaction interruption
+and physical ImageCaptureCore ownership remain unchanged: a Stop request cannot release the
+source slot or destination scope before physical work settles.
+
+All **287 core tests pass**, including 42 persistence tests. The new suite's three tests/six cases
+cover pre-cancelled public registration (CancellationError, all eight registration/evidence
+tables empty and zero downstream source calls), deterministic actual task cancellation during
+each preparation loop, and successful uncancelled registration of 100 originals. The internal
+test seam introduces no public API or timing-based sleep. Compiler warnings/errors and
+whitespace checks are clear. Logs: `/tmp/cloakroll-preparation-cancellation-core.log`.
+This validates preparation cancellation, not an interrupted physical USB request.

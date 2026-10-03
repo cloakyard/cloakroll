@@ -399,3 +399,8 @@ videos completed before Stop could be exercised. No phase gate is promoted by th
 Next bounded implementation stage: optional native connection/USB-availability help, accessible
 media actions, offline backup-folder readiness/retry, and cooperative cancellation during large
 backup registration. Preserve native system surfaces and macOS 14 fallbacks.
+
+Preparation cancellation refinement is implemented and passes all 287 core tests. Registration
+now cooperates with Stop during metadata validation, with no database rows or source calls on
+pre-cancelled requests. Physical source ownership and interruption gates remain unchanged; see
+`verification/PHASE-7.md`. UI help and destination checks are being verified as the next stage.
