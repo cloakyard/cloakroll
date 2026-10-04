@@ -3,7 +3,7 @@
 **Your camera roll, safely on your Mac.** A native macOS photo and video backup app, part of Cloakyard.
 
 CloakRoll is being built in verified phases. The app browses a real USB-connected iPhone and
-backs up selected or filtered originals into Year/Month folders, checking file sizes and local
+backs up selected or filtered originals into separate iPhone folders, checking file sizes and local
 SHA-256 digests before reporting success. Bounded physical imports have covered photos, Live
 Photos, RAW and video. Persistent incremental history is implemented and tested; its physical
 reconnect/new-photo acceptance check remains pending. Thumbnail reconnect and broader reliability
@@ -15,6 +15,11 @@ Follow [the implementation plan](docs/PLAN.md) for actual progress and verificat
 The [native UI refinement evidence](docs/verification/PHASE-8.md) covers history, menu parity,
 remembered preferences and compact light/dark layout checks. Small, Medium and Large thumbnail
 presets remain the only size controls.
+Settings → Backup → Folder structure offers Year and Month (the default) or One Folder
+for photos and videos within each iPhone folder. The choice applies to new files;
+existing verified originals stay in place and remain eligible for incremental reuse.
+See [organization verification](docs/verification/BACKUP-ORGANIZATION.md) for safety checks
+and the pending physical check of the new flat layout.
 The [scale performance evidence](docs/verification/PHASE-9.md) records generated 10k/50k/100k
 catalog measurements and improvements to identity preparation and history matching.
 

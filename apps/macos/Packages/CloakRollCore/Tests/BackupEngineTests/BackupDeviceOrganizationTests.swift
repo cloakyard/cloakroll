@@ -17,30 +17,32 @@ struct BackupDeviceOrganizationTests {
         #expect(throws: BackupEngineError.invalidSelection) { try BackupFolderLayout.deviceFolderName(for: "") }
     }
 
-    @Test func identicalNamesFromDifferentPhonesHaveSeparateFoldersAndNeverReuseEachOthersEvidence() async throws {
+    @Test(arguments: [BackupFolderLayout.byDevice, .byDeviceFlat])
+    func identicalNamesFromDifferentPhonesHaveSeparateFoldersAndNeverReuseEachOthersEvidence(layout: BackupFolderLayout) async throws {
         let root = try backupDirectory()
         defer { try? FileManager.default.removeItem(at: root) }
         let session = UUID()
         let firstAsset = asset(deviceID: "persistent:first")
         let secondAsset = asset(deviceID: "persistent:second")
         let first = try await BackupEngine(timeZone: .gmt).run(
-            assets: [firstAsset], sessionID: session, destination: root, folderLayout: .byDevice
+            assets: [firstAsset], sessionID: session, destination: root, folderLayout: layout
         ) { request, _ in try writeOriginal(request, data: Data([1, 2, 3])) }
         let second = try await BackupEngine(timeZone: .gmt, previousRecords: first.records).run(
-            assets: [secondAsset], sessionID: session, destination: root, folderLayout: .byDevice
+            assets: [secondAsset], sessionID: session, destination: root, folderLayout: layout
         ) { request, _ in try writeOriginal(request, data: Data([4, 5, 6])) }
         #expect(first.snapshot.phase == .completed && second.snapshot.phase == .completed)
         #expect(first.snapshot.transferredBytes == 3 && second.snapshot.transferredBytes == 3)
         let one = try #require(first.records.first)
         let two = try #require(second.records.first)
-        #expect(one.relativePath == "\(try BackupFolderLayout.deviceFolderName(for: firstAsset.deviceID))/2026/09/IMG.HEIC")
-        #expect(two.relativePath == "\(try BackupFolderLayout.deviceFolderName(for: secondAsset.deviceID))/2026/09/IMG.HEIC")
+        let suffix = layout == .byDeviceFlat ? "/IMG.HEIC" : "/2026/09/IMG.HEIC"
+        #expect(one.relativePath == (try BackupFolderLayout.deviceFolderName(for: firstAsset.deviceID)) + suffix)
+        #expect(two.relativePath == (try BackupFolderLayout.deviceFolderName(for: secondAsset.deviceID)) + suffix)
         #expect(one.relativePath != two.relativePath)
         #expect(try Data(contentsOf: root.appendingPathComponent(one.relativePath)) == Data([1, 2, 3]))
         #expect(try Data(contentsOf: root.appendingPathComponent(two.relativePath)) == Data([4, 5, 6]))
 
         let repeated = try await BackupEngine(previousRecords: first.records + second.records).run(
-            assets: [firstAsset], sessionID: session, destination: root, folderLayout: .byDevice
+            assets: [firstAsset], sessionID: session, destination: root, folderLayout: layout
         ) { _, _ in throw BackupTestError.unexpectedLoad }
         #expect(repeated.snapshot.phase == .completed && repeated.snapshot.transferredBytes == 0)
         #expect(repeated.records == first.records)
@@ -48,7 +50,7 @@ struct BackupDeviceOrganizationTests {
         // Removing one phone's local original invalidates only that phone's reuse evidence.
         try FileManager.default.removeItem(at: root.appendingPathComponent(one.relativePath))
         let restored = try await BackupEngine(previousRecords: first.records + second.records).run(
-            assets: [firstAsset], sessionID: session, destination: root, folderLayout: .byDevice
+            assets: [firstAsset], sessionID: session, destination: root, folderLayout: layout
         ) { request, _ in try writeOriginal(request, data: Data([7, 8, 9])) }
         #expect(restored.snapshot.phase == .completed && restored.snapshot.transferredBytes == 3)
         #expect(restored.records.first?.relativePath == one.relativePath)
@@ -80,7 +82,7 @@ struct BackupDeviceOrganizationTests {
         #expect(try Data(contentsOf: root.appendingPathComponent(original.relativePath)) == Data([1, 2, 3]))
     }
 
-    @Test(arguments: [BackupFolderLayout.byDate, .byDevice])
+    @Test(arguments: [BackupFolderLayout.byDate, .byDevice, .byDeviceFlat])
     func mixedDeviceSelectionsFailBeforeAnySourceOrFilesystemWork(layout: BackupFolderLayout) async throws {
         let root = try backupDirectory()
         defer { try? FileManager.default.removeItem(at: root) }
@@ -94,13 +96,14 @@ struct BackupDeviceOrganizationTests {
         #expect(try FileManager.default.contentsOfDirectory(atPath: root.path).isEmpty)
     }
 
-    @Test func publicationJournalRecoveryIncludesTheExactDeviceFolder() async throws {
+    @Test(arguments: [BackupFolderLayout.byDevice, .byDeviceFlat])
+    func publicationJournalRecoveryIncludesTheExactDeviceFolder(layout: BackupFolderLayout) async throws {
         let root = try backupDirectory()
         defer { try? FileManager.default.removeItem(at: root) }
         let capture = JournalCapture()
         let selected = asset(deviceID: "persistent:first")
         let result = try await BackupEngine().run(
-            assets: [selected], sessionID: UUID(), destination: root, folderLayout: .byDevice,
+            assets: [selected], sessionID: UUID(), destination: root, folderLayout: layout,
             onPublication: { await capture.publication($0) },
             onVerified: { _ in throw BackupTestError.source }
         ) { request, _ in try writeOriginal(request, data: Data([1, 2, 3])) }
@@ -109,10 +112,12 @@ struct BackupDeviceOrganizationTests {
         let record = try #require(result.records.first)
         #expect(publication.relativePath == record.relativePath)
         #expect(publication.relativePath.hasPrefix(try BackupFolderLayout.deviceFolderName(for: selected.deviceID) + "/"))
+        #expect(publication.relativePath.split(separator: "/").count == (layout == .byDeviceFlat ? 2 : 4))
         #expect(try await BackupRecovery.inspect(destination: root, intent: publication) == .published(record))
     }
 
-    @Test func aDeviceFolderSymlinkCannotRedirectOriginalPublication() async throws {
+    @Test(arguments: [BackupFolderLayout.byDevice, .byDeviceFlat])
+    func aDeviceFolderSymlinkCannotRedirectOriginalPublication(layout: BackupFolderLayout) async throws {
         let root = try backupDirectory()
         let outside = try backupDirectory()
         defer {
@@ -123,7 +128,7 @@ struct BackupDeviceOrganizationTests {
         let folder = try BackupFolderLayout.deviceFolderName(for: selected.deviceID)
         try FileManager.default.createSymbolicLink(at: root.appendingPathComponent(folder), withDestinationURL: outside)
         let result = try await BackupEngine().run(
-            assets: [selected], sessionID: UUID(), destination: root, folderLayout: .byDevice
+            assets: [selected], sessionID: UUID(), destination: root, folderLayout: layout
         ) { request, _ in try writeOriginal(request, data: Data([1, 2, 3])) }
         #expect(result.snapshot.phase == .failed && result.records.isEmpty)
         #expect(try FileManager.default.contentsOfDirectory(atPath: outside.path).isEmpty)

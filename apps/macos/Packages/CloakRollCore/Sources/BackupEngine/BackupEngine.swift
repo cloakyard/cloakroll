@@ -92,7 +92,8 @@ public actor BackupEngine {
             let timeZone = timeZone
             let folderPrefix = try folderLayout.folderPrefix(deviceID: deviceID)
             store = try await detached {
-                try BackupFileStore(destination: destination, runID: runID, timeZone: timeZone, folderPrefix: folderPrefix)
+                try BackupFileStore(destination: destination, runID: runID, timeZone: timeZone,
+                                    folderPrefix: folderPrefix, usesDateFolders: folderLayout.usesDateFolders)
             }
             guard let store else { throw BackupEngineError.invalidSelection }
             for asset in assets {

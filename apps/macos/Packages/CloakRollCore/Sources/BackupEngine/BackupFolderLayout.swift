@@ -3,10 +3,13 @@ import Foundation
 import MediaModels
 
 /// Organization applies only to newly published originals. Previously verified paths remain
-/// valid in either layout and are never renamed or moved as part of an incremental backup.
+/// valid in every layout and are never renamed or moved as part of an incremental backup.
 public enum BackupFolderLayout: Equatable, Sendable {
     case byDate
     case byDevice
+    case byDeviceFlat
+
+    var usesDateFolders: Bool { self != .byDeviceFlat }
 
     /// A versioned, deterministic folder component. Display names are deliberately excluded:
     /// renaming an iPhone must not split its future originals across different folders.
@@ -20,7 +23,7 @@ public enum BackupFolderLayout: Equatable, Sendable {
     func folderPrefix(deviceID: String) throws -> [String] {
         switch self {
         case .byDate: []
-        case .byDevice: [try Self.deviceFolderName(for: deviceID)]
+        case .byDevice, .byDeviceFlat: [try Self.deviceFolderName(for: deviceID)]
         }
     }
 }

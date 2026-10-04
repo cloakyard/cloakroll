@@ -42,7 +42,8 @@ struct SettingsView: View {
     }
 
     private var backup: some View {
-        Form {
+        @Bindable var model = model
+        return Form {
             Section("Destination") {
                 if let destination = model.backup.destination.selection {
                     LabeledContent("Folder", value: destination.displayName)
@@ -76,14 +77,22 @@ struct SettingsView: View {
                 }
                 .disabled(model.isSample || model.backup.isBusy || model.backup.destination.isChoosing)
             }
-            Section("Originals") {
-                LabeledContent("Media format", value: "Keep originals")
-                LabeledContent("Folder structure", value: "iPhone / Year / Month")
-            }
             Section {
-                Text("Previous backups are remembered for each iPhone and folder. Saved originals are checked before they are reused.")
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
+                LabeledContent("Media format", value: "Keep originals")
+                Picker("Folder structure", selection: $model.backupOrganization) {
+                    ForEach(BackupOrganization.allCases, id: \.self) { organization in
+                        Text(organization.title).tag(organization)
+                    }
+                }
+                .pickerStyle(.menu)
+                .disabled(model.backup.isBusy)
+            } header: {
+                Text("Originals")
+            } footer: {
+                Text("""
+                Each iPhone has its own folder. Photos and videos can be grouped by year and month or kept together.
+                This setting applies to new files; existing backups stay in place.
+                """)
             }
         }
         .formStyle(.grouped)

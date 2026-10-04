@@ -59,7 +59,10 @@ final class LibraryBackupController {
         if didChoose { retryHistoryCheck() }
     }
 
-    func start(assets: [MediaAsset], sessionID: UUID, download: @escaping BackupEngine.Download) {
+    func start(
+        assets: [MediaAsset], sessionID: UUID, folderLayout: BackupFolderLayout = .byDevice,
+        download: @escaping BackupEngine.Download
+    ) {
         guard !isBusy, !isCheckingHistory, historyErrorMessage == nil,
               !destination.isChoosing, !assets.isEmpty else { return }
         if persistence != nil {
@@ -73,7 +76,8 @@ final class LibraryBackupController {
         errorMessage = nil
         lastAttempt = Attempt(assets: assets, sessionID: sessionID)
         snapshot = BackupSnapshot(phase: .preparing, totalAssets: assets.count)
-        runTask = Task { await perform(assets: assets, sessionID: sessionID, download: download) }
+        // Capture the organization before any folder picker or lease awaits. One run uses one layout.
+        runTask = Task { await perform(assets: assets, sessionID: sessionID, folderLayout: folderLayout, download: download) }
     }
 
     func cancel() {
@@ -117,7 +121,9 @@ final class LibraryBackupController {
         return history.projection(assets: assets, scope: .init(sessionID: sessionID, destinationID: destinationID))
     }
 
-    private func perform(assets: [MediaAsset], sessionID: UUID, download: @escaping BackupEngine.Download) async {
+    private func perform(
+        assets: [MediaAsset], sessionID: UUID, folderLayout: BackupFolderLayout, download: @escaping BackupEngine.Download
+    ) async {
         defer {
             engine = nil
             isBusy = false
@@ -150,7 +156,7 @@ final class LibraryBackupController {
             }
             defer { monitor.cancel() }
             var result = try await engine.run(
-                assets: assets, sessionID: sessionID, destination: lease.url, folderLayout: .byDevice,
+                assets: assets, sessionID: sessionID, destination: lease.url, folderLayout: folderLayout,
                 onStaged: { intent in
                     if let journal { try await journal.store.recordStaging(sessionID: journal.id, intent: intent) }
                 },

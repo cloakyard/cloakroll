@@ -2,6 +2,15 @@ import AppKit
 import MediaModels
 
 extension AppModel {
+    func showSelectedInfo() {
+        if let activeID, selection.selectedIDs.contains(activeID) {
+            infoAsset = currentAsset(id: activeID)
+            return
+        }
+        guard let id = snapshot.orderedIDs.first(where: selection.selectedIDs.contains) else { return }
+        infoAsset = currentAsset(id: id)
+    }
+
     var canBackUp: Bool {
         isViewingLibrary && backupSourceAvailable && (!selection.selectedIDs.isEmpty || snapshot.visibleNewCount > 0)
     }

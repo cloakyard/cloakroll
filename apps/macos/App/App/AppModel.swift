@@ -31,6 +31,7 @@ final class AppModel {
     var isProjecting = false
     var presentation: LibraryPresentation?
     var settingsTab = SettingsTab.general { didSet { preferences.save(settingsTab) } }
+    var backupOrganization = BackupOrganization.byDate { didSet { preferences.save(backupOrganization) } }
     var sampleProgress = false
     var sampleProgressExample = BackupProgressExample.copying
     private(set) var catalogSessionID: UUID?
@@ -71,6 +72,7 @@ final class AppModel {
         sort = preferences.sort
         grouping = preferences.grouping
         settingsTab = preferences.settingsTab
+        backupOrganization = preferences.backupOrganization
         if let makeBrowser {
             self.makeBrowser = makeBrowser
         } else {
@@ -198,7 +200,7 @@ final class AppModel {
     func startBackup(assets: [MediaAsset]) {
         guard backupSourceAvailable, let sessionID = catalogSessionID,
               let provider = browser as? any OriginalMediaDownloading else { return }
-        backup.start(assets: assets, sessionID: sessionID) { request, progress in
+        backup.start(assets: assets, sessionID: sessionID, folderLayout: backupOrganization.folderLayout) { request, progress in
             try await provider.downloadOriginal(
                 resourceID: request.resource.id, sessionID: request.sessionID,
                 to: request.directory, filename: request.filename, progress: progress
@@ -388,15 +390,6 @@ final class AppModel {
     func clearSelection() {
         selection.clear()
         activeID = nil
-    }
-
-    func showSelectedInfo() {
-        if let activeID, selection.selectedIDs.contains(activeID) {
-            infoAsset = lookup[activeID]
-            return
-        }
-        guard let id = snapshot.orderedIDs.first(where: selection.selectedIDs.contains) else { return }
-        infoAsset = lookup[id]
     }
 
     func moveSelection(by offset: Int, extending: Bool) {

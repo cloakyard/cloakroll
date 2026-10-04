@@ -596,3 +596,20 @@ Native Copying/Verifying/Stopping previews and presentation regressions pass. Th
 combined stage passes 342 core and 148 app tests, Debug/Release builds, strict lint
 and signatures. See `verification/BACKUP-PROGRESS.md`; no physical transfer was
 initiated and no broader phase is promoted.
+
+### 4 October — configurable backup folder organization
+
+Settings → Backup offers Year and Month (existing default) or One Folder for new
+originals within each iPhone's separate folder. The preference persists, is captured
+per run, and cannot be changed in Settings during an active backup. Existing verified
+paths remain eligible for fresh verification/reuse in place; no migration occurs.
+Filename collisions, multiple phones, interrupted publication and layout switches
+retain the existing safety rules.
+
+All 342 core and 148 hosted app tests pass, as do native picker inspection,
+Debug/Release builds, strict lint and signature checks. Tests include persistent
+reopen/reconnect/layout reuse and actual AppModel capture during a suspended source
+call followed by a new run. See `verification/BACKUP-ORGANIZATION.md`. The prior
+user backup had completed before rebuilding; no physical transfer was initiated.
+The new flat-layout physical import/repeat remains pending because the iPhone is
+not currently exposed. No full phase acceptance is claimed.

@@ -14,15 +14,18 @@ struct LibraryInteractionTests {
         let preferences = LibraryPreferences(defaults: defaults)
         let first = AppModel(makeBrowser: { MockDeviceBrowserService() }, preferences: preferences)
         #expect(first.thumbnailSize == .medium)
+        #expect(first.backupOrganization == .byDate)
         first.thumbnailSize = .large
         first.sort = .oldestFirst
         first.grouping = .month
         first.settingsTab = .backup
+        first.backupOrganization = .singleFolder
         let reopened = AppModel(makeBrowser: { MockDeviceBrowserService() }, preferences: preferences)
         #expect(reopened.thumbnailSize == .large)
         #expect(reopened.sort == .oldestFirst)
         #expect(reopened.grouping == .month)
         #expect(reopened.settingsTab == .backup)
+        #expect(reopened.backupOrganization == .singleFolder)
     }
 
     @Test func invalidSavedChoiceDoesNotEraseOtherValidPreferences() throws {
@@ -33,11 +36,13 @@ struct LibraryInteractionTests {
         defaults.set("oldestFirst", forKey: "browsing.sort")
         defaults.set(100, forKey: "browsing.grouping")
         defaults.set("missing-pane", forKey: "settings.selectedTab")
+        defaults.set("future-organization", forKey: "backup.organization")
         let model = AppModel(makeBrowser: { MockDeviceBrowserService() }, preferences: LibraryPreferences(defaults: defaults))
         #expect(model.thumbnailSize == .medium)
         #expect(model.sort == .oldestFirst)
         #expect(model.grouping == .automatic)
         #expect(model.settingsTab == .general)
+        #expect(model.backupOrganization == .byDate)
     }
 
     @Test func contextBackupTargetsTheClickedItemOrItsSelectedBatchWithoutChangingSelection() async throws {
