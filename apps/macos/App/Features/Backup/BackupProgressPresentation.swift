@@ -28,13 +28,9 @@ struct BackupProgressPresentation {
 
     var title: String {
         if isStopping || snapshot.phase == .cancelling { return "Stopping Backup…" }
-        switch snapshot.phase {
-        case .idle, .preparing: return "Preparing Backup…"
-        case .downloading: return "Backing Up…"
-        case .verifying: return "Verifying Originals…"
-        case .completed, .failed, .cancelled: return "Finishing Backup…"
-        case .cancelling: return "Stopping Backup…"
-        }
+        // This presentation stays active through local verification and the final history write.
+        // BackupBar switches to its separate terminal summary only after the operation settles.
+        return "Backing Up…"
     }
 
     var itemSummary: String {
@@ -49,7 +45,7 @@ struct BackupProgressPresentation {
         return "\(Format.bytes(processedBytes)) of \(Format.bytes(snapshot.expectedBytes))"
     }
 
-    var waitsForOperation: Bool {
-        isStopping || snapshot.phase != .downloading
-    }
+    /// With a known total the linear meter is determinate, so keep one stable activity indicator
+    /// beside the heading throughout the operation instead of inserting it for every verification.
+    var showsActivityIndicator: Bool { fraction != nil }
 }

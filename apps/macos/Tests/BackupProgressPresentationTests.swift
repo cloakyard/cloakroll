@@ -17,7 +17,7 @@ struct BackupProgressPresentationTests {
         #expect(progress.percentage == "0%")
         #expect(progress.byteSummary != nil)
         #expect(progress.title == "Backing Up…")
-        #expect(!progress.waitsForOperation)
+        #expect(progress.showsActivityIndicator)
     }
 
     @Test("An unknown or invalid total has no invented fraction or percentage")
@@ -32,8 +32,8 @@ struct BackupProgressPresentationTests {
             #expect(progress.fraction == nil)
             #expect(progress.percentage == nil)
             #expect(progress.byteSummary == nil)
-            #expect(progress.title == "Preparing Backup…")
-            #expect(progress.waitsForOperation)
+            #expect(progress.title == "Backing Up…")
+            #expect(!progress.showsActivityIndicator)
         }
     }
 
@@ -50,7 +50,7 @@ struct BackupProgressPresentationTests {
         #expect(progress.itemSummary == "1 of 4 items backed up")
     }
 
-    @Test("Entering verification retains measured data progress and changes the phase indication")
+    @Test("Entering verification retains measured data progress and the stable heading")
     func verificationRetainsReceivedBytes() {
         var snapshot = BackupSnapshot(
             phase: .downloading, totalAssets: 3, expectedBytes: 1_000, completedAssets: 1,
@@ -64,8 +64,10 @@ struct BackupProgressPresentationTests {
         #expect(verifying.processedBytes == downloading.processedBytes)
         #expect(verifying.fraction == downloading.fraction)
         #expect(verifying.percentage == "50%")
-        #expect(verifying.title == "Verifying Originals…")
-        #expect(verifying.waitsForOperation)
+        #expect(verifying.title == downloading.title)
+        #expect(verifying.title == "Backing Up…")
+        #expect(verifying.showsActivityIndicator == downloading.showsActivityIndicator)
+        #expect(verifying.showsActivityIndicator)
         #expect(verifying.itemSummary == "1 of 3 items backed up")
     }
 
@@ -88,6 +90,8 @@ struct BackupProgressPresentationTests {
         #expect(after.fraction == before.fraction)
         #expect(nextOriginal.fraction == after.fraction)
         #expect(nextOriginal.percentage == "50%")
+        #expect(Set([before, after, nextOriginal].map(\.title)) == ["Backing Up…"])
+        #expect([before, after, nextOriginal].allSatisfy { $0.showsActivityIndicator })
     }
 
     @Test("Reused originals advance progress without claiming new transferred bytes")
@@ -100,7 +104,7 @@ struct BackupProgressPresentationTests {
         #expect(progress.percentage == "75%")
         #expect(progress.snapshot.transferredBytes == 0)
         #expect(progress.itemSummary == "3 of 4 items backed up")
-        #expect(progress.waitsForOperation)
+        #expect(progress.showsActivityIndicator)
     }
 
     @Test("A full data meter still distinguishes verification and finalization from completion")
@@ -110,15 +114,15 @@ struct BackupProgressPresentationTests {
             currentResourceBytes: 1_000, currentResourceExpectedBytes: 1_000
         ))
         #expect(verifying.percentage == "100%")
-        #expect(verifying.title == "Verifying Originals…")
+        #expect(verifying.title == "Backing Up…")
         #expect(verifying.itemSummary == "0 of 1 item backed up")
-        #expect(verifying.waitsForOperation)
+        #expect(verifying.showsActivityIndicator)
         let finishing = BackupProgressPresentation(snapshot: BackupSnapshot(
             phase: .completed, totalAssets: 1, expectedBytes: 1_000, completedAssets: 1, verifiedBytes: 1_000
         ))
         #expect(finishing.percentage == "100%")
-        #expect(finishing.title == "Finishing Backup…")
-        #expect(finishing.waitsForOperation)
+        #expect(finishing.title == "Backing Up…")
+        #expect(finishing.showsActivityIndicator)
     }
 
     @Test("Stopping takes priority over phase text without discarding measured progress")
@@ -129,12 +133,12 @@ struct BackupProgressPresentationTests {
                 currentResourceBytes: 150, currentResourceExpectedBytes: 400
             ), isStopping: true)
             #expect(progress.title == "Stopping Backup…")
-            #expect(progress.waitsForOperation)
+            #expect(progress.showsActivityIndicator)
             #expect(progress.percentage == "35%")
         }
         let cancelling = BackupProgressPresentation(snapshot: BackupSnapshot(phase: .cancelling))
         #expect(cancelling.title == "Stopping Backup…")
-        #expect(cancelling.waitsForOperation)
+        #expect(!cancelling.showsActivityIndicator)
     }
 
     @Test("Negative and oversized byte counters cannot escape the data meter bounds")

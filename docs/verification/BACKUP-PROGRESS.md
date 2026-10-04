@@ -79,3 +79,25 @@ checked into the repository.
 
 Physical interruption during this particular UI pass, full VoiceOver, increased contrast
 and macOS 14 runtime behavior were not revalidated. No broader phase gate is promoted.
+
+## 4 October — stable active heading
+
+The user reported rapid cycling between copying and verification labels during a
+large backup. Active progress now keeps **Backing Up…** through preparation,
+download, verification and final history saving. The sidebar uses the same stable
+title. **Stopping Backup…** remains explicit after a cancellation request, and the
+existing completed/failed/cancelled summaries appear only when the operation settles.
+
+The native mini activity indicator remains present throughout determinate progress,
+so entering verification no longer shifts the title sideways for each original.
+Received-byte accounting, percentages, item counts and verification are unchanged;
+100% data progress still does not announce backup completion.
+
+The normal Debug UI was inspected using the explicitly labeled Copying, Verifying
+and Stopping examples. Copying and Verifying retain the same title and alignment;
+Stop remains distinct. These are presentation checks, not physical transfer evidence.
+The combined organization stage passes 342 core and 148 hosted app tests, including
+updated heading/spinner, repeated-original, 100% and cancellation regressions.
+Debug/Release builds, strict lint, whitespace and signatures pass without compiler
+warnings. No transfer was initiated for this pass. See `BACKUP-ORGANIZATION.md` for
+the companion Settings feature, checks and remaining hardware limit.

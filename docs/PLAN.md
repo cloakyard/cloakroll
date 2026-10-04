@@ -584,3 +584,15 @@ Debug/Release builds, all 338 core and 146 app tests, strict lint and signatures
 see `verification/PHASE-8.md`. The physical thumbnail boundary check passed before
 the final sidebar rebuild; after that restart the iPhone is again not exposed to the
 app. No new backup or media mutation was initiated.
+
+### 4 October — stable backup heading
+
+Active backup UI now keeps Backing Up… across preparation, copying, verification
+and history saving, including the destination caption. The native activity indicator
+also stays in place during determinate progress. Stop and settled result summaries
+remain distinct. Measured byte progress and verification behavior are unchanged.
+
+Native Copying/Verifying/Stopping previews and presentation regressions pass. The
+combined stage passes 342 core and 148 app tests, Debug/Release builds, strict lint
+and signatures. See `verification/BACKUP-PROGRESS.md`; no physical transfer was
+initiated and no broader phase is promoted.
