@@ -219,3 +219,32 @@ failure-state checks with physical transfers remain pending. Controller/persiste
 covered by generated callback tests, not substituted for hardware acceptance. Full VoiceOver,
 system contrast variants, macOS 14 runtime and final icon remain open. No personal screenshots
 or media were added to the repository. Logs are listed in the Phase 7 refinement appendix.
+
+## 4 October — floating Liquid Glass backup surface
+
+On macOS 26 and later, the existing backup controls now sit on one native regular
+Liquid Glass rounded rectangle, inset 12 points from the detail edges. Internal
+horizontal padding keeps the text aligned with the media grid. The panel has no
+custom blur, tint, painted highlight or whole-panel interaction effect. Native
+buttons and measured progress retain their existing behavior. macOS 14–15 retain
+the system bar-material fallback.
+
+`safeAreaInset` reserves the panel's full height and margins. This replaces the
+previous `safeAreaBar` scroll-edge extension, avoiding a second full-width blurred
+band behind the glass. At the actual bottom scroll limit the final image row is
+fully visible above the panel; content can pass behind it while scrolling.
+
+The normal Debug app was inspected in standard light and compact light/dark sizes,
+with both idle controls and illustrative active progress. Native text, percentage,
+meter and Stop fit without clipping. Debug build, strict lint, whitespace and
+signature checks passed. No new tests were added for this reversible surface-only
+change. System reduced-transparency/high-contrast preferences and macOS 14 runtime
+were not separately exercised; system glass owns those adaptations.
+
+Public Xcode 27 SDK availability was checked. Design references:
+[custom glass](https://developer.apple.com/documentation/swiftui/applying-liquid-glass-to-custom-views),
+[materials](https://developer.apple.com/design/human-interface-guidelines/materials),
+[safe-area bars](https://developer.apple.com/documentation/swiftui/view/safeareabar(edge:alignment:spacing:content:)),
+and [adopting Liquid Glass](https://developer.apple.com/documentation/technologyoverviews/adopting-liquid-glass).
+Radius and margins are local design choices, not prescribed Apple measurements.
+Build log: `/tmp/cloakroll-glass-initial-build.log`.

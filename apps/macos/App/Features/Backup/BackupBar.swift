@@ -3,6 +3,7 @@ import SwiftUI
 
 struct BackupBar: View {
     let model: AppModel
+    var horizontalInset: CGFloat = Design.contentInset
 
     var body: some View {
         HStack(spacing: 16) {
@@ -27,7 +28,7 @@ struct BackupBar: View {
                 idleActions
             }
         }
-        .padding(.horizontal, Design.contentInset)
+        .padding(.horizontal, horizontalInset)
         .padding(.vertical, 16)
     }
 

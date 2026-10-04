@@ -530,3 +530,13 @@ Two physical video imports and a final repeat passed size/SHA-256 checks; interm
 physical percentages were too brief to capture reliably. Test copies were removed and
 history preserved. See `verification/BACKUP-PROGRESS.md` for evidence, the post-cleanup
 device-unavailable limitation and remaining acceptance checks. No full phase is promoted.
+
+### 4 October — Liquid Glass backup surface; thumbnail lookahead in progress
+
+The bottom backup controls now use one floating native regular-glass surface on
+macOS 26+, with a system-material fallback. Standard/compact light/dark inspection,
+bottom content clearance, normal build, strict lint and signature checks pass; see
+`verification/PHASE-8.md`. Thumbnail audit found two remaining sources of scroll
+pop-in: lookahead depends on lazy cell creation and currently warms only encoded
+data. The next bounded stage moves lookahead to catalog rows and prepares decoded
+images while preserving visible priority and existing cache/source limits.
