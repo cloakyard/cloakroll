@@ -166,6 +166,16 @@ devices/destinations and verification failure. Hardware matrices stay separate f
 
 ## Progress evidence
 
+### 4 October 2026 — requested cleanup and real incremental/Stop checks
+
+Removed sixteen explicitly requested previous test backups after matching the full private
+baseline, reclaiming 3,286,761,691 bytes. History remains available. The normal app exposed
+5,140 items on the connected phone. A deleted local photo was copied again; its immediate
+repeat verified the saved original with zero transfer. Native Command-period stopped an actual
+231 MB USB download before publication, waited for the terminal callback, and recorded zero
+verified items. Try Again succeeded and independent hashes passed. See
+`verification/OCTOBER-4-HARDWARE.md`. Cable-removal and simultaneous-device gates remain open.
+
 - Initial workspace was empty, without Git history. Xcode 27.0, Swift 6.4, XcodeGen and SwiftLint are available.
 - USB inventory at discovery showed host buses only; no attached iPhone. Hardware verification remains pending.
 - No product feature code was written during discovery.
