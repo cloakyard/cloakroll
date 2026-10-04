@@ -49,3 +49,19 @@ Coordinated cable removal, new capture/reconnect, simultaneous phone selection a
 per-device folder layout still require their own observations. No mock or generated-source
 test substitutes for these checks. Small new test backups created after cleanup are accounted
 for separately from the sixteen removed prior files.
+
+## Actual Quit during transfer
+
+After independently checking the completed 231,289,653-byte test video, it was removed to
+reclaim the new test space and force another physical download. The same single item was
+selected, its backup started, and native Command-Q sent immediately afterward.
+
+- 13:21:19.753: actual original download started, one outstanding operation.
+- 13:21:19.804: stop requested; waiting for completion.
+- 13:21:19.868: ImageCaptureCore cancellation result `-9937`; original operation settled.
+- 13:21:20.028: discovery stopped after the original callback had settled.
+
+The app process exited. The saved session was cancelled with zero completed/verified items,
+verified bytes and transferred bytes; no unfinished video was published. Only the 533,294-byte
+photo remained in the test destination. This validates graceful Quit during an actual download,
+not a forced crash or physical disconnect.
