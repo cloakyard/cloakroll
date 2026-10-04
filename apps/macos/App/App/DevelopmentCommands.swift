@@ -17,7 +17,20 @@ struct DevelopmentCommands: Commands {
                 Button("No Device") { Task { await model.loadSample(count: 0, state: .disconnected) } }
                 Button("Restricted Device") { Task { await model.loadSample(count: 0, state: .restricted) } }
                 Button("Disconnected Library") { model.deviceState = .unavailable }
-                Button("Sample Backup Progress") { model.sampleProgress.toggle() }
+                Menu("Sample Backup Progress") {
+                    ForEach(BackupProgressExample.allCases, id: \.self) { example in
+                        Button(example.rawValue) {
+                            Task {
+                                await model.loadSample(count: 20)
+                                guard model.isSample, !model.backup.isBusy else { return }
+                                model.sampleProgressExample = example
+                                model.sampleProgress = true
+                            }
+                        }
+                    }
+                    Divider()
+                    Button("Hide Sample Progress") { model.sampleProgress = false }
+                }
                 Menu("Media Info Examples") {
                     Button("Long Filenames and Many Originals") {
                         Task { await MediaInfoExamples.show(.longFilenames, in: model) }

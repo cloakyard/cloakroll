@@ -6,12 +6,20 @@ struct BackupBar: View {
 
     var body: some View {
         HStack(spacing: 16) {
-            if model.sampleProgress {
-                sampleProgress
-            } else if model.backup.isBusy {
-                activeProgress(model.backup.snapshot ?? BackupSnapshot(phase: .preparing))
+            if model.backup.isBusy {
+                BackupProgressView(
+                    progress: BackupProgressPresentation(
+                        snapshot: model.backup.snapshot ?? BackupSnapshot(phase: .preparing),
+                        isStopping: model.backup.isStopping
+                    ), destinationCaption: destinationCaption
+                )
                 Button("Stop") { model.backup.cancel() }
                     .disabled(model.backup.isStopping)
+            } else if model.sampleProgress {
+                BackupProgressView(
+                    progress: model.sampleProgressExample.presentation, destinationCaption: destinationCaption, isSample: true
+                )
+                Button("Stop") {}.disabled(true)
             } else if let snapshot = model.backup.snapshot, isTerminal(snapshot.phase) {
                 terminalContent(snapshot)
             } else {
@@ -51,33 +59,6 @@ struct BackupBar: View {
                 .disabled(!model.canBackUp)
                 .help(model.isSample ? "Transfers are unavailable in the sample library." : "Copy originals to the backup folder.")
         }
-    }
-
-    private func activeProgress(_ snapshot: BackupSnapshot) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack(alignment: .firstTextBaseline) {
-                Text(activeTitle(snapshot)).fontWeight(.medium)
-                Spacer(minLength: 12)
-                Text(transferCaption(snapshot))
-                    .foregroundStyle(.secondary)
-                    .monospacedDigit()
-                    .fixedSize()
-            }
-            if isIndeterminate(snapshot) {
-                ProgressView().progressViewStyle(.linear)
-                    .accessibilityLabel(activeTitle(snapshot))
-            } else {
-                ProgressView(value: progressBytes(snapshot), total: Double(snapshot.expectedBytes))
-                    .accessibilityLabel("Backup progress")
-            }
-            Text(model.backup.isStopping ? "Finishing the current operation…" : snapshot.currentFilename ?? destinationCaption)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .lineLimit(1)
-                .truncationMode(.middle)
-                .help(snapshot.currentFilename ?? destinationCaption)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private func terminalContent(_ snapshot: BackupSnapshot) -> some View {
@@ -163,34 +144,6 @@ struct BackupBar: View {
         return count == 0 ? "Back Up New Items" : "Back Up \(count.formatted()) New \(count == 1 ? "Item" : "Items")"
     }
 
-    private func activeTitle(_ snapshot: BackupSnapshot) -> String {
-        if model.backup.isStopping || snapshot.phase == .cancelling { return "Stopping Backup…" }
-        switch snapshot.phase {
-        case .preparing, .idle: return "Preparing Backup…"
-        case .verifying: return "Verifying Originals…"
-        case .downloading:
-            let counts = "\(snapshot.completedAssets.formatted()) of \(snapshot.totalAssets.formatted())"
-            return "Backing Up \(counts) \(snapshot.totalAssets == 1 ? "Item" : "Items")"
-        case .completed, .failed, .cancelled: return "Finishing Backup…"
-        case .cancelling: return "Stopping Backup…"
-        }
-    }
-
-    private func progressBytes(_ snapshot: BackupSnapshot) -> Double {
-        let current = snapshot.phase == .downloading ? max(0, snapshot.currentResourceBytes) : 0
-        return min(Double(snapshot.expectedBytes), Double(max(0, snapshot.verifiedBytes)) + Double(current))
-    }
-
-    private func isIndeterminate(_ snapshot: BackupSnapshot) -> Bool {
-        model.backup.isStopping || snapshot.phase == .preparing || snapshot.phase == .verifying
-            || snapshot.expectedBytes <= 0 || snapshot.currentResourceBytes == 0
-    }
-
-    private func transferCaption(_ snapshot: BackupSnapshot) -> String {
-        if snapshot.transferredBytes > 0 { return "\(Format.bytes(snapshot.transferredBytes)) transferred" }
-        return snapshot.phase == .downloading ? "Copying original…" : ""
-    }
-
     private func terminalTitle(_ phase: BackupPhase) -> String {
         if model.backup.wasInterrupted, phase == .failed { return "Backup Interrupted" }
         return switch phase {
@@ -209,19 +162,5 @@ struct BackupBar: View {
     private func verifiedSummary(_ snapshot: BackupSnapshot) -> String {
         let count = snapshot.verifiedResources
         return "\(count.formatted()) \(count == 1 ? "original" : "originals") verified · \(Format.bytes(snapshot.verifiedBytes))"
-    }
-
-    private var sampleProgress: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack {
-                Text("Sample progress · 63 of 247 items")
-                Spacer()
-                Text("6.2 GB of 18.4 GB").foregroundStyle(.secondary)
-            }
-            .font(.callout.monospacedDigit())
-            ProgressView(value: 6.2, total: 18.4)
-                .accessibilityLabel("Sample backup progress")
-            Text("Illustrative state. No transfer is running.").font(.caption).foregroundStyle(.secondary)
-        }
     }
 }

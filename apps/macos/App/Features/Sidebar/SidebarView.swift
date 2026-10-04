@@ -33,8 +33,17 @@ struct SidebarView: View {
                                     .lineLimit(1)
                                     .truncationMode(.middle)
                                     .help(destination.lastKnownPath)
-                                DestinationReadinessLabel(readiness: model.backup.destination.readiness)
+                                if model.backup.isBusy {
+                                    Text(BackupProgressPresentation(
+                                        snapshot: model.backup.snapshot ?? .init(phase: .preparing),
+                                        isStopping: model.backup.isStopping
+                                    ).title)
                                     .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                } else {
+                                    DestinationReadinessLabel(readiness: model.backup.destination.readiness)
+                                        .font(.caption)
+                                }
                             }
                         } icon: {
                             Image(systemName: "folder")

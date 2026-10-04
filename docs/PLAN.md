@@ -515,3 +515,18 @@ despite USB inventory seeing the phone. No physical transfer was initiated in th
 sixteen existing destination files remain unchanged and no new session/journal entry was created.
 Physical unplug/Stop/Quit, external-drive failure, reconnect/cache and remaining UI/runtime gates
 remain explicitly open; no full phase was promoted based on controlled callbacks.
+
+### 4 October — measured backup progress refinement
+
+The native bottom bar now shows measured byte progress, a percentage, completed items,
+the current original and transferred bytes. Verification, Stop and final history saving
+retain explicit active states; data reaching 100% does not announce completion. The
+destination caption follows the phase. Atomic counter handoff avoids double counting,
+and missing download callbacks are filled only after local size/hash verification.
+
+All 338 core and 125 hosted app tests pass, as do normal Debug/Release builds, strict
+lint and signature checks. Light/dark and compact native layouts were inspected.
+Two physical video imports and a final repeat passed size/SHA-256 checks; intermediate
+physical percentages were too brief to capture reliably. Test copies were removed and
+history preserved. See `verification/BACKUP-PROGRESS.md` for evidence, the post-cleanup
+device-unavailable limitation and remaining acceptance checks. No full phase is promoted.

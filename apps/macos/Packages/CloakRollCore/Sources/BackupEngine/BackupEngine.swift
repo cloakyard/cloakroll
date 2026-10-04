@@ -212,13 +212,16 @@ public actor BackupEngine {
             guard result.expectedByteCount == resource.byteCount, result.expectedByteCount > 0 else {
                 throw BackupEngineError.sourceSizeChanged
             }
-            state.transferredBytes += resource.byteCount - state.currentResourceBytes
-            state.currentResourceBytes = resource.byteCount
             state.phase = .verifying
             publish()
             let verifiedStage = try await detached {
                 try store.verifyStaged(staged, returnedURL: result.url, expectedByteCount: resource.byteCount, createdAt: asset.createdAt)
             }
+            // A successful source callback supplies expected size, not observed local bytes.
+            // Fill missing progress only after the staged file passes size and hash verification.
+            state.transferredBytes += resource.byteCount - state.currentResourceBytes
+            state.currentResourceBytes = resource.byteCount
+            publish()
             let verified = try await finalize(verifiedStage, intent: intent, store: store, onPublication: onPublication)
             try await record(verified, evidenceKey: evidenceKey, onVerified: onVerified)
         } catch {
@@ -259,6 +262,9 @@ public actor BackupEngine {
         records.append(verified)
         state.verifiedResources += 1
         state.verifiedBytes += verified.byteCount
+        // These bytes now belong to verifiedBytes, including while persistence is pending.
+        // Keep the two progress counters disjoint when publishing the transition.
+        state.currentResourceBytes = 0
         publish()
         // Publication already happened. Own and await this uncancelled transaction through its
         // real completion, retaining both the local original and retry evidence on write failure.

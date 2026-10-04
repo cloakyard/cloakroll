@@ -31,6 +31,7 @@ final class AppModel {
     var presentation: LibraryPresentation?
     var settingsTab = SettingsTab.general { didSet { preferences.save(settingsTab) } }
     var sampleProgress = false
+    var sampleProgressExample = BackupProgressExample.copying
     private(set) var catalogSessionID: UUID?
     private(set) var mediaScanState: MediaScanState?
     private(set) var mediaScanPercent: Int?

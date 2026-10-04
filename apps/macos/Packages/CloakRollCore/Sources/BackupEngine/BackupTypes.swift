@@ -57,6 +57,7 @@ public struct BackupSnapshot: Sendable, Equatable {
     public var verifiedBytes: Int64
     public var transferredBytes: Int64
     public var currentFilename: String?
+    /// Downloaded bytes of the current original that have not yet moved into verifiedBytes.
     public var currentResourceBytes: Int64
     public var currentResourceExpectedBytes: Int64
     public var completedAssetIDs: Set<String>

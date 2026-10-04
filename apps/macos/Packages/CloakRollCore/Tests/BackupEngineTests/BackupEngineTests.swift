@@ -68,7 +68,7 @@ struct BackupEngineTests {
     }
 
     @Test(arguments: [Data([1, 2]), Data([1, 2, 3, 4])])
-    func localSizeMismatchNeverCreatesAVerifiedRecord(data: Data) async throws {
+    func localSizeMismatchWithoutCallbacksNeverInventsTransferredBytesOrAVerifiedRecord(data: Data) async throws {
         let destination = try backupDirectory()
         defer { try? FileManager.default.removeItem(at: destination) }
         let result = try await BackupEngine().run(assets: [backupAsset()], sessionID: UUID(), destination: destination) { request, _ in
@@ -77,6 +77,9 @@ struct BackupEngineTests {
         #expect(result.snapshot.phase == .failed)
         #expect(result.records.isEmpty)
         #expect(result.snapshot.verifiedBytes == 0)
+        #expect(result.snapshot.expectedBytes == 3)
+        #expect(result.snapshot.transferredBytes == 0)
+        #expect(result.snapshot.currentResourceBytes == 0)
     }
 
     @Test func unavailableDestinationFailsBeforeAnySourceCall() async throws {
