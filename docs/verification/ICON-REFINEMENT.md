@@ -1,5 +1,38 @@
 # Landscape icon refinement — 4 October 2026
 
+## Update — landscape fills the app icon
+
+Following the user's request to retain the identity and remove the inset square, the existing
+mountain and sun artwork now fills the system enclosure. The photograph layer and its clipping
+frame are removed. The four remaining foreground SVGs use a uniform 1.6× scale, preserving the
+sun's circular proportions and the original ridge curves. Mountain paths extend past the
+canvas edges; the opaque warm sky is now the document background. Icon Composer supplies the
+outer mask and material, including its dark background; lighter dark mountain fills remain.
+
+The canonical `.icon` is still compiled directly by Xcode. Default/Dark About images and all
+six appearance previews were regenerated with the existing validated generation-27 exporter.
+No application behavior, source media or saved originals changed.
+
+Actual verification for this update:
+
+- Visually inspected Default, Dark, Clear Light/Dark and Tinted Light/Dark at 512 pixels,
+  plus Default at 16, 32, 64 and 128 pixels. The sun and ridge remain distinct without an inset border.
+- Launched the rebuilt Debug app and inspected About in light and dark on the current Mac;
+  both use the new artwork. Restored system appearance afterward.
+- Debug and Release builds passed without warnings or errors; both signatures passed
+  `codesign --verify --deep --strict`.
+- Compiled asset inspection confirms the four foreground vectors and native icon stacks,
+  alongside generated fallback artwork and `CloakRoll.icns` for the macOS 14 deployment target.
+- All 342 core tests, strict SwiftLint and `git diff --check` passed. No new behavior tests
+  were added for this vector/resource-only change.
+
+Logs: `/tmp/cloakroll-full-icon-export.log`, `/tmp/cloakroll-full-icon-debug-build.log`,
+`/tmp/cloakroll-full-icon-release-build.log`, `/tmp/cloakroll-full-icon-core-tests.log`.
+Older macOS runtime checks remain pending; preview/export and deployment-target compilation
+do not substitute for them.
+
+## Previous inset composition
+
 The final direction preserves the mountain and sun requested by the user. A broad violet
 ridge curves into the foreground, with a lighter distant peak and an apricot sun in a pale
 photo window. The Dark variant uses a deep night sky and lighter mountain faces. It has no

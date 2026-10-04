@@ -5,11 +5,12 @@ media for the mock library, not user photographs or evidence of device imports.
 
 ## App icon
 
-The icon is a photo window with a sweeping violet mountain ridge, a distant lavender peak and
-an apricot sun. Five editable SVG foreground layers and the full-bleed violet background live in
+The icon is an edge-to-edge landscape with a sweeping violet mountain ridge, a distant lavender
+peak and an apricot sun. Four editable SVG foreground layers and a full-bleed warm sky live in
 the canonical [Icon Composer document](icon/CloakRoll.icon/). The system supplies the enclosure
 mask and material effects, following Apple's [app icon guidance](https://developer.apple.com/design/human-interface-guidelines/app-icons/).
-The Dark appearance uses a night-sky palette. The concept was explored with built-in image
+There is no inset photo frame or surrounding purple tile. The Dark appearance uses the system's
+dark background with lighter mountain faces. The concept was explored with built-in image
 generation, then drawn as editable vectors; no generated bitmap or baked glass lighting ships
 in the layered icon. See the [design and verification record](../docs/verification/ICON-REFINEMENT.md).
 

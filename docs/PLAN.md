@@ -166,6 +166,16 @@ devices/destinations and verification failure. Hardware matrices stay separate f
 
 ## Progress evidence
 
+### 4 October 2026 — landscape fills the app icon
+
+Expanded the existing mountain-and-sun identity to the full icon canvas, removing the inset
+photo frame and purple surround. Four vector layers retain the original curves and colors;
+Icon Composer applies the system enclosure and material. Regenerated all six appearances,
+small-size previews and Default/Dark About artwork. Visually inspected each preview and the
+rebuilt app's About screen in light/dark. Debug/Release builds, 342 core tests, strict lint,
+whitespace and signatures pass. See `verification/ICON-REFINEMENT.md`. Older-system runtime
+checks and the broader phase gates remain open; no media or backup operation was initiated.
+
 ### 4 October 2026 — destination status refinement
 
 Grouped the destination name and status under one native folder Label. A compact, secondary

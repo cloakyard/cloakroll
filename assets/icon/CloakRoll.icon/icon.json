@@ -1,6 +1,6 @@
 {
   "fill": {
-    "automatic-gradient": "extended-srgb:0.385,0.20,0.78,1.00000"
+    "solid": "extended-srgb:1.00000,0.97647,0.94902,1.00000"
   },
   "groups": [
     {
@@ -44,18 +44,6 @@
         {
           "image-name": "03-sun.svg",
           "name": "Sun"
-        },
-        {
-          "image-name": "02-sky.svg",
-          "name": "Photograph",
-          "fill-specializations": [
-            {
-              "appearance": "dark",
-              "value": {
-                "solid": "extended-srgb:0.19,0.13,0.33,1.00000"
-              }
-            }
-          ]
         }
       ],
       "shadow": {
