@@ -166,6 +166,16 @@ devices/destinations and verification failure. Hardware matrices stay separate f
 
 ## Progress evidence
 
+### 4 October 2026 — landscape identity and native macOS 27 app icon
+
+Replaced the shield prototype with a photo window, original sweeping mountain facets and an
+apricot sun. The editable Icon Composer document now compiles into the app's native layered
+icon, with Xcode-generated older-system representations. Default/Dark About assets and six
+appearance previews share the same source. Small sizes and all six styles were inspected;
+the actual About screen was checked in light and dark on macOS 27.0.1. Clean Debug and Release
+builds, all 305 core tests, strict lint, whitespace and signature checks pass. Phase 8's other
+acceptance gates remain open. See `verification/ICON-REFINEMENT.md` for evidence and limits.
+
 ### 4 October 2026 — explicit local verification and final test cleanup
 
 Library → Check Saved Originals now refreshes local backup evidence without reconnecting or

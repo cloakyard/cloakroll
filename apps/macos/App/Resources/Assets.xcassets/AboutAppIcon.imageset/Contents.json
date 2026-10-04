@@ -9,6 +9,28 @@
       "filename" : "about_icon_512.png",
       "idiom" : "mac",
       "scale" : "2x"
+    },
+    {
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
+      "filename" : "about_icon_dark_256.png",
+      "idiom" : "mac",
+      "scale" : "1x"
+    },
+    {
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
+      "filename" : "about_icon_dark_512.png",
+      "idiom" : "mac",
+      "scale" : "2x"
     }
   ],
   "info" : {

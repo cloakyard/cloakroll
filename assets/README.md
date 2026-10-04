@@ -3,29 +3,50 @@
 These assets are original, local artwork. The scenic images are visibly illustrated sample
 media for the mock library, not user photographs or evidence of device imports.
 
-## App icon prototype
+## App icon
 
-The Phase 1 icon explores a purple photo stack, a soft shield silhouette and a simple landscape.
-Its rounded dimensional treatment relates to CloakDrop, while the pictogram expresses preserving
-photographs. It is a **prototype**; final small-size and appearance refinements belong to Phase 8.
+The icon is a photo window with a sweeping violet mountain ridge, a distant lavender peak and
+an apricot sun. Five editable SVG foreground layers and the full-bleed violet background live in
+the canonical [Icon Composer document](icon/CloakRoll.icon/). The system supplies the enclosure
+mask and material effects, following Apple's [app icon guidance](https://developer.apple.com/design/human-interface-guidelines/app-icons/).
+The Dark appearance uses a night-sky palette. The concept was explored with built-in image
+generation, then drawn as editable vectors; no generated bitmap or baked glass lighting ships
+in the layered icon. See the [design and verification record](../docs/verification/ICON-REFINEMENT.md).
 
-Editable SVG layers and the Icon Composer document live in `icon/CloakRoll.icon/`. The document
-stays outside the app target so CloakRoll can target macOS 14 without depending on the newer
-layered-icon format. Generated PNG slots live in
-`apps/macos/App/Resources/Assets.xcassets/AppIcon.appiconset`; About uses its own 256/512 exports.
-Do not hand-edit generated PNGs.
+`apps/macos/project.yml` includes this document as an app target resource and sets
+`ASSETCATALOG_COMPILER_APPICON_NAME` to `CloakRoll`. Xcode 27 compiles it into `Assets.car` and
+`CloakRoll.icns` with a minimum deployment target of macOS 14. The generated Info.plist uses
+`CloakRoll` for `CFBundleIconName` and `CFBundleIconFile`. The former PNG `AppIcon.appiconset`
+has been removed; Xcode generates the older-system representation from the layered source.
+See Apple's [Icon Composer integration and compatibility guidance](https://developer.apple.com/documentation/xcode/creating-your-app-icon-using-icon-composer).
 
-From the repository root, with Xcode 26.4 or later selected:
+Select **Xcode 27** for generation and builds. From the repository root:
 
 ```sh
 swift apps/macos/scripts/generate_app_icon.swift
 ```
 
-The generator finds Icon Composer through `xcode-select`, uses its Default macOS rendition and
-pins design generation 26 to retain the intended family treatment. App builds use the committed
-conventional catalog, so regeneration is not required to build. When finalizing, inspect 16, 32,
-128 and 512 pixels, including native light/dark contexts. The newer layered document is retained
-for future platform adoption; the current app uses the flattened Default artwork in both modes.
+The generator locates Icon Composer through `xcode-select` and pins design generation 27.
+It exports six 512-pixel appearance previews—Default, Dark, Clear Light/Dark and Tinted
+Light/Dark—plus Default previews at 16, 32, 64 and 128 pixels into `assets/icon/Previews`.
+Default and Dark About artwork is generated at 256 and 512 pixels in `AboutAppIcon.imageset`.
+All exports are staged and validated before replacing committed outputs. Do not edit these
+PNGs by hand; regeneration updates previews and About artwork, while the app build compiles
+the canonical layered icon directly.
+
+From `apps/macos`, regenerate and build the project:
+
+```sh
+GIT_CONFIG_COUNT=0 xcodegen generate
+GIT_CONFIG_COUNT=0 xcodebuild -project CloakRoll.xcodeproj -scheme CloakRoll -destination 'platform=macOS,arch=arm64' -configuration Debug -derivedDataPath build/Verify build
+```
+
+Inspect every appearance and the small-size previews after artwork changes. The generated
+ICNS was inspected and contains 16, 32, 128 and 256-pixel PNG renditions; `Assets.car` also contains
+fallback images through 1024 pixels and native Aqua, Dark Aqua and tintable icon stacks. Successful compilation
+for the macOS 14 deployment target establishes fallback generation; runtime appearance on
+macOS 14 and macOS 26 has not been verified. Generation-27 previews describe the current
+material rendering, not those older systems.
 
 ## Illustrated mock library
 

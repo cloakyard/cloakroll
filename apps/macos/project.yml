@@ -31,12 +31,15 @@ targets:
         excludes:
           - Resources/Info.plist
           - Resources/CloakRoll.entitlements
+      - path: ../../assets/icon/CloakRoll.icon
+        type: file
+        buildPhase: resources
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.cloakyard.cloakroll
         PRODUCT_NAME: CloakRoll
         CODE_SIGN_ENTITLEMENTS: App/Resources/CloakRoll.entitlements
-        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_APPICON_NAME: CloakRoll
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AppAccent
         ENABLE_PREVIEWS: YES
     info:
