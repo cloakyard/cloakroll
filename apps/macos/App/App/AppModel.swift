@@ -19,7 +19,8 @@ final class AppModel {
     var grouping: CatalogGrouping = .automatic { didSet { preferences.save(grouping); scheduleProjection() } }
     var thumbnailSize = ThumbnailSize.medium { didSet { preferences.save(thumbnailSize) } }
     var cellSize: Double { thumbnailSize.minimumCellWidth }
-    var snapshot = CatalogSnapshot.empty
+    var snapshot = CatalogSnapshot.empty { didSet { snapshotRevision &+= 1 } }
+    private(set) var snapshotRevision = 0
     var selection = MediaSelection()
     private(set) var activeID: String?
     var device: ConnectedDevice?

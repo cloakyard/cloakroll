@@ -540,3 +540,17 @@ bottom content clearance, normal build, strict lint and signature checks pass; s
 pop-in: lookahead depends on lazy cell creation and currently warms only encoded
 data. The next bounded stage moves lookahead to catalog rows and prepares decoded
 images while preserving visible priority and existing cache/source limits.
+
+### 4 October — decoded thumbnail lookahead verified
+
+Section-aware lookahead now prepares two rows below and one above the viewport,
+independently of lazy cell creation. A single speculative worker warms the bounded
+decoded cache, cancels obsolete demand and preserves visible priority and session
+ownership. Indexing shares catalog storage and runs off the main actor.
+
+All 338 core and 139 hosted app tests pass, along with Debug/Release builds, strict
+lint and signature checks. On the physical 2,071-item iPhone library, the initial
+viewport had 20 decoded images ready instead of 12 with the same 20 source loads.
+A controlled jump loaded exactly the nearby 24 images and then settled with cache
+usage below its existing limit. See `verification/PHASE-4.md` for measurements and
+limitations; no frame-rate, whole-process memory or full-phase acceptance claim is made.

@@ -5,6 +5,7 @@ import SwiftUI
 struct MediaCell: View {
     let asset: MediaAsset
     let viewportSize: CGSize
+    let onVisibilityChange: (Bool) -> Void
     let onSelect: () -> Void
     @Environment(AppModel.self) private var model
     @State private var thumbnailDemand = ThumbnailDemand.none
@@ -14,7 +15,7 @@ struct MediaCell: View {
     var body: some View {
         Button(action: onSelect) {
             GeometryReader { geometry in
-                MediaThumbnail(asset: asset, demand: thumbnailDemand)
+                MediaThumbnail(asset: asset, demand: thumbnailDemand == .visible ? .visible : .none)
                     .frame(width: geometry.size.width, height: geometry.size.height)
                     .clipped()
                     .overlay(alignment: .bottomLeading) { mediaBadge.padding(7) }
@@ -44,6 +45,9 @@ struct MediaCell: View {
         }
         .buttonStyle(.plain)
         .modifier(ThumbnailViewport(size: viewportSize, demand: $thumbnailDemand))
+        .onChange(of: thumbnailDemand) { _, demand in onVisibilityChange(demand == .visible) }
+        .onAppear { onVisibilityChange(thumbnailDemand == .visible) }
+        .onDisappear { onVisibilityChange(false) }
         .accessibilityElement(children: .ignore)
         .accessibilityAddTraits(.isButton)
         .accessibilityAction { onSelect() }

@@ -58,8 +58,13 @@ final class LibraryThumbnailController {
 
     func prefetch(for key: ThumbnailKey, load: @escaping @Sendable () async throws -> Data) async throws {
         let generation = try await prepare(key)
-        if await decoded.cachedImage(for: key) != nil { return }
-        _ = try await encoded.data(for: key, priority: .prefetch, load: load)
+        if await decoded.cachedImage(for: key) != nil {
+            try validate(key, generation: generation)
+            return
+        }
+        let data = try await encoded.data(for: key, priority: .prefetch, load: load)
+        try validate(key, generation: generation)
+        _ = try await decoded.image(for: key, data: data)
         try validate(key, generation: generation)
     }
 
@@ -77,6 +82,10 @@ final class LibraryThumbnailController {
     }
 
     #if DEBUG
+    func metrics() async -> (source: ThumbnailPipelineMetrics, images: DecodedThumbnailCache.Metrics) {
+        (await encoded.metrics(), await decoded.metrics())
+    }
+
     func logMetrics() async {
         let source = await encoded.metrics()
         let images = await decoded.metrics()

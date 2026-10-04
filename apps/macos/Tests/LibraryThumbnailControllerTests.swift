@@ -8,6 +8,66 @@ import UniformTypeIdentifiers
 
 @MainActor
 struct LibraryThumbnailControllerTests {
+    @Test func prefetchPreparesTheBitmapBeforeAVisibleRequest() async throws {
+        let controller = LibraryThumbnailController(cacheDirectory: nil)
+        let session = UUID()
+        controller.setSession(session)
+        let key = key(session)
+        let data = try fixture(width: 48, height: 24)
+        try await controller.prefetch(for: key) { data }
+        let before = await controller.metrics()
+        #expect(before.source.sourceLoads == 1)
+        #expect(before.images.decodes == 1)
+        #expect(before.images.items == 1)
+        let image = try #require(try await controller.image(for: key) {
+            Issue.record("A prefetched bitmap requested its source again")
+            return data
+        })
+        #expect(image.width == 48)
+        let after = await controller.metrics()
+        #expect(after.source.sourceLoads == 1)
+        #expect(after.images.decodes == 1)
+        #expect(after.images.hits == before.images.hits + 1)
+    }
+
+    @Test func cancellingPrefetchKeepsTheVisibleConsumerAndSharedSourceAlive() async throws {
+        let controller = LibraryThumbnailController(cacheDirectory: nil)
+        let session = UUID()
+        controller.setSession(session)
+        let key = key(session)
+        let source = ControlledThumbnailSource()
+        let prefetch = Task { try await controller.prefetch(for: key) { try await source.load("shared") } }
+        await source.waitForStart("shared")
+        let visible = Task { try await controller.image(for: key) { try await source.load("shared") } }
+        prefetch.cancel()
+        await #expect(throws: CancellationError.self) { try await prefetch.value }
+        await source.finish("shared", data: try fixture(width: 48, height: 24))
+        #expect(try await visible.value?.width == 48)
+        #expect(await source.callCount("shared") == 1)
+        #expect(await controller.metrics().images.decodes == 1)
+    }
+
+    @Test func aRetiredPrefetchCannotWarmTheReplacementSessionsBitmapCache() async throws {
+        let controller = LibraryThumbnailController(cacheDirectory: nil)
+        let oldSession = UUID()
+        let currentSession = UUID()
+        controller.setSession(oldSession)
+        let oldKey = key(oldSession)
+        let source = ControlledThumbnailSource()
+        let old = Task { try await controller.prefetch(for: oldKey) { try await source.load("old") } }
+        await source.waitForStart("old")
+        controller.setSession(currentSession)
+        await #expect(throws: ThumbnailPipelineError.staleSession) { try await old.value }
+        await source.finish("old", data: try fixture(width: 48, height: 24))
+        let currentKey = key(currentSession)
+        let data = try fixture(width: 64, height: 32)
+        try await controller.prefetch(for: currentKey) { data }
+        let metrics = await controller.metrics()
+        #expect(metrics.images.decodes == 1)
+        #expect(metrics.images.items == 1)
+        #expect(try await controller.image(for: currentKey) { data }?.width == 64)
+    }
+
     @Test func gridAndInfoShareSourceAndDecodedImage() async throws {
         let controller = LibraryThumbnailController(cacheDirectory: nil)
         let session = UUID()

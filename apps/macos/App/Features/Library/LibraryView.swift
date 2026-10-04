@@ -1,11 +1,13 @@
 import AppKit
 import MediaModels
 import SwiftUI
+import ThumbnailPipeline
 
 struct LibraryView: View {
     @Environment(AppModel.self) private var model
     @State private var keyboard = GridKeyboardController()
     @State private var columns = 5
+    @State private var prefetcher = GridThumbnailPrefetcher()
 
     var body: some View {
         VStack(spacing: 0) {
@@ -71,13 +73,15 @@ struct LibraryView: View {
                             ForEach(model.snapshot.sections) { section in
                                 Section {
                                     ForEach(section.assets) { asset in
-                                        MediaCell(asset: asset, viewportSize: geometry.size) {
+                                        MediaCell(asset: asset, viewportSize: geometry.size, onVisibilityChange: { visible in
+                                            prefetcher.setVisible(visible, assetID: asset.id)
+                                        }, onSelect: {
                                             keyboard.focus()
                                             let flags = NSEvent.modifierFlags
                                             model.select(
                                                 asset, extendingRange: flags.contains(.shift), toggling: flags.contains(.command)
                                             )
-                                        }
+                                        })
                                         .id(asset.id)
                                     }
                                 } header: {
@@ -109,6 +113,25 @@ struct LibraryView: View {
             }
             .onChange(of: geometry.size.width, initial: true) { updateColumnCount(width: geometry.size.width) }
             .onChange(of: model.cellSize) { updateColumnCount(width: geometry.size.width) }
+            .task(id: prefetchContext) { await preparePrefetch() }
+            .onDisappear { prefetcher.stop() }
+        }
+    }
+
+    private var prefetchContext: GridPrefetchContext {
+        GridPrefetchContext(
+            revision: model.snapshotRevision, columns: columns, sessionID: model.catalogSessionID,
+            available: !model.isSample && model.deviceState == .ready
+        )
+    }
+
+    private func preparePrefetch() async {
+        guard prefetchContext.available, let sessionID = model.catalogSessionID else { prefetcher.pause(); return }
+        let reusableIDs = model.device?.identity?.isPersistent == true ? model.thumbnailReuseIDs : [:]
+        await prefetcher.prepare(sections: model.snapshot.sections, columns: columns) { asset in
+            let reusableID = asset.primaryResourceID.flatMap { reusableIDs[$0] }
+            guard let key = ThumbnailKey(asset: asset, sessionID: sessionID, reusableIdentity: reusableID) else { return }
+            try await model.thumbnails.prefetch(for: key) { [model] in try await model.thumbnailData(for: key) }
         }
     }
 
@@ -141,6 +164,13 @@ struct LibraryView: View {
 }
 
 private enum LibraryScrollAnchor { case top }
+
+private struct GridPrefetchContext: Equatable {
+    let revision: Int
+    let columns: Int
+    let sessionID: UUID?
+    let available: Bool
+}
 
 struct DeviceEmptyView: View {
     @Environment(AppModel.self) private var model

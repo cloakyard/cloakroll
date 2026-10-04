@@ -80,3 +80,79 @@ Preview metadata matching is not content identity and never marks an original ba
 may omit originals or thumbnails over USB. Cache costs exclude framework/rendering/transient
 allocations; RSS evidence is separate. A request that never calls back after unplug retains its
 actual source slot. macOS 14 API availability is compiled; this Mac runs macOS 27.0 (26A428).
+
+## 4 October — prepare the next rows before cell creation
+
+The prior geometry band only prefetched instantiated LazyVGrid cells and warmed
+encoded data. A cell becoming visible still needed a bitmap decode. The grid now
+indexes actual section rows independently of lazy cell construction, selecting two
+rows below and one above the visible rows, capped at 32 speculative items. Section
+breaks and partial rows are respected. Indexing runs off the main actor after a
+catalog/layout change; row slices share immutable section storage instead of copying
+every asset into another set of arrays. Scrolling only consults the visible IDs and
+nearby row boundaries.
+
+One speculative consumer warms both encoded data and the existing decoded cache.
+Visible cells retain higher pipeline priority and share in-flight requests. Moving
+away cancels obsolete consumers; entering a prefetched row preserves its shared
+request. Filter/column/session changes replace the plan safely. Pause preserves
+current geometry for unavailable-to-ready transitions, and cells report visibility
+again when returning from another view. Retired and cancelled work cannot alter a
+replacement worker or decode into a replacement session.
+
+No cache budget, USB concurrency or physical callback-ownership rule changed:
+32 MiB encoded memory, 256 MiB encoded disk, 64 MiB decoded memory, two logical
+source slots and at most one prefetch-only source request. Offscreen cells retain
+no extra displayed bitmap; the bounded shared decoded cache owns warmed images.
+
+### Verification
+
+- All **338 core tests** and **139 hosted app tests** pass. Fourteen new app tests
+  cover uncreated rows, partial sections, resize, the 32-item cap, one worker,
+  visible promotion, obsolete/late cancellation, pause/resume, filtering, warm
+  bitmap reuse and retired/shared consumers. Independent read-only review found
+  no remaining concrete correctness issue.
+- XcodeGen, normal Debug and Release builds, strict lint, whitespace and both
+  signatures pass. Normal Debug was rebuilt after testing to remove hosted-test
+  PlugIns. Tests produce the existing system shortcut-service diagnostics and the
+  expected invalid-image fixture decoder message; no compiler warnings were added.
+- Physical iPhone library: 2,071 items on macOS 27.0.1 (26A434), Xcode 27.0
+  (27A266a). The same standard window, four-column layout and first viewport were
+  measured before and after the change using the normal app's Debug metrics.
+
+| Initial viewport, before any scroll | Before | After |
+| --- | ---: | ---: |
+| Source loads / encoded entries | 20 / 20 | 20 / 20 |
+| Decoded bitmaps ready | 12 | 20 |
+| Decoded cache bytes | 8,650,752 | 14,942,208 |
+| Active / queued work when sampled | 0 / 0 | 0 / 0 |
+| Decode / disk failures | 0 / 0 | 0 / 0 |
+
+The eight additional ready bitmaps correspond to two four-item upcoming rows.
+The source-load count and encoded byte count (1,018,029) were unchanged. This is
+direct readiness evidence, not a frame-time or zero-pop-in guarantee.
+
+A later controlled scrollbar jump added exactly 24 source loads and 24 decodes,
+matching 12 visible plus eight ahead and four behind. The counters then remained
+unchanged across a separate stationary check 24 seconds later (196 total loads,
+242 decodes, 1,341 decoded hits, active=0/queued=0). Decoded cache cost was
+66,496,704 bytes / 90 entries, below its 67,108,864-byte limit; total decodes exceeding
+retained entries demonstrates eviction. Decode and disk failures remained zero.
+One earlier long automation interval was not isolated enough to attribute its
+additional loads to a specific scroll input; it is excluded from that comparison.
+
+Real thumbnails were visually inspected after scrolling, and navigation to History
+and back to All Photos was exercised. The app is left in live All Photos at the top,
+standard size and System appearance. No original-file backup or source mutation
+was requested during these checks. Prior test-copy badges correctly cleared when
+the phone reconnected to the empty verification folder.
+
+This does not establish instrumented frame latency, a total-process memory plateau,
+or guaranteed readiness when rapidly jumping past the lookahead window. Physical
+disconnect during thumbnail work, system accessibility variants and macOS 14 runtime
+were not repeated. Existing phase acceptance limitations remain explicit.
+
+Logs: `/tmp/cloakroll-lookahead-core-tests.log`, `/tmp/cloakroll-lookahead-app-tests.log`,
+`/tmp/cloakroll-lookahead-build.log`, `/tmp/cloakroll-lookahead-release.log`,
+`/tmp/cloakroll-lookahead-baseline-metrics.log`, `/tmp/cloakroll-lookahead-first-viewport.log`,
+`/tmp/cloakroll-lookahead-jump-metrics.log`, and `/tmp/cloakroll-lookahead-settled-metrics.log`.
