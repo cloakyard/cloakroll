@@ -150,7 +150,7 @@ final class LibraryBackupController {
             }
             defer { monitor.cancel() }
             var result = try await engine.run(
-                assets: assets, sessionID: sessionID, destination: lease.url,
+                assets: assets, sessionID: sessionID, destination: lease.url, folderLayout: .byDevice,
                 onStaged: { intent in
                     if let journal { try await journal.store.recordStaging(sessionID: journal.id, intent: intent) }
                 },

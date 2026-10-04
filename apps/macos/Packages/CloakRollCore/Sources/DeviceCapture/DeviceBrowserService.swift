@@ -6,11 +6,14 @@ import OSLog
 /// Owns ImageCaptureCore objects on the main actor and emits value-only connection/catalog state.
 /// Enumeration reads supplied file properties; thumbnails are requested only by visible consumers.
 @MainActor
-public final class DeviceBrowserService: DeviceMediaSource, ThumbnailProviding, OriginalMediaDownloading {
+public final class DeviceBrowserService: DeviceMediaSource, DeviceSelectionBrowsing, ThumbnailProviding, OriginalMediaDownloading {
     private let context: DeviceCaptureContext
     public let events: AsyncStream<DeviceEvent>
     public let catalogs: AsyncStream<DeviceMediaSnapshot>
     public var thumbnailDiagnostics: ThumbnailRequestDiagnostics { context.thumbnailDiagnostics }
+    public var inventory: DeviceInventory { selection.inventory }
+    public var selectedSessionID: UUID? { lifecycle.activeToken }
+    public var selectedConnection: DeviceConnection { lifecycle.connection }
     private let continuation: AsyncStream<DeviceEvent>.Continuation
     private let catalogContinuation: AsyncStream<DeviceMediaSnapshot>.Continuation
     private let catalog: CameraCatalog
@@ -22,12 +25,19 @@ public final class DeviceBrowserService: DeviceMediaSource, ThumbnailProviding, 
     private var camera: ICCameraDevice?
     private var cameraDelegate: CaptureCameraDelegate?
     private var candidates: [ObjectIdentifier: ICCameraDevice] = [:]
-    private var candidateOrder: [ObjectIdentifier] = []
+    private var selection = DeviceSelectionRegistry()
     private var lifecycle = DeviceLifecycle()
     private var lastPublished: DeviceConnection?
+    private var lastInventory: DeviceInventory?
+    private let makeBrowser: @MainActor () -> ICDeviceBrowser
 
-    public init(context: DeviceCaptureContext = DeviceCaptureContext()) {
+    public convenience init(context: DeviceCaptureContext = DeviceCaptureContext()) {
+        self.init(context: context, makeBrowser: { ICDeviceBrowser() })
+    }
+
+    init(context: DeviceCaptureContext, makeBrowser: @escaping @MainActor () -> ICDeviceBrowser) {
         self.context = context
+        self.makeBrowser = makeBrowser
         let stream = AsyncStream<DeviceEvent>.makeStream(bufferingPolicy: .bufferingNewest(16))
         events = stream.stream
         continuation = stream.continuation
@@ -44,12 +54,17 @@ public final class DeviceBrowserService: DeviceMediaSource, ThumbnailProviding, 
         let delegate = CaptureBrowserDelegate { [weak self] event in
             DispatchQueue.main.async { self?.receive(event, generation: generation) }
         }
-        let browser = ICDeviceBrowser()
+        let browser = makeBrowser()
         let mask = ICDeviceTypeMask.camera.rawValue | ICDeviceLocationTypeMask.local.rawValue
         browser.browsedDeviceTypeMask = ICDeviceTypeMask(rawValue: mask) ?? .camera
         browser.delegate = delegate
         self.browser = browser
         browserDelegate = delegate
+        context.originalDownloads.onSettled = { [weak self] in
+            guard let self, browserGeneration == generation else { return }
+            connectNextIfNeeded()
+        }
+        publishInventory()
         publish()
         logger.info("Starting local camera discovery")
         browser.start()
@@ -63,8 +78,9 @@ public final class DeviceBrowserService: DeviceMediaSource, ThumbnailProviding, 
         browser = nil
         browserDelegate = nil
         candidates.removeAll()
-        candidateOrder.removeAll()
+        selection.reset()
         lifecycle.reset()
+        publishInventory()
         publish()
         logger.info("Stopped camera discovery")
     }
@@ -76,6 +92,16 @@ public final class DeviceBrowserService: DeviceMediaSource, ThumbnailProviding, 
         }
         stop()
         start()
+    }
+
+    @discardableResult
+    public func selectDevice(id: UUID) -> Bool {
+        guard browser != nil, let key = selection.key(for: id), candidates[key] != nil,
+              selection.select(id, originalIsBusy: context.originalDownloads.isBusy) else { return false }
+        if let camera, ObjectIdentifier(camera) == key { return true }
+        retireCamera()
+        connectNextIfNeeded()
+        return true
     }
 
     private func receive(_ event: BrowserCallback, generation: UUID) {
@@ -91,17 +117,20 @@ public final class DeviceBrowserService: DeviceMediaSource, ThumbnailProviding, 
             )
             logger.notice("Camera discovery callback; supported mobile device: \(supported, privacy: .public)")
             guard supported else { return }
-            if candidates[key] == nil { candidateOrder.append(key) }
             candidates[key] = discovered
+            selection.upsert(key, name: displayName(discovered), productKind: discovered.productKind)
             connectNextIfNeeded()
+            publishInventory()
         case .removed(let key):
             removeCandidate(key)
         }
     }
 
     private func connectNextIfNeeded() {
-        guard camera == nil,
-              let selected = candidateOrder.compactMap({ candidates[$0] }).first else { return }
+        guard browser != nil, camera == nil, !context.originalDownloads.isBusy,
+              let identifier = selection.selectedID ?? selection.firstID,
+              let key = selection.key(for: identifier), let selected = candidates[key],
+              selection.select(identifier, originalIsBusy: false) else { return }
         let token = UUID()
         let identity = DeviceIdentityResolver.resolve(
             persistentID: selected.persistentIDString,
@@ -109,10 +138,8 @@ public final class DeviceBrowserService: DeviceMediaSource, ThumbnailProviding, 
             uuid: selected.uuidString,
             sessionID: token
         )
-        let name = selected.name?.trimmingCharacters(in: .whitespacesAndNewlines)
         let value = ConnectedDevice(
-            identity: identity,
-            name: name.flatMap { $0.isEmpty ? nil : $0 } ?? "Apple mobile device",
+            identity: identity, name: displayName(selected),
             productKind: selected.productKind
         )
         let delegate = CaptureCameraDelegate(
@@ -126,6 +153,7 @@ public final class DeviceBrowserService: DeviceMediaSource, ThumbnailProviding, 
         selected.delegate = delegate
         preferOriginals(selected)
         lifecycle.begin(device: value, token: token)
+        publishInventory()
         context.thumbnailRequests.begin(sessionID: token)
         catalog.begin(
             sessionID: token, deviceID: value.id, percent: Int(selected.contentCatalogPercentCompleted),
@@ -189,9 +217,10 @@ public final class DeviceBrowserService: DeviceMediaSource, ThumbnailProviding, 
 
     private func removeCandidate(_ key: ObjectIdentifier) {
         candidates[key] = nil
-        candidateOrder.removeAll { $0 == key }
-        guard let camera, ObjectIdentifier(camera) == key else { return }
+        selection.remove(key)
+        guard let camera, ObjectIdentifier(camera) == key else { publishInventory(); return }
         retireCamera()
+        publishInventory()
         publish()
         connectNextIfNeeded()
     }
@@ -267,6 +296,18 @@ public final class DeviceBrowserService: DeviceMediaSource, ThumbnailProviding, 
            camera.mediaPresentation != .originalAssets {
             camera.mediaPresentation = .originalAssets
         }
+    }
+
+    private func displayName(_ camera: ICCameraDevice) -> String {
+        let name = camera.name?.trimmingCharacters(in: .whitespacesAndNewlines)
+        return name.flatMap { $0.isEmpty ? nil : $0 } ?? "Apple mobile device"
+    }
+
+    private func publishInventory() {
+        let value = selection.inventory
+        guard lastInventory != value else { return }
+        lastInventory = value
+        continuation.yield(.inventoryChanged(value))
     }
 
     private func publish() {

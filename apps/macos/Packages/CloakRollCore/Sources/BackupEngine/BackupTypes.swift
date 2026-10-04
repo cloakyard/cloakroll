@@ -8,6 +8,7 @@ public enum BackupPhase: String, Equatable, Sendable {
 public enum BackupEngineError: Error, Equatable, Sendable {
     case busy
     case invalidSelection
+    case mixedDevices
     case invalidResourceSize
     case sourceSizeChanged
     case persistenceFailed
@@ -19,6 +20,7 @@ extension BackupEngineError: LocalizedError {
         switch self {
         case .busy: "A backup is already running."
         case .invalidSelection: "The selected media contains missing or ambiguous original resources."
+        case .mixedDevices: "Choose media from one iPhone at a time."
         case .invalidResourceSize: "An original has no reliable size. Reconnect your iPhone and try again."
         case .sourceSizeChanged: "The original changed or its download format differs from the catalog. Refresh the library and try again."
         case .journalFailed:

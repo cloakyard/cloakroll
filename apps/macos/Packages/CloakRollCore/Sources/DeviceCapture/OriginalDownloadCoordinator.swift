@@ -35,6 +35,8 @@ final class OriginalDownloadCoordinator {
     private let logger = Logger(subsystem: "com.cloakroll.core", category: "OriginalDownloads")
     private(set) var sessionID: UUID?
     private var active: Active?
+    /// The app's newest browser may resume deferred selection only after actual cleanup.
+    var onSettled: (@MainActor () -> Void)?
 
     var isBusy: Bool { active != nil }
 
@@ -89,6 +91,7 @@ final class OriginalDownloadCoordinator {
                 } catch {
                     active = nil
                     continuation.resume(throwing: cancellation.isCancelled ? CancellationError() : error)
+                    onSettled?()
                 }
             }
         } onCancel: {
@@ -127,6 +130,7 @@ final class OriginalDownloadCoordinator {
             } else {
                 operation.continuation.resume(with: result.mapError { $0 as any Error })
             }
+            onSettled?()
         }
     }
 }

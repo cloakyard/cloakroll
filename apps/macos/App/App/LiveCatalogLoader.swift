@@ -20,14 +20,17 @@ final class LiveCatalogLoader {
     private var retiredSessions: Set<UUID> = []
     private var latestRevision: UInt64?
     private var isStopped = false
+    private let shouldReceive: (DeviceMediaSnapshot) -> Bool
     private let onReceive: (DeviceMediaSnapshot) -> Void
     private let onPrepared: (PreparedDeviceCatalog) -> Void
 
     init(
         source: any DeviceMediaSource,
+        shouldReceive: @escaping (DeviceMediaSnapshot) -> Bool = { _ in true },
         onReceive: @escaping (DeviceMediaSnapshot) -> Void,
         onPrepared: @escaping (PreparedDeviceCatalog) -> Void
     ) {
+        self.shouldReceive = shouldReceive
         self.onReceive = onReceive
         self.onPrepared = onPrepared
         let catalogs = source.catalogs
@@ -37,6 +40,13 @@ final class LiveCatalogLoader {
                 self?.receive(catalog)
             }
         }
+    }
+
+    func retireCurrentSession() {
+        if let sessionID { retiredSessions.insert(sessionID) }
+        sessionID = nil
+        latestRevision = nil
+        pending = nil
     }
 
     func stop() {
@@ -49,7 +59,7 @@ final class LiveCatalogLoader {
     }
 
     private func receive(_ catalog: DeviceMediaSnapshot) {
-        guard !isStopped, !retiredSessions.contains(catalog.sessionID) else { return }
+        guard !isStopped, shouldReceive(catalog), !retiredSessions.contains(catalog.sessionID) else { return }
         if sessionID != catalog.sessionID {
             if let sessionID { retiredSessions.insert(sessionID) }
             sessionID = catalog.sessionID

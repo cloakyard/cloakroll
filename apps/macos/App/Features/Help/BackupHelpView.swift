@@ -43,6 +43,8 @@ struct BackupHelpView: View {
         Group {
             Section("Connect Your iPhone") {
                 Text("Connect your iPhone to this Mac with a USB cable and unlock it. If asked, tap Trust on your iPhone.")
+                Text("When more than one iPhone is connected, choose one in the sidebar. Back up one iPhone at a time.")
+                    .foregroundStyle(.secondary)
             }
             Section("Choose a Backup Folder") {
                 Text("Choose a folder on your Mac or an external drive using Choose Folder in the sidebar.")
@@ -55,9 +57,11 @@ struct BackupHelpView: View {
                 Back Up New Items copies new items in the current view.
                 """)
                 Text("""
-                Original files are saved in Year / Month folders and verified after copying. \
+                Original files are saved in separate iPhone folders, organized by year and month, and verified after copying. \
                 Your photos and videos stay on your iPhone.
                 """)
+                    .foregroundStyle(.secondary)
+                Text("Each iPhone folder has a stable identifier. Earlier backups in Year / Month folders can still be checked and reused.")
                     .foregroundStyle(.secondary)
             }
             Section {

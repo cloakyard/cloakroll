@@ -78,7 +78,7 @@ struct SettingsView: View {
             }
             Section("Originals") {
                 LabeledContent("Media format", value: "Keep originals")
-                LabeledContent("Folder structure", value: "Year / Month")
+                LabeledContent("Folder structure", value: "iPhone / Year / Month")
             }
             Section {
                 Text("Previous backups are remembered for each iPhone and folder. Saved originals are checked before they are reused.")

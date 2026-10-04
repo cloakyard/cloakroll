@@ -166,6 +166,17 @@ devices/destinations and verification failure. Hardware matrices stay separate f
 
 ## Progress evidence
 
+### 4 October 2026 — multiple iPhones and separate backup folders
+
+Added native selection for multiple discovered phones, safe source retirement and stale-event
+rejection. New originals use stable per-device folders containing Year/Month paths; legacy
+files remain eligible for fresh verification without moves. Same-name phones, renaming,
+missing originals, queued callbacks and mixed-device rejection are tested. All 305 core and
+93 hosted app tests pass; normal build, lint and signature checks pass. Two physical phones
+were used sequentially: their originals went into distinct verified folders, a mixed old/new
+selection transferred only new components, and its repeat transferred zero bytes. See
+`verification/MULTIPLE-IPHONES.md`. Simultaneous picker and active cable-removal gates remain open.
+
 ### 4 October 2026 — requested cleanup and real incremental/Stop checks
 
 Removed sixteen explicitly requested previous test backups after matching the full private

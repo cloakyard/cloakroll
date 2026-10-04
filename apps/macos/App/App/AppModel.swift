@@ -26,6 +26,7 @@ final class AppModel {
     var deviceState: DeviceViewState = .disconnected
     var isSample = false
     var deviceMessage: String?
+    private(set) var deviceInventory = DeviceInventory()
     var isProjecting = false
     var presentation: LibraryPresentation?
     var settingsTab = SettingsTab.general { didSet { preferences.save(settingsTab) } }
@@ -50,14 +51,19 @@ final class AppModel {
     @ObservationIgnored private var lookup: [String: MediaAsset] = [:]
     @ObservationIgnored private let makeBrowser: @MainActor () -> any DeviceBrowsing
     @ObservationIgnored private var browser: (any DeviceBrowsing)?
+    @ObservationIgnored private var lastSelectedDeviceID: UUID?
     @ObservationIgnored private var deviceTask: Task<Void, Never>?
     @ObservationIgnored private var catalogLoader: LiveCatalogLoader?
     @ObservationIgnored private var lastProjectedQuery: CatalogQuery?
     @ObservationIgnored private let preferences: LibraryPreferences
     @ObservationIgnored let thumbnails = LibraryThumbnailController()
-    @ObservationIgnored let backup = LibraryBackupController(persistence: LibraryBackupPersistence.appDefault())
+    @ObservationIgnored let backup: LibraryBackupController
 
-    init(makeBrowser: (@MainActor () -> any DeviceBrowsing)? = nil, preferences: LibraryPreferences = .standard) {
+    init(
+        makeBrowser: (@MainActor () -> any DeviceBrowsing)? = nil, preferences: LibraryPreferences = .standard,
+        backup: LibraryBackupController = LibraryBackupController(persistence: LibraryBackupPersistence.appDefault())
+    ) {
+        self.backup = backup
         self.preferences = preferences
         thumbnailSize = preferences.thumbnailSize
         sort = preferences.sort
@@ -132,22 +138,11 @@ final class AppModel {
         backup.dismissSummary()
         started = true
         stopDeviceBrowsing()
-        resetCatalogState()
+        clearDeviceLibrary()
         sourceGeneration += 1
-        generation += 1
-        projectionTask?.cancel()
         isLoadingSource = false
-        isProjecting = false
         isSample = false
         sampleProgress = false
-        assets = []
-        statuses = [:]
-        backupDates = [:]
-        lookup = [:]
-        snapshot = .empty
-        scrollReset += 1
-        clearSelection()
-        infoAsset = nil
         device = nil
         deviceState = .disconnected
         deviceMessage = nil
@@ -156,6 +151,7 @@ final class AppModel {
         if let source = service as? any DeviceMediaSource {
             catalogLoader = LiveCatalogLoader(
                 source: source,
+                shouldReceive: { [weak self] in self?.shouldReceiveCatalog($0) == true },
                 onReceive: { [weak self] in self?.receiveCatalog($0) },
                 onPrepared: { [weak self] in self?.applyCatalog($0) }
             )
@@ -173,6 +169,19 @@ final class AppModel {
     func retryDeviceConnection() {
         guard !backup.isBusy else { return }
         browser?.retry()
+    }
+
+    var canSelectDevice: Bool {
+        !isSample && !backup.isBusy && !backup.destination.isChoosing && browser is any DeviceSelectionBrowsing
+    }
+
+    @discardableResult
+    func selectDevice(id: UUID) -> Bool {
+        guard canSelectDevice, let source = browser as? any DeviceSelectionBrowsing,
+              source.selectDevice(id: id) else { return false }
+        applyInventory(source.inventory)
+        applyConnection(source.selectedConnection)
+        return true
     }
 
     var backupSourceAvailable: Bool {
@@ -233,6 +242,8 @@ final class AppModel {
         deviceTask?.cancel()
         deviceTask = nil
         browser = nil
+        deviceInventory = DeviceInventory()
+        lastSelectedDeviceID = nil
     }
 
     var isCatalogLoading: Bool { mediaScanState == .scanning || isCatalogPreparing }
@@ -246,6 +257,47 @@ final class AppModel {
         isCatalogPreparing = false
     }
 
+    private func clearDeviceLibrary() {
+        backup.suspendHistory(resetSource: true)
+        thumbnails.setSession(nil)
+        catalogLoader?.retireCurrentSession()
+        resetCatalogState()
+        generation += 1
+        projectionTask?.cancel()
+        isProjecting = false
+        assets = []
+        statuses = [:]
+        backupDates = [:]
+        lookup = [:]
+        snapshot = .empty
+        scrollReset += 1
+        clearSelection()
+        infoAsset = nil
+    }
+
+    private func applyInventory(_ value: DeviceInventory) {
+        deviceInventory = value
+        guard let selectedID = value.selectedID else { return }
+        if let previous = lastSelectedDeviceID, previous != selectedID {
+            backup.sourceBecameUnavailable()
+            clearDeviceLibrary()
+            device = nil
+            deviceState = .opening
+            deviceMessage = nil
+        }
+        lastSelectedDeviceID = selectedID
+    }
+
+    private func shouldReceiveCatalog(_ source: DeviceMediaSnapshot) -> Bool {
+        guard !isSample else { return false }
+        guard let selector = browser as? any DeviceSelectionBrowsing else { return true }
+        // Streams are independent: read the current selection before accepting either envelope.
+        applyInventory(selector.inventory)
+        applyConnection(selector.selectedConnection)
+        return selector.selectedSessionID == source.sessionID
+            || (selector.selectedSessionID == nil && source.state == .interrupted && catalogSessionID == source.sessionID)
+    }
+
     private func receiveCatalog(_ source: DeviceMediaSnapshot) {
         guard !isSample else { return }
         catalogSessionID = source.sessionID
@@ -257,7 +309,7 @@ final class AppModel {
     }
 
     private func applyCatalog(_ prepared: PreparedDeviceCatalog) {
-        guard !isSample, prepared.source.sessionID == catalogSessionID else { return }
+        guard shouldReceiveCatalog(prepared.source), prepared.source.sessionID == catalogSessionID else { return }
         isCatalogPreparing = false
         // Keep the previous device's catalog useful while the same phone reconnects. A complete
         // empty catalog or a different phone always replaces it rather than claiming stale media.
@@ -276,20 +328,32 @@ final class AppModel {
 
     private func apply(_ event: DeviceEvent) {
         guard !isSample else { return }
+        if let selector = browser as? any DeviceSelectionBrowsing {
+            applyInventory(selector.inventory)
+            applyConnection(selector.selectedConnection)
+            return
+        }
         switch event {
+        case .inventoryChanged(let inventory):
+            applyInventory(inventory)
         case .stateChanged(let connection):
-            device = connection.device
-            deviceState = connection.state
-            deviceMessage = connection.message
-            if connection.state != .ready {
-                backup.sourceBecameUnavailable()
-                backup.suspendHistory()
-            } else {
-                backup.retryHistoryCheck()
-            }
-            if connection.state != .ready { thumbnails.setSession(nil) } else if mediaScanState != .interrupted {
-                thumbnails.setSession(catalogSessionID)
-            }
+            applyConnection(connection)
+        }
+    }
+
+    private func applyConnection(_ connection: DeviceConnection) {
+        guard device != connection.device || deviceState != connection.state || deviceMessage != connection.message else { return }
+        device = connection.device
+        deviceState = connection.state
+        deviceMessage = connection.message
+        if connection.state != .ready {
+            backup.sourceBecameUnavailable()
+            backup.suspendHistory()
+        } else {
+            backup.retryHistoryCheck()
+        }
+        if connection.state != .ready { thumbnails.setSession(nil) } else if mediaScanState != .interrupted {
+            thumbnails.setSession(catalogSessionID)
         }
     }
 

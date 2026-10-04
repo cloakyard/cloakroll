@@ -10,8 +10,11 @@ struct PersistentLibraryCatalog: Sendable {
     let asset: MediaAsset
     let source: DeviceMediaSnapshot
 
-    init(prefix: String = "old", sessionID: UUID = UUID(), contextFolder: String = "100APPLE", companion: Bool = false) {
-        device = ConnectedDevice(identity: DeviceIdentity(kind: .persistent, value: "fixture-phone"), name: "Test iPhone")
+    init(
+        prefix: String = "old", sessionID: UUID = UUID(), contextFolder: String = "100APPLE", companion: Bool = false,
+        deviceKey: String = "fixture-phone", deviceName: String = "Test iPhone"
+    ) {
+        device = ConnectedDevice(identity: DeviceIdentity(kind: .persistent, value: deviceKey), name: deviceName)
         let date = BackupLibraryFixture.date
         var resources = [MediaResource(id: prefix + "-still", filename: "IMG.HEIC", byteCount: 3, modifiedAt: date)]
         if companion { resources.append(MediaResource(id: prefix + "-motion", filename: "IMG.MOV", byteCount: 2, modifiedAt: date)) }

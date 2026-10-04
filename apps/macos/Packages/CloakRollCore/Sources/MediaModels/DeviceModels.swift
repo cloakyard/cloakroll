@@ -66,6 +66,7 @@ public struct DeviceConnection: Equatable, Sendable {
 
 public enum DeviceEvent: Equatable, Sendable {
     case stateChanged(DeviceConnection)
+    case inventoryChanged(DeviceInventory)
 }
 
 /// One consumer owns this stream. Recreate the service after cancelling that consumer.

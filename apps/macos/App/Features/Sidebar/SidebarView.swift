@@ -87,16 +87,22 @@ struct DeviceSummary: View {
                 .foregroundStyle(model.device == nil ? Color.secondary : Design.accent)
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 4) {
-                Text(model.device?.displayName ?? "No iPhone Connected")
-                    .fontWeight(.medium)
-                    .lineLimit(2)
+                if model.deviceInventory.devices.count > 1 {
+                    ConnectedDevicePicker(inventory: model.deviceInventory, isEnabled: model.canSelectDevice) {
+                        model.selectDevice(id: $0)
+                    }
+                } else {
+                    Text(model.device?.displayName ?? "No iPhone Connected")
+                        .fontWeight(.medium)
+                        .lineLimit(2)
+                }
                 Label(status, systemImage: symbol)
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: .contain)
     }
 
     private var status: String {

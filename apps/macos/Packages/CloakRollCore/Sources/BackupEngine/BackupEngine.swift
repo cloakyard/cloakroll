@@ -41,6 +41,7 @@ public actor BackupEngine {
     /// every verified partial component retained; an incomplete asset is never marked complete.
     public func run(
         assets: [MediaAsset], sessionID: UUID, destination: URL,
+        folderLayout: BackupFolderLayout = .byDate,
         onStaged: @escaping StagingHandler = { _ in }, onPublication: @escaping PublicationHandler = { _ in },
         onVerified: @escaping VerificationHandler = { _ in }, download: @escaping Download
     ) async throws -> BackupResult {
@@ -51,7 +52,7 @@ public actor BackupEngine {
         currentTransfer = nil
         publish()
         let task = Task {
-            await execute(assets: assets, sessionID: sessionID, destination: destination,
+            await execute(assets: assets, sessionID: sessionID, destination: destination, folderLayout: folderLayout,
                           onStaged: onStaged, onPublication: onPublication, onVerified: onVerified, download: download)
         }
         worker = task
@@ -79,17 +80,19 @@ public actor BackupEngine {
 
     private func execute(
         assets: [MediaAsset], sessionID: UUID, destination: URL,
+        folderLayout: BackupFolderLayout,
         onStaged: @escaping StagingHandler, onPublication: @escaping PublicationHandler,
         onVerified: @escaping VerificationHandler, download: @escaping Download
     ) async -> BackupResult {
         var store: BackupFileStore?
         do {
             try Task.checkCancellation()
-            try validate(assets)
+            let deviceID = try validate(assets)
             guard let runID = state.runID else { throw BackupEngineError.invalidSelection }
             let timeZone = timeZone
+            let folderPrefix = try folderLayout.folderPrefix(deviceID: deviceID)
             store = try await detached {
-                try BackupFileStore(destination: destination, runID: runID, timeZone: timeZone)
+                try BackupFileStore(destination: destination, runID: runID, timeZone: timeZone, folderPrefix: folderPrefix)
             }
             guard let store else { throw BackupEngineError.invalidSelection }
             for asset in assets {
@@ -130,14 +133,18 @@ public actor BackupEngine {
         return BackupResult(snapshot: state, records: records)
     }
 
-    private func validate(_ assets: [MediaAsset]) throws {
-        guard !assets.isEmpty, Set(assets.map(\.id)).count == assets.count else { throw BackupEngineError.invalidSelection }
+    private func validate(_ assets: [MediaAsset]) throws -> String {
+        guard let deviceID = assets.first?.deviceID, !deviceID.isEmpty,
+              Set(assets.map(\.id)).count == assets.count else { throw BackupEngineError.invalidSelection }
         var identifiers: Set<String> = []
         var bytes: Int64 = 0
         var count = 0
         for asset in assets {
+            try Task.checkCancellation()
             guard !asset.id.isEmpty, !asset.deviceID.isEmpty, !asset.resources.isEmpty else { throw BackupEngineError.invalidSelection }
+            guard asset.deviceID == deviceID else { throw BackupEngineError.mixedDevices }
             for resource in asset.resources {
+                try Task.checkCancellation()
                 guard !resource.id.isEmpty, identifiers.insert(resource.id).inserted else { throw BackupEngineError.invalidSelection }
                 guard resource.byteCount > 0 else { throw BackupEngineError.invalidResourceSize }
                 let total = bytes.addingReportingOverflow(resource.byteCount)
@@ -149,6 +156,7 @@ public actor BackupEngine {
         state.totalResources = count
         state.expectedBytes = bytes
         publish()
+        return deviceID
     }
 
     private func transfer(

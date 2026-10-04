@@ -29,18 +29,20 @@ final class BackupFileStore: @unchecked Sendable {
     private let staging: BackupDescriptor
     let stagingName: String
     private let timeZone: TimeZone
+    private let folderPrefix: [String]
     private let markerName = ".owner"
     private let markerBytes: [UInt8]
     private let markerEvidence: BackupFileEvidence
 
-    init(destination: URL, runID: UUID, timeZone: TimeZone) throws {
-        guard destination.isFileURL else { throw BackupFileError.unsafePath }
+    init(destination: URL, runID: UUID, timeZone: TimeZone, folderPrefix: [String] = []) throws {
+        guard destination.isFileURL, folderPrefix.allSatisfy(BackupDescriptor.isComponent) else { throw BackupFileError.unsafePath }
         root = try BackupDescriptor(open(destination.path, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC))
         let status = try root.status()
         destinationIdentity = "\(status.st_dev):\(status.st_ino)"
         stagingName = ".cloakroll-staging-" + runID.uuidString.lowercased()
         staging = try root.createDirectory(stagingName)
         self.timeZone = timeZone
+        self.folderPrefix = folderPrefix
         let marker = try BackupDescriptor(openat(staging.value, markerName, O_RDWR | O_CREAT | O_EXCL | O_NOFOLLOW | O_CLOEXEC, 0o600))
         let bytes = Array(("CloakRoll original staging 1\n" + runID.uuidString + "\n").utf8)
         markerBytes = bytes
@@ -88,7 +90,7 @@ final class BackupFileStore: @unchecked Sendable {
         let evidence = try BackupFileEvidence.inspect(file, expectedBytes: expectedByteCount)
         try file.sync()
         try staged.descriptor.sync()
-        let folders = BackupPathNaming.folders(createdAt: createdAt, timeZone: timeZone)
+        let folders = folderPrefix + BackupPathNaming.folders(createdAt: createdAt, timeZone: timeZone)
         var destination = root
         for folder in folders {
             let child = try destination.directory(folder, create: true)
