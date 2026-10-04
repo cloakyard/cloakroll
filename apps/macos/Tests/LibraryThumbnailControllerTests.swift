@@ -8,6 +8,24 @@ import UniformTypeIdentifiers
 
 @MainActor
 struct LibraryThumbnailControllerTests {
+    @Test func nearbyCellReceivesThePreparedBitmapBeforePromotion() async throws {
+        let controller = LibraryThumbnailController(cacheDirectory: nil)
+        let session = UUID()
+        controller.setSession(session)
+        let key = key(session)
+        let data = try fixture(width: 48, height: 24)
+        let presentation = ThumbnailPresentation()
+        #expect(presentation.prepare(key: key, demand: .prefetch))
+        let image = try #require(try await controller.image(for: key, priority: .prefetch) { data })
+        presentation.accept(image, for: key)
+        #expect(presentation.image === image)
+        #expect(!presentation.prepare(key: key, demand: .visible))
+        #expect(presentation.image === image)
+        let metrics = await controller.metrics()
+        #expect(metrics.source.sourceLoads == 1)
+        #expect(metrics.images.decodes == 1)
+    }
+
     @Test func prefetchPreparesTheBitmapBeforeAVisibleRequest() async throws {
         let controller = LibraryThumbnailController(cacheDirectory: nil)
         let session = UUID()

@@ -561,3 +561,16 @@ Added Open in Finder under the selected Destination, using the existing bookmark
 and independent access lease. Actual activation opened the correct selected folder
 in Finder. Debug build, 338 core tests, strict lint and signature checks pass; see
 `verification/PHASE-8.md`. No backup or source-media operation was started.
+
+### 4 October — nearby thumbnails displayed before scrolling exposes them
+
+Fixed the remaining presentation gap after decoded-cache lookahead: nearby cells
+now install the prepared bitmap at prefetch priority and preserve it when crossing
+the visible boundary in either direction. Far/disappearing cells still release
+images, and stale/cancelled results cannot replace current content.
+
+All 338 core and 146 hosted app tests, Debug/Release builds, strict lint and signatures
+pass. On the physical 2,071-item iPhone library, the same row previously blank beneath
+the glass bar now displays there before further scrolling, including after reversing
+direction. See `verification/PHASE-4.md` for the bounded before/after evidence and
+remaining frame-time/memory limits. No full phase acceptance is claimed.

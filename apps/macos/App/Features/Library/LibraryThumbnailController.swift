@@ -42,14 +42,15 @@ final class LibraryThumbnailController {
     }
 
     func image(
-        for key: ThumbnailKey, load: @escaping @Sendable () async throws -> Data
+        for key: ThumbnailKey, priority: ThumbnailPriority = .visible,
+        load: @escaping @Sendable () async throws -> Data
     ) async throws -> CGImage? {
         let generation = try await prepare(key)
         if let image = await decoded.cachedImage(for: key) {
             try validate(key, generation: generation)
             return image
         }
-        let data = try await encoded.data(for: key, priority: .visible, load: load)
+        let data = try await encoded.data(for: key, priority: priority, load: load)
         try validate(key, generation: generation)
         let image = try await decoded.image(for: key, data: data)
         try validate(key, generation: generation)
@@ -57,15 +58,7 @@ final class LibraryThumbnailController {
     }
 
     func prefetch(for key: ThumbnailKey, load: @escaping @Sendable () async throws -> Data) async throws {
-        let generation = try await prepare(key)
-        if await decoded.cachedImage(for: key) != nil {
-            try validate(key, generation: generation)
-            return
-        }
-        let data = try await encoded.data(for: key, priority: .prefetch, load: load)
-        try validate(key, generation: generation)
-        _ = try await decoded.image(for: key, data: data)
-        try validate(key, generation: generation)
+        _ = try await image(for: key, priority: .prefetch, load: load)
     }
 
     private func prepare(_ key: ThumbnailKey) async throws -> UUID {

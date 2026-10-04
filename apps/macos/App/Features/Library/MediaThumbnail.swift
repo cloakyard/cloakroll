@@ -3,20 +3,19 @@ import MediaModels
 import SwiftUI
 import ThumbnailPipeline
 
-/// Cells retain only their displayed bitmap. Shared caches serve revisits and Info.
+/// Nearby cells install their bitmap before scrolling exposes it, including beneath glass.
 struct MediaThumbnail: View {
     let asset: MediaAsset
     var contentMode: ContentMode = .fill
     var demand: ThumbnailDemand = .visible
     @Environment(AppModel.self) private var model
-    @State private var image: CGImage?
-    @State private var loadedKey: ThumbnailKey?
+    @State private var presentation = ThumbnailPresentation()
 
     var body: some View {
         Group {
             if model.isSample {
                 SampleThumbnail(asset: asset, contentMode: contentMode)
-            } else if let image {
+            } else if let image = presentation.image {
                 Image(decorative: image, scale: 1)
                     .resizable()
                     .aspectRatio(contentMode: contentMode)
@@ -27,10 +26,7 @@ struct MediaThumbnail: View {
         }
         .accessibilityHidden(true)
         .task(id: request) { await load(request) }
-        .onDisappear {
-            image = nil
-            loadedKey = nil
-        }
+        .onDisappear { presentation.reset() }
     }
 
     private var request: ThumbnailRequest {
@@ -44,31 +40,20 @@ struct MediaThumbnail: View {
     }
 
     private func load(_ request: ThumbnailRequest) async {
-        guard request.demand != .none else {
-            image = nil
-            loadedKey = nil
-            return
-        }
+        guard !Task.isCancelled, self.request == request else { return }
         let key = ThumbnailKey(asset: request.asset, sessionID: request.sessionID, reusableIdentity: request.reusableIdentity)
-        if loadedKey != key || request.demand != .visible {
-            image = nil
-            loadedKey = nil
-        }
-        guard request.available, request.demand != .none, let key else { return }
-        if loadedKey == key, image != nil { return }
+        let needsImage = presentation.prepare(key: key, demand: request.demand)
+        guard request.available, needsImage, let key else { return }
         while !Task.isCancelled {
             do {
                 let load: @Sendable () async throws -> Data = { [model] in
                     try await model.thumbnailData(for: key)
                 }
-                if request.demand == .prefetch {
-                    try await model.thumbnails.prefetch(for: key, load: load)
-                } else {
-                    let decoded = try await model.thumbnails.image(for: key, load: load)
-                    guard !Task.isCancelled, self.request == request else { return }
-                    image = decoded
-                    loadedKey = key
-                }
+                let decoded = try await model.thumbnails.image(
+                    for: key, priority: request.demand == .visible ? .visible : .prefetch, load: load
+                )
+                guard !Task.isCancelled, self.request == request else { return }
+                presentation.accept(decoded, for: key)
                 return
             } catch ThumbnailPipelineError.queueFull {
                 guard request.demand == .visible else { return }

@@ -15,7 +15,7 @@ struct MediaCell: View {
     var body: some View {
         Button(action: onSelect) {
             GeometryReader { geometry in
-                MediaThumbnail(asset: asset, demand: thumbnailDemand == .visible ? .visible : .none)
+                MediaThumbnail(asset: asset, demand: thumbnailDemand)
                     .frame(width: geometry.size.width, height: geometry.size.height)
                     .clipped()
                     .overlay(alignment: .bottomLeading) { mediaBadge.padding(7) }

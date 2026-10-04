@@ -156,3 +156,47 @@ Logs: `/tmp/cloakroll-lookahead-core-tests.log`, `/tmp/cloakroll-lookahead-app-t
 `/tmp/cloakroll-lookahead-build.log`, `/tmp/cloakroll-lookahead-release.log`,
 `/tmp/cloakroll-lookahead-baseline-metrics.log`, `/tmp/cloakroll-lookahead-first-viewport.log`,
 `/tmp/cloakroll-lookahead-jump-metrics.log`, and `/tmp/cloakroll-lookahead-settled-metrics.log`.
+
+## 4 October — display prepared images before the viewport boundary
+
+The user still observed blank rows after the cache lookahead change. Investigation
+found a separate presentation gap: MediaCell reduced nearby demand to `.none`,
+clearing its image. A warm bitmap was only adopted after a visible geometry update
+and asynchronous cache lookup. Cache readiness alone did not establish display readiness.
+
+Instantiated nearby cells now request and display the bitmap with prefetch priority.
+The same image survives both directions across the nearby/visible boundary without
+being cleared or reloaded. Far-away/disappearing cells still release their reference;
+changed keys and cancelled requests cannot install an old result. The existing
+catalog lookahead still prepares images for cells not yet instantiated. Cache limits,
+serial decoding and physical source limits are unchanged. Unlike the preceding
+stage, nearby cells may retain references to shared bitmaps within the bounded
+geometry band; cache accounting still excludes presentation/framework allocations.
+
+Verification:
+
+- **338 core tests and 146 hosted app tests pass.** Seven new test functions cover
+  actual prefetch bitmap delivery into presentation, promotion, demotion, release,
+  changed session/metadata, late completion and missing decode results.
+- Normal Debug/Release builds, strict lint, whitespace and both signature checks
+  pass, with no compiler warnings. The normal Debug app was rebuilt after testing.
+- Physical 2,071-item iPhone library, standard 1,100 × 740 window, four columns:
+  before the change, scrolling 0.24 pages from the top left the first September row
+  blank beneath the glass bar. After the change, the same scroll position
+  (AX fraction 0.001816021044479162) displayed that row beneath the glass. Moving
+  another 0.1 pages down exposed the prepared images above the bar; returning
+  0.1 pages up retained them. These were directly inspected native screenshots.
+- At that point the pipeline had 24 source loads/decodes, 24 decoded entries using
+  18,087,936 bytes, eight coalesced consumers, no active/queued work, and zero
+  source/decode/disk failures. No original-file backup was initiated.
+
+This confirms the reproduced boundary defect was removed at the sampled positions.
+It is not a frame-time recording or a guarantee for large jumps beyond prepared
+rows. Newly created visible cells and uncached USB thumbnails remain asynchronous.
+Instrumented sustained scrolling, total-process memory and older-OS runtime gates
+remain open. The phone temporarily disappeared from discovery after app restart,
+then became available for the physical check; no mock was substituted.
+
+Logs: `/tmp/cloakroll-presentation-core-tests.log`,
+`/tmp/cloakroll-presentation-app-tests.log`, `/tmp/cloakroll-presentation-build.log`,
+`/tmp/cloakroll-presentation-release.log`, `/tmp/cloakroll-presentation-metrics.log`.
