@@ -166,6 +166,19 @@ devices/destinations and verification failure. Hardware matrices stay separate f
 
 ## Progress evidence
 
+### 4 October 2026 — destination status refinement
+
+Grouped the destination name and status under one native folder Label. A compact, secondary
+“Access checked” caption aligns beneath the name; the redundant sidebar-sized success icon
+is removed. Checking uses a mini progress indicator, while failures show an inline warning,
+“Needs attention” and the specific error in help/accessibility. The wording describes the
+last folder-access check, not backup verification or continuously monitored availability.
+Actual macOS 27 UI checks cover unchecked/available accessibility text, the connected-phone
+sidebar in light/dark, and the shared status in Backup settings. State/error semantics were
+reviewed without forcing a real folder failure. Debug build, strict lint, whitespace check
+and all 333 core tests pass; no new tests for this presentation-only change. Logs:
+`/tmp/cloakroll-destination-design-build.log` and `/tmp/cloakroll-destination-design-core-tests.log`.
+
 ### 4 October 2026 — camera metadata and native Info scrolling
 
 Media Info now requests actual camera EXIF only when opened for a still image. The native

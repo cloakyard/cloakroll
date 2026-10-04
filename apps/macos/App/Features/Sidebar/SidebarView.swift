@@ -27,13 +27,19 @@ struct SidebarView: View {
             } else {
                 Section("Destination") {
                     if let destination = model.backup.destination.selection {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Label(destination.displayName, systemImage: "folder")
-                                .lineLimit(1)
-                                .help(destination.lastKnownPath)
-                            DestinationReadinessLabel(readiness: model.backup.destination.readiness)
-                                .font(.caption)
+                        Label {
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text(destination.displayName)
+                                    .lineLimit(1)
+                                    .truncationMode(.middle)
+                                    .help(destination.lastKnownPath)
+                                DestinationReadinessLabel(readiness: model.backup.destination.readiness)
+                                    .font(.caption)
+                            }
+                        } icon: {
+                            Image(systemName: "folder")
                         }
+                        .accessibilityElement(children: .combine)
                     }
                     Button {
                         Task { await model.backup.chooseDestination() }

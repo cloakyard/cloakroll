@@ -7,19 +7,29 @@ struct DestinationReadinessLabel: View {
         Group {
             switch readiness {
             case .unchecked:
-                Text("Not Checked")
+                Text("Not checked yet")
             case .checking:
-                HStack(spacing: 6) {
-                    ProgressView().controlSize(.mini)
-                    Text("Checking Folder…")
+                HStack(spacing: 4) {
+                    ProgressView()
+                        .controlSize(.mini)
+                        .accessibilityHidden(true)
+                    Text("Checking access…")
                 }
             case .available:
-                Label("Last Check Passed", systemImage: "checkmark.circle")
+                Text("Access checked")
             case .unavailable:
-                Label("Folder Unavailable", systemImage: "exclamationmark.circle")
+                HStack(alignment: .firstTextBaseline, spacing: 4) {
+                    Image(systemName: "exclamationmark.circle.fill")
+                        .foregroundStyle(.orange)
+                        .accessibilityHidden(true)
+                    Text("Needs attention")
+                }
             }
         }
         .foregroundStyle(.secondary)
+        .fixedSize(horizontal: false, vertical: true)
+        .accessibilityElement(children: .combine)
+        .accessibilityValue(readiness.message ?? "")
         .help(readiness.message ?? "Folder access is checked again before each backup.")
     }
 }
