@@ -233,6 +233,18 @@ final class AppModel {
         stopDeviceBrowsing()
     }
 
+    func photoMetadata(for asset: MediaAsset, sessionID: UUID) async throws -> PhotoCameraMetadata {
+        guard !isSample, deviceState == .ready, !backup.isBusy, catalogSessionID == sessionID,
+              currentAsset(id: asset.id) == asset, let resourceID = asset.primaryResource?.id,
+              let provider = browser as? any PhotoMetadataProviding else { throw MediaSourceError.unavailable }
+        try Task.checkCancellation()
+        let metadata = try await provider.photoMetadata(for: resourceID, sessionID: sessionID)
+        try Task.checkCancellation()
+        guard !isSample, catalogSessionID == sessionID, deviceState == .ready,
+              currentAsset(id: asset.id) == asset else { throw MediaSourceError.staleSession }
+        return metadata
+    }
+
     private func stopDeviceBrowsing() {
         backup.suspendHistory(resetSource: true)
         thumbnails.setSession(nil)

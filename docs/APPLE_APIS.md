@@ -152,6 +152,35 @@ No delete-after-download, deletion API, clock synchronization, tethered capture,
 
 Sources: [Download options](https://developer.apple.com/documentation/imagecapturecore/icdownloadoption), [Sidecar download option](https://developer.apple.com/documentation/imagecapturecore/icdownloadsidecarfiles), [Camera download APIs](https://developer.apple.com/documentation/imagecapturecore/iccameradevice), and `ICCameraItem.h` / `ICCameraFile.h`.
 
+## On-demand camera EXIF in Media Info
+
+`ICCameraFile.requestMetadataDictionary(options:completion:)` is public on macOS 10.15+,
+including CloakRoll's macOS 14 baseline. Its completion may run on any queue. Normalize the
+returned ImageIO `{Exif}` / `{TIFF}` dictionary into a Sendable value before crossing actors.
+Use the optional `metadata` property only as a cache lookup; `metadataIfAvailable` can implicitly
+request metadata and must not be used while enumerating the library.
+
+The camera delegate denies metadata requests unless the exact framework file has an explicitly
+pending Info request. A shared coordinator permits one physical metadata operation and eight
+waiting callers. Cancellation, a 15-second caller deadline and session retirement release callers,
+but retain the framework file and physical slot until the actual callback arrives. Stale sessions
+and changed resource objects cannot publish results. No original-file download or conversion is
+needed. Opening Info during a backup defers this optional request until the backup finishes.
+
+Only camera make/model, lens, ISO, F-number, exposure time, focal length, 35 mm equivalent and
+exposure bias are extracted. No GPS fields or raw metadata dictionaries are persisted. Absent
+EXIF remains absent; numbers must be finite and physically positive except exposure bias,
+where zero and negative values are valid. No APEX or filename-based guessing is used.
+
+On 4 October 2026, the physical iPhone supplied all eight displayed camera fields for a Live
+Photo via this API; a PNG supplied no camera fields and showed the quiet unavailable state.
+See `verification/MEDIA-INFO.md` for actual validation and limits.
+
+Sources: [requestMetadataDictionary](https://developer.apple.com/documentation/imagecapturecore/iccamerafile/requestmetadatadictionary%28options%3Acompletion%3A%29),
+[metadata](https://developer.apple.com/documentation/imagecapturecore/iccameraitem/metadata),
+[metadataIfAvailable](https://developer.apple.com/documentation/imagecapturecore/iccameraitem/metadataifavailable),
+and [shouldGetMetadataOf](https://developer.apple.com/documentation/imagecapturecore/iccameradevicedelegate/cameradevice%28_%3Ashouldgetmetadataof%3A%29).
+
 ## Asset relationships and deduplication
 
 Useful public relationship hints include:

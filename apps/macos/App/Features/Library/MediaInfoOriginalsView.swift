@@ -13,7 +13,7 @@ struct MediaInfoOriginalsView: View {
                 Text(resources.count, format: .number)
                     .font(.caption.monospacedDigit())
                     .foregroundStyle(.secondary)
-                    .accessibilityLabel("\(resources.count) original files")
+                    .accessibilityLabel("\(resources.count) original \(resources.count == 1 ? "file" : "files")")
             }
             if resources.isEmpty {
                 Text("Original file details aren’t available.")

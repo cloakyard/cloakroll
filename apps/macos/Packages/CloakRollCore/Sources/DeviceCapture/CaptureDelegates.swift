@@ -82,12 +82,15 @@ enum CameraCallback: Sendable {
 final class CaptureCameraDelegate: NSObject, ICCameraDeviceDelegate {
     private let receive: @Sendable (CameraCallback) -> Void
     private let shouldGetThumbnail: @Sendable (ObjectIdentifier) -> Bool
+    private let shouldGetMetadata: @Sendable (ObjectIdentifier) -> Bool
 
     init(
         shouldGetThumbnail: @escaping @Sendable (ObjectIdentifier) -> Bool = { _ in false },
+        shouldGetMetadata: @escaping @Sendable (ObjectIdentifier) -> Bool = { _ in false },
         receive: @escaping @Sendable (CameraCallback) -> Void
     ) {
         self.shouldGetThumbnail = shouldGetThumbnail
+        self.shouldGetMetadata = shouldGetMetadata
         self.receive = receive
     }
 
@@ -144,5 +147,7 @@ final class CaptureCameraDelegate: NSObject, ICCameraDeviceDelegate {
         shouldGetThumbnail(ObjectIdentifier(item))
     }
 
-    func cameraDevice(_ cameraDevice: ICCameraDevice, shouldGetMetadataOf item: ICCameraItem) -> Bool { false }
+    func cameraDevice(_ cameraDevice: ICCameraDevice, shouldGetMetadataOf item: ICCameraItem) -> Bool {
+        shouldGetMetadata(ObjectIdentifier(item))
+    }
 }

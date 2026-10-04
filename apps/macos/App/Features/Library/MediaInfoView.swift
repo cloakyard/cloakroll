@@ -11,11 +11,16 @@ struct MediaInfoView: View {
             HStack(alignment: .top, spacing: 24) {
                 preview
                     .frame(width: 304)
+                    .padding(.leading, 24)
+                    .padding(.vertical, 24)
                 ScrollView {
                     VStack(alignment: .leading, spacing: 20) {
                         heading
                         metadata
                         backupStatus
+                        if asset.kind.isStillImage, !model.isSample, asset.primaryResource != nil {
+                            MediaInfoCameraView(asset: asset)
+                        }
                         MediaInfoOriginalsView(resources: asset.resources)
                         if model.isSample {
                             Text("Illustrated sample media. No original file is stored or transferred.")
@@ -23,12 +28,11 @@ struct MediaInfoView: View {
                                 .foregroundStyle(.secondary)
                         }
                     }
-                    .padding(.trailing, 4)
-                    .padding(.bottom, 4)
                 }
+                .contentMargins(.trailing, 24, for: .scrollContent)
+                .contentMargins(.vertical, 24, for: .scrollContent)
                 .scrollBounceBehavior(.basedOnSize)
             }
-            .padding(24)
             .navigationTitle("Media Info")
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
@@ -65,7 +69,8 @@ struct MediaInfoView: View {
         GroupBox {
             VStack(spacing: 12) {
                 detail("Captured", asset.createdAt?.formatted(date: .abbreviated, time: .shortened) ?? "Unknown")
-                detail(asset.resources.count > 1 ? "Total size" : "Size", Format.bytes(asset.byteCount))
+                detail(asset.resources.count > 1 ? "Total size" : "Size",
+                       asset.resources.isEmpty ? "Unknown" : Format.bytes(asset.byteCount))
                 if let width = asset.pixelWidth, let height = asset.pixelHeight, width > 0, height > 0 {
                     detail("Dimensions", "\(width) × \(height)")
                 }
@@ -101,17 +106,7 @@ struct MediaInfoView: View {
     }
 
     private func detail(_ label: String, _ value: String) -> some View {
-        HStack(alignment: .firstTextBaseline, spacing: 16) {
-            Text(label).foregroundStyle(.secondary)
-            Spacer(minLength: 0)
-            Text(value)
-                .multilineTextAlignment(.trailing)
-                .textSelection(.enabled)
-                .fixedSize(horizontal: false, vertical: true)
-        }
-        .font(.callout)
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(label): \(value)")
+        MediaInfoDetailRow(label: label, value: value)
     }
 
     private var mediaSymbol: String {

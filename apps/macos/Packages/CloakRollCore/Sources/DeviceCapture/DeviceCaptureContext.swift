@@ -4,6 +4,7 @@
 public final class DeviceCaptureContext {
     let thumbnailRequests = ThumbnailRequestCoordinator()
     let originalDownloads = OriginalDownloadCoordinator()
+    let photoMetadataRequests = PhotoMetadataRequestCoordinator()
 
     public var thumbnailDiagnostics: ThumbnailRequestDiagnostics { thumbnailRequests.diagnostics }
 

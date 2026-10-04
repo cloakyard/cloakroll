@@ -2,7 +2,7 @@ import Foundation
 
 /// The synchronous framework delegate can run outside the actor. It sees only object identities,
 /// never reads camera properties, and allows only explicit requests awaiting their real callback.
-final class ThumbnailRequestPermissions: @unchecked Sendable {
+final class CaptureRequestPermissions: @unchecked Sendable {
     private let lock = NSLock()
     private var counts: [ObjectIdentifier: Int] = [:]
 

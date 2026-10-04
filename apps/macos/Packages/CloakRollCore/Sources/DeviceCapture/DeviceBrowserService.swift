@@ -6,7 +6,8 @@ import OSLog
 /// Owns ImageCaptureCore objects on the main actor and emits value-only connection/catalog state.
 /// Enumeration reads supplied file properties; thumbnails are requested only by visible consumers.
 @MainActor
-public final class DeviceBrowserService: DeviceMediaSource, DeviceSelectionBrowsing, ThumbnailProviding, OriginalMediaDownloading {
+public final class DeviceBrowserService:
+    DeviceMediaSource, DeviceSelectionBrowsing, ThumbnailProviding, PhotoMetadataProviding, OriginalMediaDownloading {
     private let context: DeviceCaptureContext
     public let events: AsyncStream<DeviceEvent>
     public let catalogs: AsyncStream<DeviceMediaSnapshot>
@@ -17,7 +18,8 @@ public final class DeviceBrowserService: DeviceMediaSource, DeviceSelectionBrows
     private let continuation: AsyncStream<DeviceEvent>.Continuation
     private let catalogContinuation: AsyncStream<DeviceMediaSnapshot>.Continuation
     private let catalog: CameraCatalog
-    private let thumbnailPermissions = ThumbnailRequestPermissions()
+    private let thumbnailPermissions = CaptureRequestPermissions()
+    private let metadataPermissions = CaptureRequestPermissions()
     private let logger = Logger(subsystem: "com.cloakroll.core", category: "DeviceCapture")
     private var browser: ICDeviceBrowser?
     private var browserDelegate: CaptureBrowserDelegate?
@@ -144,6 +146,7 @@ public final class DeviceBrowserService: DeviceMediaSource, DeviceSelectionBrows
         )
         let delegate = CaptureCameraDelegate(
             shouldGetThumbnail: { [thumbnailPermissions] identifier in thumbnailPermissions.contains(identifier) },
+            shouldGetMetadata: { [metadataPermissions] identifier in metadataPermissions.contains(identifier) },
             receive: { [weak self] event in
                 DispatchQueue.main.async { self?.receive(event, token: token) }
             }
@@ -230,6 +233,7 @@ public final class DeviceBrowserService: DeviceMediaSource, DeviceSelectionBrows
         if let token = lifecycle.activeToken {
             context.thumbnailRequests.retire(sessionID: token)
             context.originalDownloads.retire(sessionID: token)
+            context.photoMetadataRequests.retire(sessionID: token)
             catalog.interrupt(sessionID: token)
         }
         lifecycle.reset()
@@ -268,6 +272,33 @@ public final class DeviceBrowserService: DeviceMediaSource, DeviceSelectionBrows
                 withExtendedLifetime(file) {}
             }
         }
+    }
+
+    public func photoMetadata(for resourceID: String, sessionID: UUID) async throws -> PhotoCameraMetadata {
+        try Task.checkCancellation()
+        let file = try catalogFile(for: resourceID, sessionID: sessionID)
+        // Unlike metadataIfAvailable, metadata does not implicitly enqueue a request.
+        if let cached = file.metadata { return PhotoMetadataParser.parse(cached) }
+        let result = try await context.photoMetadataRequests.metadata(sessionID: sessionID) { [weak self] completion in
+            guard let self else { throw MediaSourceError.unavailable }
+            let requestedFile = try catalogFile(for: resourceID, sessionID: sessionID)
+            guard requestedFile === file else { throw MediaSourceError.staleSession }
+            let identifier = ObjectIdentifier(file)
+            let permissions = metadataPermissions
+            permissions.insert(identifier)
+            file.requestMetadataDictionary(options: nil) { dictionary, error in
+                // Normalize on the callback queue; an untyped dictionary never crosses actors.
+                guard error == nil else { completion(.failure(.unavailable)); return }
+                completion(.success(PhotoMetadataParser.parse(dictionary)))
+            }
+            return {
+                permissions.remove(identifier)
+                withExtendedLifetime(file) {}
+            }
+        }
+        try Task.checkCancellation()
+        guard try catalogFile(for: resourceID, sessionID: sessionID) === file else { throw MediaSourceError.staleSession }
+        return result
     }
 
     public func downloadOriginal(
@@ -317,9 +348,11 @@ public final class DeviceBrowserService: DeviceMediaSource, DeviceSelectionBrows
             case .ready:
                 context.thumbnailRequests.begin(sessionID: token)
                 context.originalDownloads.begin(sessionID: token)
+                context.photoMetadataRequests.begin(sessionID: token)
             case .restricted, .unavailable:
                 context.thumbnailRequests.retire(sessionID: token)
                 context.originalDownloads.retire(sessionID: token)
+                context.photoMetadataRequests.retire(sessionID: token)
             case .disconnected, .opening:
                 break
             }

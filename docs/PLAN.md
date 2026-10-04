@@ -166,6 +166,18 @@ devices/destinations and verification failure. Hardware matrices stay separate f
 
 ## Progress evidence
 
+### 4 October 2026 — camera metadata and native Info scrolling
+
+Media Info now requests actual camera EXIF only when opened for a still image. The native
+Camera group shows supplied camera/lens, ISO, aperture, shutter speed, focal lengths and
+exposure bias, with quiet missing-data handling and explicit retry on request failure.
+One physical metadata operation is permitted; caller cancellation, timeout and session
+retirement cannot release its physical ownership early or publish stale values. The scrollbar
+now sits at the sheet's right edge with margins applied only to content. Verified real Live
+Photo EXIF and a PNG without camera facts; reviewed edge scrolling in light/dark with 30
+long filenames. All 333 core and 112 hosted app tests, Debug/Release builds and strict lint
+pass. See `verification/MEDIA-INFO.md`; existing broader hardware gates remain open.
+
 ### 4 October 2026 — Media Info redesign
 
 Replaced the tall, single-column Info sheet with a contained full-image preview and a scrollable
