@@ -166,6 +166,15 @@ devices/destinations and verification failure. Hardware matrices stay separate f
 
 ## Progress evidence
 
+### 4 October 2026 — backup activity indicator alignment
+
+Changed the progress heading row from text-baseline alignment to vertical centering so the
+native mini spinner, Backing Up label and percentage align. Inspected the production view
+with sample progress in expanded and compact native windows. Debug/Release builds, 342 core
+tests, strict lint, whitespace and signatures pass. Installed and launched the verified
+Release build; superseded app copies went to Trash. The user's previous backup was already
+complete before restarting. See `verification/BACKUP-PROGRESS.md`; no transfer was started.
+
 ### 4 October 2026 — visible selection reset
 
 Added a native Deselect All button beside the selected count in the idle backup bar. It uses

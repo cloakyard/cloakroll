@@ -7,7 +7,7 @@ struct BackupProgressView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            HStack(alignment: .firstTextBaseline, spacing: 8) {
+            HStack(alignment: .center, spacing: 8) {
                 if progress.showsActivityIndicator {
                     ProgressView().controlSize(.mini).accessibilityHidden(true)
                 }

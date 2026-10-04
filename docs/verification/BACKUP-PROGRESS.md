@@ -101,3 +101,21 @@ updated heading/spinner, repeated-original, 100% and cancellation regressions.
 Debug/Release builds, strict lint, whitespace and signatures pass without compiler
 warnings. No transfer was initiated for this pass. See `BACKUP-ORGANIZATION.md` for
 the companion Settings feature, checks and remaining hardware limit.
+
+## 4 October — spinner and heading alignment
+
+The progress heading HStack used `.firstTextBaseline`, which aligned the native activity
+indicator's non-text bounds incorrectly beside the label. It now uses `.center` for the
+spinner, heading and percentage, without manual offsets or changing the native control size.
+The production progress view was visually inspected using the Copying sample in expanded
+and compact windows; the spinner and heading now share their vertical center.
+
+Debug and Release builds pass without compiler warnings, all 342 core tests pass, and strict
+lint, whitespace and both signature checks pass. No new tests were added for this alignment
+change. Logs: `/tmp/cloakroll-progress-alignment-debug.log`,
+`/tmp/cloakroll-progress-alignment-release.log`, `/tmp/cloakroll-progress-alignment-core.log`.
+
+The installed app showed the user's prior backup complete (5,141 items / 9,068 originals)
+before it was closed. This is observed app status, not an independent media audit. No backup
+was started during this pass. The verified Release build was installed and launched from
+`/Applications/CloakRoll.app`; superseded installed/debug/release copies were moved to Trash.
