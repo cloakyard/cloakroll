@@ -73,6 +73,8 @@ private struct LibraryActionItems: View {
             .keyboardShortcut(".", modifiers: .command)
             .disabled(!model.backup.isBusy || model.backup.isStopping)
         Divider()
+        Button("Check Saved Originals") { model.checkSavedOriginals() }
+            .disabled(!model.canCheckSavedOriginals)
         Button("Refresh Backup History") {
             Task { await model.backup.persistence?.loadSessions() }
         }

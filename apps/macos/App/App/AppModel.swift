@@ -280,6 +280,7 @@ final class AppModel {
         guard let selectedID = value.selectedID else { return }
         if let previous = lastSelectedDeviceID, previous != selectedID {
             backup.sourceBecameUnavailable()
+            if !backup.isBusy { backup.dismissSummary() }
             clearDeviceLibrary()
             device = nil
             deviceState = .opening

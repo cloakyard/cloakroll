@@ -42,6 +42,18 @@ extension AppModel {
         startBackup(assets: attempt.assets)
     }
 
+    var canCheckSavedOriginals: Bool {
+        isViewingLibrary && !isSample && deviceState == .ready && mediaScanState == .complete
+            && catalogSessionID != nil && !isCatalogPreparing && !isProjecting
+            && !backup.isBusy && !backup.isCheckingHistory && !backup.destination.isChoosing
+            && backup.destination.selection != nil && backup.persistence != nil
+    }
+
+    func checkSavedOriginals() {
+        guard canCheckSavedOriginals else { return }
+        backup.retryHistoryCheck()
+    }
+
     var selectedFilenames: [String] {
         snapshot.orderedIDs.compactMap { selection.selectedIDs.contains($0) ? currentAsset(id: $0)?.filename : nil }
     }

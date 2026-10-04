@@ -78,3 +78,38 @@ Local logs: `/tmp/cloakroll-multi-device-core-tests.log`,
 `/tmp/cloakroll-multiple-phones-app-tests.log`, `/tmp/cloakroll-multiple-phones-normal-build.log`.
 No private paths, device identifiers, filenames, personal screenshots or database exports are
 committed with this evidence.
+
+## Final refinement — check saved originals without reconnecting
+
+The native Library menu now offers **Check Saved Originals** for an idle, complete live
+library with a chosen destination. It performs the existing fresh local verification and updates
+badges without downloading media or replacing the current selection/session. It is unavailable
+during transfer, stopping, catalog/history preparation, folder selection, sample browsing and
+offline/history views. A prior access error does not disable retry. History Refresh remains a
+separate operation that reads recorded session outcomes.
+
+Three additional hosted tests cover deletion while connected, overlapping command rejection,
+selection/session preservation, disabled states, and failed folder access followed by recovery.
+Review also found that an idle completed summary could linger when switching to another phone;
+switching now dismisses that summary, while an active interrupted operation retains its outcome.
+The selector test now proves the completed old-phone summary is cleared.
+
+Actual final-command build: the second phone reappeared after normal relaunch with 2,071 items
+and its two backed-up test items. All six remaining known test media files / **14,139,137 bytes**
+were freshly matched to stored size and digest evidence, then removed as the final requested
+space cleanup. **Check Saved Originals** changed Backed Up from two to zero and Not Backed Up
+from 2,069 to 2,071 without reconnecting. The destination contains no media/staging files; the
+sixteen historical sessions remain. Two cancelled staging intents remain conservative metadata,
+not verified media or reusable files. Source iPhones were never modified.
+
+Native Backup Settings displays `iPhone / Year / Month` without clipping. The revised Help sheet
+was visually inspected, scrolled to its final guidance/actions and dismissed with Escape. General
+Settings, System appearance, Medium size and the live All Photos view were restored. Simultaneous
+chooser interaction, full VoiceOver/system appearance combinations and active cable-pull acceptance
+remain open; the real Stop/Quit results do not substitute for them.
+
+Final validation: **305 core tests and 96 hosted app tests pass**. The last hosted rerun includes
+the idle-summary switch regression. The final normal build is warning-free; strict lint, diff,
+signature and normal sandbox entitlement checks pass. No core source changed after its full run.
+Final logs: `/tmp/cloakroll-check-originals-app-tests-final.log` and
+`/tmp/cloakroll-check-originals-normal-build-final.log`.

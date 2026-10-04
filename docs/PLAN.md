@@ -166,6 +166,16 @@ devices/destinations and verification failure. Hardware matrices stay separate f
 
 ## Progress evidence
 
+### 4 October 2026 — explicit local verification and final test cleanup
+
+Library → Check Saved Originals now refreshes local backup evidence without reconnecting or
+downloading. It handles missing files and retry after access failure, with safe operation-state
+gating. Switching phones dismisses an idle old-phone summary while keeping active interruption
+outcomes. Actual connected-phone verification cleared two stale badges after the final six
+test files were removed. The destination is now empty and historical session records remain.
+Final 305 core and 96 hosted app tests, normal build, lint, whitespace and signature checks pass.
+See `verification/MULTIPLE-IPHONES.md` and `verification/OCTOBER-4-HARDWARE.md`.
+
 ### 4 October 2026 — multiple iPhones and separate backup folders
 
 Added native selection for multiple discovered phones, safe source retirement and stale-event

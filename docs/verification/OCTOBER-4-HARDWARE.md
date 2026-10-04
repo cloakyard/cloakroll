@@ -65,3 +65,15 @@ The app process exited. The saved session was cancelled with zero completed/veri
 verified bytes and transferred bytes; no unfinished video was published. Only the 533,294-byte
 photo remained in the test destination. This validates graceful Quit during an actual download,
 not a forced crash or physical disconnect.
+
+## New feature hardware follow-up and final cleanup
+
+The next normal build was tested with both physical phones sequentially. New originals were
+independently verified in distinct device folders. A mixed saved/new selection transferred only
+its new Live Photo components; its identical repeat transferred zero bytes. See
+[multiple-iPhone verification](MULTIPLE-IPHONES.md) for exact counts and file-layout evidence.
+
+After these tests, the remaining six test files / 14,139,137 bytes were also verified against
+stored size/digest evidence and removed. The selected destination is empty, while all sixteen
+session histories remain. The native Check Saved Originals command refreshed the connected
+phone to zero backed-up items without a reconnect. No source iPhone media was deleted.

@@ -7,8 +7,9 @@ import Testing
 @MainActor
 struct AppModelDeviceSelectionTests {
     @Test func switchingClearsSelectionAndRejectsRetiredCatalogAndConnectionEnvelopes() async throws {
+        let fixture = try BackupControllerFixture()
         let source = SelectableLibrarySource()
-        let model = AppModel(makeBrowser: { source })
+        let model = AppModel(makeBrowser: { source }, backup: fixture.controller)
         model.startLive()
         defer { model.shutdown() }
         let old = source.snapshot(filename: "old.HEIC")
@@ -18,8 +19,14 @@ struct AppModelDeviceSelectionTests {
         let asset = try #require(model.assets.first)
         model.select(asset, extendingRange: false, toggling: false)
         model.infoAsset = asset
+        fixture.controller.start(assets: [asset], sessionID: old.sessionID) { request, _ in
+            try writePersistentOriginal(request, byte: 1)
+        }
+        await fixture.controller.waitUntilStopped()
+        #expect(fixture.controller.snapshot?.phase == .completed)
 
         #expect(model.selectDevice(id: source.secondID))
+        #expect(fixture.controller.snapshot == nil)
         #expect(model.assets.isEmpty)
         #expect(model.snapshot.orderedIDs.isEmpty)
         #expect(model.selection.selectedIDs.isEmpty)
