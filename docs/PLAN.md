@@ -554,3 +554,10 @@ viewport had 20 decoded images ready instead of 12 with the same 20 source loads
 A controlled jump loaded exactly the nearby 24 images and then settled with cache
 usage below its existing limit. See `verification/PHASE-4.md` for measurements and
 limitations; no frame-rate, whole-process memory or full-phase acceptance claim is made.
+
+### 4 October — Finder shortcut in the sidebar
+
+Added Open in Finder under the selected Destination, using the existing bookmark
+and independent access lease. Actual activation opened the correct selected folder
+in Finder. Debug build, 338 core tests, strict lint and signature checks pass; see
+`verification/PHASE-8.md`. No backup or source-media operation was started.

@@ -248,3 +248,18 @@ Public Xcode 27 SDK availability was checked. Design references:
 and [adopting Liquid Glass](https://developer.apple.com/documentation/technologyoverviews/adopting-liquid-glass).
 Radius and margins are local design choices, not prescribed Apple measurements.
 Build log: `/tmp/cloakroll-glass-initial-build.log`.
+
+## 4 October — direct Finder access from Destination
+
+The sidebar now exposes **Open in Finder** below the selected backup folder and
+above Change Folder. It uses a native borderless action and the existing bookmarked
+destination access path. It remains available without an iPhone and during backup;
+choosing another folder temporarily disables it. Sample mode and no-selection mode
+do not show an action for a nonexistent destination. No navigation selection changes.
+
+Verified in the normal Debug app: activating the new row opened the selected
+**CloakRoll Verification** directory in Finder. Its title and folder contents were
+inspected through the native UI. The 338 core tests, Debug build, strict lint,
+whitespace and signature checks pass. This adds only a presentation entry point;
+no new tests or storage behavior were introduced. Existing destination validation
+still applies (including writable access). Log: `/tmp/cloakroll-finder-build.log`.

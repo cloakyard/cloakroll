@@ -49,6 +49,14 @@ struct SidebarView: View {
                             Image(systemName: "folder")
                         }
                         .accessibilityElement(children: .combine)
+                        Button {
+                            Task { await model.backup.revealDestination() }
+                        } label: {
+                            Label("Open in Finder", systemImage: "arrow.up.forward.square")
+                        }
+                        .buttonStyle(.borderless)
+                        .disabled(model.backup.destination.isChoosing)
+                        .help("Open \(destination.displayName) in Finder.")
                     }
                     Button {
                         Task { await model.backup.chooseDestination() }
