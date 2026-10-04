@@ -120,12 +120,13 @@ private extension View {
 
 struct SampleThumbnail: View {
     let asset: MediaAsset
+    var contentMode: ContentMode = .fill
 
     var body: some View {
         if asset.id.hasPrefix("fixture-"), let index = Int(asset.id.dropFirst("fixture-".count)) {
             Image("Sample\(index % 12)")
                 .resizable()
-                .scaledToFill()
+                .aspectRatio(contentMode: contentMode)
                 .accessibilityHidden(true)
         } else {
             Rectangle().fill(Design.cardFill)

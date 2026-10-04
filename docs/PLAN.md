@@ -166,6 +166,16 @@ devices/destinations and verification failure. Hardware matrices stay separate f
 
 ## Progress evidence
 
+### 4 October 2026 — Media Info redesign
+
+Replaced the tall, single-column Info sheet with a contained full-image preview and a scrollable
+details column. Added aligned metadata, destination-scoped backup status, native original-file
+rows, full selectable filenames and Escape dismissal. Checked a real Live Photo from the
+connected iPhone, dark video sample, compact window, 30 long Unicode original filenames,
+missing metadata/preview, accessibility labels and Return/Escape. Debug build, strict lint
+and all 305 core tests pass. See `verification/MEDIA-INFO.md`. Camera EXIF is the next requested
+addition and is not yet included in this UI milestone.
+
 ### 4 October 2026 — landscape identity and native macOS 27 app icon
 
 Replaced the shield prototype with a photo window, original sweeping mountain facets and an

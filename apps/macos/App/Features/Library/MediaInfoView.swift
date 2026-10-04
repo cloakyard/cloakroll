@@ -8,47 +8,27 @@ struct MediaInfoView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 18) {
-                    MediaThumbnail(asset: asset, contentMode: .fit)
-                        .frame(width: 420, height: 260)
-                        .clipped()
-                        .clipShape(RoundedRectangle(cornerRadius: Design.inlineRadius))
-                    VStack(alignment: .leading, spacing: 5) {
-                        Text(asset.filename).font(.title3.weight(.semibold)).textSelection(.enabled)
-                        Text(asset.kind.title).foregroundStyle(.secondary)
-                    }
-                    Grid(alignment: .leading, horizontalSpacing: 24, verticalSpacing: 12) {
-                        detail("Captured", asset.createdAt?.formatted(date: .long, time: .shortened) ?? "Unknown")
-                        detail("Size", Format.bytes(asset.byteCount))
-                        if let width = asset.pixelWidth, let height = asset.pixelHeight {
-                            detail("Dimensions", "\(width) × \(height)")
-                        }
-                        if asset.duration != nil { detail("Duration", Format.duration(asset.duration)) }
-                        detail("Backup", model.status(for: asset).title + (model.isSample ? " (sample)" : ""))
-                        detail("Original files", "\(asset.resources.count)")
-                    }
-                    if asset.resources.count > 1 {
-                        VStack(alignment: .leading, spacing: 6) {
-                            Text("Related originals").font(.headline)
-                            ForEach(asset.resources, id: \.id) { resource in
-                                HStack {
-                                    Text(resource.filename).textSelection(.enabled)
-                                    Spacer()
-                                    Text(Format.bytes(resource.byteCount)).foregroundStyle(.secondary)
-                                }
-                                .font(.callout)
-                            }
+            HStack(alignment: .top, spacing: 24) {
+                preview
+                    .frame(width: 304)
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 20) {
+                        heading
+                        metadata
+                        backupStatus
+                        MediaInfoOriginalsView(resources: asset.resources)
+                        if model.isSample {
+                            Text("Illustrated sample media. No original file is stored or transferred.")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
                         }
                     }
-                    if model.isSample {
-                        Label("Illustrated sample media. No original file is stored or transferred.", systemImage: "photo")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
+                    .padding(.trailing, 4)
+                    .padding(.bottom, 4)
                 }
-                .padding(20)
+                .scrollBounceBehavior(.basedOnSize)
             }
+            .padding(24)
             .navigationTitle("Media Info")
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
@@ -57,13 +37,99 @@ struct MediaInfoView: View {
                 }
             }
         }
-        .frame(width: 460, height: 660)
+        .frame(width: 760, height: 500)
+        .onExitCommand { dismiss() }
+    }
+
+    private var preview: some View {
+        MediaThumbnail(asset: asset, contentMode: .fit)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .padding(12)
+            .background(Design.cardFill, in: RoundedRectangle(cornerRadius: Design.cardRadius))
+            .clipShape(RoundedRectangle(cornerRadius: Design.cardRadius))
+    }
+
+    private var heading: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(asset.filename)
+                .font(.title2.weight(.semibold))
+                .textSelection(.enabled)
+                .fixedSize(horizontal: false, vertical: true)
+            Label(asset.kind.title, systemImage: mediaSymbol)
+                .font(.callout)
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    private var metadata: some View {
+        GroupBox {
+            VStack(spacing: 12) {
+                detail("Captured", asset.createdAt?.formatted(date: .abbreviated, time: .shortened) ?? "Unknown")
+                detail(asset.resources.count > 1 ? "Total size" : "Size", Format.bytes(asset.byteCount))
+                if let width = asset.pixelWidth, let height = asset.pixelHeight, width > 0, height > 0 {
+                    detail("Dimensions", "\(width) × \(height)")
+                }
+                if let duration = asset.duration, duration.isFinite, duration >= 0 {
+                    detail("Duration", Format.duration(duration))
+                }
+            }
+            .padding(6)
+            .frame(maxWidth: .infinity)
+        }
+    }
+
+    private var backupStatus: some View {
+        let status = model.status(for: asset)
+        return HStack(alignment: .top, spacing: 8) {
+            Image(systemName: statusSymbol(status))
+                .foregroundStyle(status == .backedUp ? Design.accent : Color.secondary)
+                .frame(width: 16, height: 16)
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 5) {
+                Text(status.title + (model.isSample ? " (sample)" : ""))
+                    .font(.callout.weight(.medium))
+                    .accessibilityLabel("Backup: \(status.title)\(model.isSample ? " (sample)" : "")")
+                if !model.isSample, let destination = model.backup.destination.selection {
+                    Text("In \(destination.displayName)")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .textSelection(.enabled)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+        }
     }
 
     private func detail(_ label: String, _ value: String) -> some View {
-        GridRow {
+        HStack(alignment: .firstTextBaseline, spacing: 16) {
             Text(label).foregroundStyle(.secondary)
-            Text(value).textSelection(.enabled)
+            Spacer(minLength: 0)
+            Text(value)
+                .multilineTextAlignment(.trailing)
+                .textSelection(.enabled)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .font(.callout)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(label): \(value)")
+    }
+
+    private var mediaSymbol: String {
+        switch asset.kind {
+        case .photo: "photo"
+        case .video: "video"
+        case .livePhoto: "livephoto"
+        case .raw: "camera.aperture"
+        case .other: "doc"
+        }
+    }
+
+    private func statusSymbol(_ status: BackupStatus) -> String {
+        switch status {
+        case .notBackedUp: "circle.dashed"
+        case .backedUp: "checkmark.circle.fill"
+        case .uncertain: "questionmark.circle"
+        case .failed: "exclamationmark.circle"
         }
     }
 }

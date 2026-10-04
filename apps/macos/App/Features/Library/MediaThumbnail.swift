@@ -15,7 +15,7 @@ struct MediaThumbnail: View {
     var body: some View {
         Group {
             if model.isSample {
-                SampleThumbnail(asset: asset)
+                SampleThumbnail(asset: asset, contentMode: contentMode)
             } else if let image {
                 Image(decorative: image, scale: 1)
                     .resizable()

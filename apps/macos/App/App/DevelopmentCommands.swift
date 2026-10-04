@@ -18,6 +18,14 @@ struct DevelopmentCommands: Commands {
                 Button("Restricted Device") { Task { await model.loadSample(count: 0, state: .restricted) } }
                 Button("Disconnected Library") { model.deviceState = .unavailable }
                 Button("Sample Backup Progress") { model.sampleProgress.toggle() }
+                Menu("Media Info Examples") {
+                    Button("Long Filenames and Many Originals") {
+                        Task { await MediaInfoExamples.show(.longFilenames, in: model) }
+                    }
+                    Button("Missing Metadata and Preview") {
+                        Task { await MediaInfoExamples.show(.missingMetadata, in: model) }
+                    }
+                }
             }
             .disabled(model.backup.isBusy)
             Button("Log Thumbnail Metrics") { Task { await model.thumbnails.logMetrics() } }
