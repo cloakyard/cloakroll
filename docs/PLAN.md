@@ -166,6 +166,16 @@ devices/destinations and verification failure. Hardware matrices stay separate f
 
 ## Progress evidence
 
+### 4 October 2026 — visible selection reset
+
+Added a native Deselect All button beside the selected count in the idle backup bar. It uses
+the existing selection-reset action, clears the range anchor and active item, and disappears
+when selection is empty. Existing Escape and ⇧⌘A behavior remains available. Single and range
+reset, select-all/keyboard reset, and compact light/dark layouts were exercised in the native
+app. Debug/Release builds, all 342 core tests, seven relevant hosted app tests, strict lint,
+whitespace and signatures pass. Installed the verified Release build in Applications and
+moved superseded app/build copies to Trash. See `verification/PHASE-8.md`; no backup started.
+
 ### 4 October 2026 — landscape fills the app icon
 
 Expanded the existing mountain-and-sun identity to the full icon canvas, removing the inset

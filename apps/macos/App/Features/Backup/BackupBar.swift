@@ -41,7 +41,13 @@ struct BackupBar: View {
                     Text("· \(Format.bytes(model.snapshot.visibleNewBytes))").foregroundStyle(.secondary)
                 }
             } else {
-                Text("\(model.selection.selectedIDs.count.formatted()) selected").fontWeight(.medium)
+                HStack(alignment: .firstTextBaseline, spacing: 12) {
+                    Text("\(model.selection.selectedIDs.count.formatted()) selected").fontWeight(.medium)
+                    Button("Deselect All") { model.clearSelection() }
+                        .buttonStyle(.borderless)
+                        .controlSize(.small)
+                        .help("Clear the selection (⇧⌘A).")
+                }
             }
             Text(destinationCaption)
                 .font(.caption)

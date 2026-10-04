@@ -282,3 +282,25 @@ The combined stage passes 338 core tests, 146 hosted app tests, Debug/Release bu
 strict lint, whitespace and both signature checks. No tests were added solely for
 this reversible menu placement. Logs use `/tmp/cloakroll-presentation-*.log`, listed
 in the Phase 4 display-readiness appendix. No backup or source mutation was started.
+
+## 4 October — visible selection reset
+
+Added a native borderless **Deselect All** button alongside the selected count in the idle
+backup bar. It calls the existing `clearSelection()` so selected IDs, the range anchor and
+active item clear together. With no selection the button disappears and the normal new-item
+summary returns. Active transfer and terminal-summary controls keep their existing behavior.
+The tooltip exposes the existing ⇧⌘A menu shortcut; Escape continues to clear a focused grid.
+
+Actual checks: the native button cleared one selected sample photo and a three-item keyboard
+range; all visible selection outlines and checkmarks cleared, Info disabled, and the new-item
+summary/backup title returned. ⌘A selected all 20 samples and ⇧⌘A cleared them. Compact light
+and dark layouts and the standard light layout were visually inspected. Escape was also
+verified against the connected iPhone selection before replacement. These are interaction
+checks, not physical backup acceptance. No transfer was started.
+
+Debug/Release builds, 342 core tests, seven existing AppModel/LibraryInteraction hosted tests,
+strict lint, whitespace and both signatures pass. No extra model or behavior tests were added
+for this UI-only exposure of the existing reset action. The verified Release build was copied
+to `/Applications/CloakRoll.app` and launched; replaced and temporary app copies went to Trash.
+Logs: `/tmp/cloakroll-deselect-debug-build.log`, `/tmp/cloakroll-deselect-release-build.log`,
+`/tmp/cloakroll-deselect-core-tests.log`, `/tmp/cloakroll-deselect-app-tests.log`.
