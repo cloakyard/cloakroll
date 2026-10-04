@@ -263,3 +263,22 @@ inspected through the native UI. The 338 core tests, Debug build, strict lint,
 whitespace and signature checks pass. This adds only a presentation entry point;
 no new tests or storage behavior were introduced. Existing destination validation
 still applies (including writable access). Log: `/tmp/cloakroll-finder-build.log`.
+
+## 4 October — move Finder access into the destination context menu
+
+Following the user's hierarchy refinement, Open in Finder is now a native
+right-click action on the destination folder row. The sidebar shows the selected
+folder, its status and Change Folder without an extra Finder action row. The entire
+folder row is the context-menu target. The same action is also supplied through
+SwiftUI accessibility actions; a separate VoiceOver pass was not performed.
+
+Verified in the final normal Debug build: right-clicking the folder showed Open in
+Finder, and choosing it opened CloakRoll Verification in Finder. All Photos remained
+the selected navigation item. The uncluttered sidebar and native menu were visually
+inspected in the standard window with System appearance, including while no camera
+library was exposed. The existing bookmark/access implementation is unchanged.
+
+The combined stage passes 338 core tests, 146 hosted app tests, Debug/Release builds,
+strict lint, whitespace and both signature checks. No tests were added solely for
+this reversible menu placement. Logs use `/tmp/cloakroll-presentation-*.log`, listed
+in the Phase 4 display-readiness appendix. No backup or source mutation was started.

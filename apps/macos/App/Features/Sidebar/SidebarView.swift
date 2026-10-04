@@ -48,15 +48,11 @@ struct SidebarView: View {
                         } icon: {
                             Image(systemName: "folder")
                         }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .contentShape(Rectangle())
                         .accessibilityElement(children: .combine)
-                        Button {
-                            Task { await model.backup.revealDestination() }
-                        } label: {
-                            Label("Open in Finder", systemImage: "arrow.up.forward.square")
-                        }
-                        .buttonStyle(.borderless)
-                        .disabled(model.backup.destination.isChoosing)
-                        .help("Open \(destination.displayName) in Finder.")
+                        .accessibilityActions { openDestinationAction }
+                        .contextMenu { openDestinationAction }
                     }
                     Button {
                         Task { await model.backup.chooseDestination() }
@@ -71,6 +67,15 @@ struct SidebarView: View {
         }
         .listStyle(.sidebar)
         .navigationTitle("CloakRoll")
+    }
+
+    private var openDestinationAction: some View {
+        Button {
+            Task { await model.backup.revealDestination() }
+        } label: {
+            Label("Open in Finder", systemImage: "arrow.up.forward.square")
+        }
+        .disabled(model.backup.destination.isChoosing)
     }
 
     private var selection: Binding<SidebarDestination?> {

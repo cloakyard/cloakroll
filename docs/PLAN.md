@@ -574,3 +574,13 @@ pass. On the physical 2,071-item iPhone library, the same row previously blank b
 the glass bar now displays there before further scrolling, including after reversing
 direction. See `verification/PHASE-4.md` for the bounded before/after evidence and
 remaining frame-time/memory limits. No full phase acceptance is claimed.
+
+### 4 October — Finder action moved to the destination context menu
+
+Open in Finder is now on right-click of the destination folder. The sidebar retains
+the folder/status and Change Folder at their original levels. The actual menu action
+opened the correct directory in Finder without changing library navigation. Final
+Debug/Release builds, all 338 core and 146 app tests, strict lint and signatures pass;
+see `verification/PHASE-8.md`. The physical thumbnail boundary check passed before
+the final sidebar rebuild; after that restart the iPhone is again not exposed to the
+app. No new backup or media mutation was initiated.
