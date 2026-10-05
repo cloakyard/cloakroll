@@ -4,6 +4,10 @@ struct LiveLibraryNotice: View {
     @Environment(AppModel.self) private var model
 
     var body: some View {
+        if showsContent { notice }
+    }
+
+    private var notice: some View {
         VStack(alignment: .leading, spacing: 8) {
             if model.isCatalogLoading && model.deviceState == .ready {
                 HStack(spacing: 8) {
@@ -19,8 +23,6 @@ struct LiveLibraryNotice: View {
                     ProgressView().controlSize(.mini)
                     Text("Checking previous backups…")
                 }
-            } else if model.mediaScanState == .complete {
-                Text("\(model.assets.count.formatted()) items available over USB")
             }
             if let message = model.backup.historyErrorMessage {
                 HStack(alignment: .firstTextBaseline, spacing: 12) {
@@ -43,12 +45,12 @@ struct LiveLibraryNotice: View {
         .foregroundStyle(.secondary)
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, Design.contentInset)
-        .padding(.vertical, showsContent ? 10 : 0)
+        .padding(.vertical, 10)
         .background(Design.cardFill)
     }
 
     private var showsContent: Bool {
         (model.isCatalogLoading && model.deviceState == .ready)
-            || model.mediaScanState == .complete || model.iCloudPhotosEnabled || model.backup.historyErrorMessage != nil
+            || model.backup.isCheckingHistory || model.iCloudPhotosEnabled || model.backup.historyErrorMessage != nil
     }
 }

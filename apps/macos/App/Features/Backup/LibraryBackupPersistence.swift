@@ -24,6 +24,7 @@ final class LibraryBackupPersistence {
     private(set) var isLoadingSessions = false
     private(set) var sessionErrorMessage: String?
     private(set) var hasLoadedSessions = false
+    private(set) var sessionsRevision = 0
     @ObservationIgnored private let databaseURL: URL
     @ObservationIgnored private let readSessions: SessionReader?
     @ObservationIgnored private var opening: Task<BackupStore, Error>?
@@ -75,6 +76,7 @@ final class LibraryBackupPersistence {
             recentSessions = sessions
             historyDevices = devices
             hasLoadedSessions = true
+            sessionsRevision += 1
         } catch {
             if refreshGeneration == generation, !(error is CancellationError) {
                 sessionErrorMessage = (error as? LocalizedError)?.errorDescription ?? "Backup history couldn’t be loaded. Try again."

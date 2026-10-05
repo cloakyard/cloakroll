@@ -93,6 +93,9 @@ struct LibraryView: View {
                         .padding(.bottom, 24)
                     }
                 }
+                // Native pane integration lets scrolled photos continue beneath the toolbar
+                // and lets macOS supply its own background and scroll-edge treatment.
+                .scrollContentBackground(.visible)
                 .coordinateSpace(name: ThumbnailViewport.coordinateSpace)
                 .background {
                     GridKeyboardBridge(

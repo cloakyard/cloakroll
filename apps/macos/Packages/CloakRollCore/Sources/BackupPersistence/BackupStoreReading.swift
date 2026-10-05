@@ -167,17 +167,19 @@ enum BackupStoreReading {
         let clause = conditions.isEmpty ? "" : " WHERE " + conditions.joined(separator: " AND ")
         arguments += [limit]
         return try Row.fetchAll(db, sql: "SELECT * FROM backup_session" + clause + " ORDER BY started_at DESC, id DESC LIMIT ?",
-                               arguments: arguments).map { row in
-            guard let id = UUID(uuidString: row["id"]), let destinationID = UUID(uuidString: row["destination_id"]),
-                  let status = StoredBackupSessionStatus(rawValue: row["status"]) else { throw BackupStoreError.unavailable }
-            let finished: Double? = row["finished_at"]
-            return StoredBackupSession(
-                id: id, deviceName: row["device_name"], destinationID: destinationID, status: status,
-                startedAt: Date(timeIntervalSince1970: row["started_at"]), finishedAt: finished.map(Date.init(timeIntervalSince1970:)),
-                totalAssets: row["total_assets"], totalResources: row["total_resources"], completedAssets: row["completed_assets"],
-                verifiedResources: row["verified_resources"], verifiedBytes: row["verified_bytes"],
-                transferredBytes: row["transferred_bytes"]
-            )
-        }
+                               arguments: arguments).map(session)
+    }
+
+    static func session(_ row: Row) throws -> StoredBackupSession {
+        guard let id = UUID(uuidString: row["id"]), let destinationID = UUID(uuidString: row["destination_id"]),
+              let status = StoredBackupSessionStatus(rawValue: row["status"]) else { throw BackupStoreError.unavailable }
+        let finished: Double? = row["finished_at"]
+        return StoredBackupSession(
+            id: id, deviceName: row["device_name"], destinationID: destinationID, status: status,
+            startedAt: Date(timeIntervalSince1970: row["started_at"]), finishedAt: finished.map(Date.init(timeIntervalSince1970:)),
+            totalAssets: row["total_assets"], totalResources: row["total_resources"], completedAssets: row["completed_assets"],
+            verifiedResources: row["verified_resources"], verifiedBytes: row["verified_bytes"],
+            transferredBytes: row["transferred_bytes"]
+        )
     }
 }

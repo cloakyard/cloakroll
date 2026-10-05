@@ -100,6 +100,21 @@ public actor BackupStore {
         } catch { throw Self.failure(error) }
     }
 
+    /// The latest successfully finished backup for this exact device, across destinations.
+    /// Recovery scans and unfinished attempts do not establish an original backup date.
+    public func lastCompletedSession(deviceKey: String) async throws -> StoredBackupSession? {
+        do {
+            return try await database.read { db in
+                try Row.fetchOne(db, sql: """
+                    SELECT * FROM backup_session
+                    WHERE device_key = ? AND status = 'completed' AND finished_at IS NOT NULL
+                        AND total_assets > 0 AND completed_assets = total_assets AND verified_resources = total_resources
+                    ORDER BY finished_at DESC, id DESC LIMIT 1
+                    """, arguments: [deviceKey]).map(BackupStoreReading.session)
+            }
+        } catch { throw Self.failure(error) }
+    }
+
     /// Reads only committed originals from one settled session and its exact destination.
     /// Reading does not promote partial backups or reconcile pending publication journals.
     public func savedFiles(sessionID: UUID, destinationID: UUID) async throws -> [VerifiedBackupResource] {

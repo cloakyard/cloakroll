@@ -145,7 +145,7 @@ for the remaining physical interruption/reconnect, app performance, accessibilit
 Developer ID/notarization and release-screenshot gates. Historical evidence below records
 what was actually observed and does not supersede those outstanding checks.
 
-Current local preview: **0.1.0 (5)**. All 376 core and 162 hosted app tests pass. The normal
+Current local preview: **0.1.0 (6)**. All 380 core and 166 hosted app tests pass. The normal
 Debug and Release builds, strict lint and actual Release-bundle audit pass. The Release
 binary contains arm64 and x86_64; compilation is not runtime acceptance on both platforms.
 The Release app no longer contains the injected debugging entitlement.
@@ -775,3 +775,19 @@ call followed by a new run. See `verification/BACKUP-ORGANIZATION.md`. The prior
 user backup had completed before rebuilding; no physical transfer was initiated.
 The new flat-layout physical import/repeat remains pending because the iPhone is
 not currently exposed. No full phase acceptance is claimed.
+
+
+### 5 October — sidebar backup details and seamless photo toolbar
+
+Added a device-identity-scoped last completed backup summary beneath the iPhone
+connection state. It shows completion date, item count and verified size; tooltip
+and accessibility text include the exact time. Its indexed lookup is independent
+of history filters and recent-row limits, and excludes unfinished and recovered
+sessions. Device changes and stale/cancelled reads are fenced.
+
+Removed the idle USB item-count strip while retaining loading and actionable
+notices. The photo scroll view now uses native seamless toolbar integration.
+Actual connected-iPhone scrolling shows photos beneath the translucent toolbar.
+Light/dark and compact layouts were inspected with real media. All 380 core and
+166 app tests, strict lint, normal Debug/Release builds and the build 6 bundle audit
+pass. See `verification/SIDEBAR-AND-TOOLBAR.md` for exact evidence and limits.

@@ -111,11 +111,12 @@ struct DeviceSummary: View {
     @Environment(AppModel.self) private var model
 
     var body: some View {
-        HStack(spacing: 10) {
+        HStack(alignment: .top, spacing: 10) {
             Image(systemName: "iphone.gen3")
                 .font(.system(size: 28, weight: .light))
                 .foregroundStyle(model.device == nil ? Color.secondary : Design.accent)
                 .accessibilityHidden(true)
+                .padding(.top, 2)
             VStack(alignment: .leading, spacing: 4) {
                 if model.deviceInventory.devices.count > 1 {
                     ConnectedDevicePicker(inventory: model.deviceInventory, isEnabled: model.canSelectDevice) {
@@ -130,6 +131,10 @@ struct DeviceSummary: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
+                if !model.isSample, let device = model.device, let persistence = model.backup.persistence {
+                    DeviceBackupSummary(deviceKey: device.id, persistence: persistence)
+                        .padding(.top, 4)
+                }
             }
         }
         .accessibilityElement(children: .contain)

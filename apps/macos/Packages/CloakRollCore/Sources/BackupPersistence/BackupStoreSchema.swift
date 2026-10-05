@@ -27,6 +27,12 @@ enum BackupStoreSchema {
                     PRIMARY KEY(destination_id, destination_identity, entry_key));
                 """)
         }
+        migrator.registerMigration("v5_device_last_backup") { db in
+            try db.execute(sql: """
+                CREATE INDEX session_device_completed ON backup_session(device_key, finished_at DESC, id DESC)
+                WHERE status = 'completed';
+                """)
+        }
         try migrator.migrate(queue)
         try queue.write { db in
             try db.execute(
