@@ -81,3 +81,11 @@ distribution, notarization or whole-phase completion is claimed.
 
 Local preview ZIP: `apps/macos/build/releases/CloakRoll-0.1.0-8-local-universal.zip`.
 SHA-256: `c6fb1161ec6bfdbc9087357ee592601f35f175c9dacafc1f30a6c990d8d22eff`.
+
+The byte-identical audited Release was installed at `/Applications/CloakRoll.app`.
+Native About reports **0.1.0 (8) · Development preview**. On launch, the connected phone
+again exposed 2,073 items and automatically restored its original destination with
+**Access checked**. Backup Settings retained the per-phone caption and **One Folder**.
+The installed bundle passes the Release audit. Superseded installed/build app copies
+are recoverable in Trash; media, saved history and preferences were retained. The app
+was left in All Photos. Install log: `/tmp/cloakroll-recall-install.log`.

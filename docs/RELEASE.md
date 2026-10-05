@@ -209,3 +209,26 @@ Installed and launched **0.1.0 (7)** at `/Applications/CloakRoll.app`. Native Ab
 retained destination/One Folder settings, the connected 2,073-item library and
 floating dates were verified. The installed bundle passes the audit. Previous
 app/build copies are recoverable in Trash; backup originals and history remain intact.
+
+## 5 October per-iPhone destination preview — build 8
+
+Each iPhone remembers its chosen folder, checks access on reconnect, and offers native
+folder selection when that destination is unavailable. Returning to the same original
+folder preserves its incremental-history identity. Pending folder choices cannot be
+assigned to a different phone after a device change.
+
+All **380 core and 180 hosted app tests**, strict lint, normal Debug/universal Release
+builds and actual Release-bundle/package checks pass. One connected physical phone's
+folder selection, relaunch, missing-folder recovery and original-ID recall passed.
+Two-device incremental reuse and missing-companion behavior have automated real-file
+coverage; switching two physical phones and external-volume interruption remain open.
+See [device destination evidence](verification/DEVICE-DESTINATIONS.md).
+
+Installed and launched the audited **0.1.0 (8)** Release at `/Applications/CloakRoll.app`.
+The real 2,073-item library and original destination returned automatically with access
+checked. Native About, per-phone Settings caption and retained One Folder organization
+were verified. Superseded app/build bundles are recoverable in Trash. No physical
+transfer or source-media change was initiated, and no remaining release gate is closed.
+
+Local archive: `apps/macos/build/releases/CloakRoll-0.1.0-8-local-universal.zip`.
+SHA-256: `c6fb1161ec6bfdbc9087357ee592601f35f175c9dacafc1f30a6c990d8d22eff`.
