@@ -9,7 +9,7 @@ import Testing
 @MainActor
 struct CheckSavedOriginalsTests {
     @Test func commandClearsMissingOriginalBadgeWithoutReconnectOrTransfer() async throws {
-        let fixture = try PersistentLibraryFixture()
+        let fixture = try PersistentLibraryFixture(allowsFolderSelection: true)
         let catalog = PersistentLibraryCatalog()
         let browser = MockDeviceBrowserService()
         let model = AppModel(makeBrowser: { browser }, backup: fixture.controller)
@@ -47,7 +47,7 @@ struct CheckSavedOriginalsTests {
     }
 
     @Test func commandRequiresAnIdleCompleteLiveLibrary() async throws {
-        let fixture = try PersistentLibraryFixture()
+        let fixture = try PersistentLibraryFixture(allowsFolderSelection: true)
         let catalog = PersistentLibraryCatalog()
         let browser = MockDeviceBrowserService()
         let model = AppModel(makeBrowser: { browser }, backup: fixture.controller)
@@ -88,7 +88,7 @@ struct CheckSavedOriginalsTests {
     }
 
     @Test func commandRemainsAvailableAfterAHistoryAccessErrorAndCanRecover() async throws {
-        let fixture = try PersistentLibraryFixture()
+        let fixture = try PersistentLibraryFixture(allowsFolderSelection: true)
         let catalog = PersistentLibraryCatalog()
         let access = SavedOriginalsAccess()
         let record = try #require(fixture.controller.destination.selection)
@@ -100,7 +100,7 @@ struct CheckSavedOriginalsTests {
         }
         let destination = BackupDestinationStore(
             defaults: try PersistentTestDefaults(record: record), operations: operations,
-            selectFolder: { nil }, saveRecord: { _ in }
+            selectFolder: { fixture.destinationFixture.folder }, saveRecord: { _ in }
         )
         let controller = LibraryBackupController(destination: destination, persistence: fixture.persistence)
         let browser = MockDeviceBrowserService()
@@ -124,6 +124,7 @@ struct CheckSavedOriginalsTests {
         model.startLive()
         browser.send(DeviceConnection(device: catalog.device, state: .ready))
         try await waitForPersistentState { model.deviceState == .ready }
+        await model.backup.chooseDestination()
         browser.sendCatalog(catalog.source)
         try await waitForPersistentState { model.canCheckSavedOriginals }
         #expect(model.backup.historyErrorMessage == nil)

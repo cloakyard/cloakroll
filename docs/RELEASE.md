@@ -10,7 +10,7 @@ restore-to-iPhone in the backlog. Additional feature expansion is not needed to 
 | Core V1 features | Implemented, including incremental history, separate iPhones, original companions, folder organization, measured progress and recovery | Fix failures found in the checks below |
 | Physical reliability | Bounded import, repeat, Stop and deferred Quit have recorded evidence | Cable removal during a large transfer; reconnect/retry; external-volume removal, full disk and restoration |
 | Incremental and thumbnails | Bounded real new-item/repeat and nearby-thumbnail evidence exists | Final same-device new capture/reconnect and preview reuse across reconnect |
-| Destination reselection | Saved-file checks validate the original root; explicit Rebuild History restores incremental evidence after reselection | Preserve prior destination IDs for incremental reuse after switching folders |
+| Device destinations | Per-iPhone mappings, access checks and original-folder ID recall implemented; one connected phone's relaunch/missing-folder flow passed | Switch two physical phones with separate folders; external-volume removal/remount |
 | Scale and responsiveness | Generated 10k/50k/100k metadata/history measurements recorded | Sustained app RSS, frame/main-thread timing and rapid physical-library scrolling |
 | Accessibility and OS support | Current-macOS light/dark, compact layout, native labels/actions inspected | Full VoiceOver/keyboard pass, system accessibility variants, macOS 14 runtime |
 | Distribution | Local universal development preview | Developer ID signing, notarization, stapled ticket, clean-Mac launch and final release screenshots |
@@ -19,7 +19,7 @@ Hardware testing resumed on 5 October 2026. Physical flat-folder import, zero-by
 repeat, early Stop/retry and relaunch passed; see [the evidence](verification/HARDWARE-2026-10-05.md).
 New-capture reconnect, cable removal during transfer and destination interruption remain open.
 Software checks do not close those gates. The build remains labeled **Development preview**; 0.1.0
-build 7 identifies this closeout preview, not a public release approval.
+build 8 identifies this closeout preview, not a public release approval.
 
 ## Repeatable software validation
 
@@ -46,7 +46,7 @@ signature or downloads credentials.
 To create a **local preview** ZIP, use a new output path:
 
 ```sh
-bash scripts/package_local.sh build/VerifyRelease/Build/Products/Release/CloakRoll.app build/releases/CloakRoll-0.1.0-7-local-universal.zip
+bash scripts/package_local.sh build/VerifyRelease/Build/Products/Release/CloakRoll.app build/releases/CloakRoll-0.1.0-8-local-universal.zip
 ```
 
 Packaging validates an isolated copy, checks the ZIP, reports SHA-256 and refuses

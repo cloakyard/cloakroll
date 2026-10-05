@@ -29,6 +29,10 @@ for photos and videos within each iPhone folder. The choice applies to new files
 existing verified originals stay in place and remain eligible for incremental reuse.
 See [organization verification](docs/verification/BACKUP-ORGANIZATION.md) for safety checks
 and the pending physical check of the new flat layout.
+Each iPhone remembers its own chosen backup folder. Reconnecting or relaunching restores
+that folder and checks access; an unavailable folder offers **Choose Folder…**.
+Switching folders and returning to the same original folder preserves its incremental
+history identity. See [destination mapping verification](docs/verification/DEVICE-DESTINATIONS.md).
 The [scale performance evidence](docs/verification/PHASE-9.md) records generated 10k/50k/100k
 catalog measurements and improvements to identity preparation and history matching.
 
@@ -39,9 +43,9 @@ Photos albums. A wired backup can only include originals exposed by the device; 
 otherwise unavailable media may be omitted.
 
 Requires macOS 14 or later; development uses Xcode 27, Swift 6, XcodeGen and SwiftLint.
-The current 0.1.0 (7) Release binary contains Apple silicon and Intel architectures.
+The current 0.1.0 (8) Release binary contains Apple silicon and Intel architectures.
 It is locally ad-hoc signed; Developer ID, notarization and older-system runtime acceptance
-remain release gates. Local software validation: 380 core tests and 166 hosted app tests.
+remain release gates. Local software validation: 380 core tests and 180 hosted app tests.
 
 **Recover after losing app data:** open **Backup History → Rebuild History…**, choose
 an existing backup folder, and use saved recovery records. New backups store these

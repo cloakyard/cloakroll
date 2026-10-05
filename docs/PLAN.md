@@ -145,13 +145,15 @@ for the remaining physical interruption/reconnect, app performance, accessibilit
 Developer ID/notarization and release-screenshot gates. Historical evidence below records
 what was actually observed and does not supersede those outstanding checks.
 
-Current local preview: **0.1.0 (7)**. All 380 core and 166 hosted app tests pass. The normal
+Current local preview: **0.1.0 (8)**. All 380 core and 180 hosted app tests pass. The normal
 Debug and Release builds, strict lint and actual Release-bundle audit pass. The Release
 binary contains arm64 and x86_64; compilation is not runtime acceptance on both platforms.
 The Release app no longer contains the injected debugging entitlement.
-Folder reselection still needs to preserve prior destination IDs for incremental reuse;
-the saved-file checker independently validates the actual original root, and explicit folder
-recovery can rebuild its incremental evidence after reselection. No public release
+Each stable iPhone identity now remembers its chosen folder, checks access on reconnect,
+and offers folder selection when unavailable. Reselecting the same original folder retains
+its destination ID for incremental reuse. One physical phone's relaunch and missing-folder
+flow passed; switching two physical phones and external-volume interruption remain open.
+See `verification/DEVICE-DESTINATIONS.md`. No public release
 is claimed, and phases with pending physical/accessibility/performance checks remain open.
 
 ## Recovery after loss of app data — requested 5 October 2026
@@ -216,6 +218,22 @@ and destination, no overwrite, interruption/retry, database migration, fresh/reo
 devices/destinations and verification failure. Hardware matrices stay separate from simulated tests.
 
 ## Progress evidence
+
+### 5 October 2026 — per-iPhone destinations and folder recall
+
+Versioned bookmark storage retains separate iPhone mappings and prior destination IDs.
+Reconnect checks the saved folder; unavailable roots offer native folder selection.
+An explicit folder switch preserves the old record, and returning to the same filesystem
+folder reuses its history namespace. A replacement folder at the old path cannot inherit
+the saved identity. Device changes invalidate pending folder-picker and lease results.
+
+All 380 core and 180 hosted app tests, strict lint, normal Debug/universal Release builds
+and the actual Release-bundle/package audit pass. The connected 2,073-item iPhone library
+retained its mapping on relaunch, detected a removed empty test destination, and returned
+through the backup bar's native picker to the original destination with the same ID.
+Two-device incremental reuse and a missing Live Photo companion passed real-file automated
+tests; they are not two-physical-phone acceptance. No physical backup was initiated.
+See `verification/DEVICE-DESTINATIONS.md`; remaining release gates stay open.
 
 ### 5 October 2026 — folder recovery and one-time USB adoption
 

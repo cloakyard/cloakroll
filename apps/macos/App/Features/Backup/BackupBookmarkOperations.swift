@@ -17,6 +17,7 @@ struct BackupDestinationOperations: Sendable {
     var sameFolder: @Sendable (URL, URL) throws -> Bool
 
     var validateReadableFolder: @Sendable (URL) throws -> String = BackupFolderValidation.validateReadable
+    var folderIdentity: @Sendable (URL) throws -> BackupFolderIdentity? = { _ in nil }
 
     static let live = Self(
         resolveBookmark: { data in
@@ -34,17 +35,25 @@ struct BackupDestinationOperations: Sendable {
         stopAccess: { $0.stopAccessingSecurityScopedResource() },
         requiresSecurityScope: { !BackupFolderValidation.isInsideAppContainer($0) },
         validateFolder: BackupFolderValidation.validate,
-        sameFolder: BackupFolderValidation.isSameFolder
+        sameFolder: BackupFolderValidation.isSameFolder,
+        folderIdentity: BackupFolderIdentity.read
     )
 
-    func prepareSelection(url: URL, previous: BackupDestination?) throws -> BackupDestination {
-        let lease = try open(url, destinationID: previous?.id ?? UUID())
+    func prepareSelection(url: URL, remembered: [BackupDestination]) throws -> BackupDestination {
+        let lease = try open(url, destinationID: UUID())
         defer { lease.release() }
         let name = try validateFolder(url)
         let bookmark = try createBookmark(url)
-        let identifier = previous.flatMap { matches($0, url: url) ? $0.id : nil } ?? UUID()
+        let identity = try folderIdentity(url)
+        let matching = try remembered.filter { record in
+            try Task.checkCancellation()
+            return matches(record, url: url, identity: identity)
+        }
+        // An ambiguous match must not select an arbitrary history namespace.
+        let identifier = matching.count == 1 ? matching[0].id : UUID()
         try Task.checkCancellation()
-        return BackupDestination(id: identifier, displayName: name, lastKnownPath: url.path, bookmarkData: bookmark)
+        return BackupDestination(id: identifier, displayName: name, lastKnownPath: url.path,
+                                 bookmarkData: bookmark, folderIdentity: identity)
     }
 
     func acquire(_ record: BackupDestination, readOnly: Bool = false) throws -> AcquiredBackupDestination {
@@ -53,9 +62,11 @@ struct BackupDestinationOperations: Sendable {
         let lease = try open(resolved.url, destinationID: record.id)
         do {
             let name = try readOnly ? validateReadableFolder(resolved.url) : validateFolder(resolved.url)
+            let identity = try folderIdentity(resolved.url)
+            guard record.folderIdentity == nil || record.folderIdentity == identity else { throw BackupDestinationError.unavailable }
             let bookmark = resolved.isStale ? try createBookmark(resolved.url) : record.bookmarkData
             let refreshed = BackupDestination(
-                id: record.id, displayName: name, lastKnownPath: resolved.url.path, bookmarkData: bookmark
+                id: record.id, displayName: name, lastKnownPath: resolved.url.path, bookmarkData: bookmark, folderIdentity: identity
             )
             try Task.checkCancellation()
             return AcquiredBackupDestination(lease: lease, record: refreshed)
@@ -83,7 +94,8 @@ struct BackupDestinationOperations: Sendable {
         } catch { throw BackupDestinationError.bookmarkCreationFailed }
     }
 
-    private func matches(_ previous: BackupDestination, url: URL) -> Bool {
+    private func matches(_ previous: BackupDestination, url: URL, identity: BackupFolderIdentity?) -> Bool {
+        if let previousIdentity = previous.folderIdentity { return previousIdentity == identity }
         do {
             let resolved = try resolveBookmark(previous.bookmarkData)
             let lease = try open(resolved.url, destinationID: previous.id)

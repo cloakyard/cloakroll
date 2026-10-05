@@ -39,7 +39,7 @@ final class BackupControllerFixture {
     let scope: BackupScopeProbe
     let source = ControlledBackupOriginals()
 
-    init(hasSelection: Bool = true) throws {
+    init(hasSelection: Bool = true, allowsFolderSelection: Bool = false) throws {
         folder = FileManager.default.temporaryDirectory.appendingPathComponent("CloakRollLibraryBackupTests-" + UUID().uuidString)
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
         scope = BackupScopeProbe(folder: folder)
@@ -47,9 +47,9 @@ final class BackupControllerFixture {
             id: UUID(), displayName: "Test Backup", lastKnownPath: folder.path, bookmarkData: Data([1, 2, 3])
         ) : nil
         let defaults = BackupMemoryDefaults(data: try record.map { try JSONEncoder().encode($0) })
-        let destination = BackupDestinationStore(
-            defaults: defaults, operations: scope.operations, selectFolder: { nil }, saveRecord: { _ in }
-        )
+        let selectedFolder = folder
+        let destination = BackupDestinationStore(defaults: defaults, operations: scope.operations,
+            selectFolder: { allowsFolderSelection ? selectedFolder : nil }, saveRecord: { _ in })
         controller = LibraryBackupController(destination: destination)
     }
 

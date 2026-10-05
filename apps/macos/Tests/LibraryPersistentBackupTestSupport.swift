@@ -42,8 +42,8 @@ final class PersistentLibraryFixture {
     let persistence: LibraryBackupPersistence
     let controller: LibraryBackupController
 
-    init() throws {
-        destinationFixture = try BackupControllerFixture()
+    init(allowsFolderSelection: Bool = false) throws {
+        destinationFixture = try BackupControllerFixture(allowsFolderSelection: allowsFolderSelection)
         databaseURL = destinationFixture.folder.appendingPathComponent("Application Support/Backups.sqlite")
         persistence = LibraryBackupPersistence(databaseURL: databaseURL)
         controller = LibraryBackupController(destination: destinationFixture.controller.destination, persistence: persistence)

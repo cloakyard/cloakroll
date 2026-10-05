@@ -8,7 +8,7 @@ import Testing
 @MainActor
 struct AppModelBackupOrganizationTests {
     @Test func activeRunKeepsCapturedOrganizationAndNextRunUsesChangedPreference() async throws {
-        let fixture = try BackupControllerFixture()
+        let fixture = try BackupControllerFixture(allowsFolderSelection: true)
         let source = OrganizationLibrarySource()
         let model = AppModel(
             makeBrowser: { source }, preferences: LibraryPreferences(defaults: nil), backup: fixture.controller
@@ -16,6 +16,8 @@ struct AppModelBackupOrganizationTests {
         model.startLive()
         defer { model.shutdown() }
         try await organizationWait { model.assets.count == 1 && model.backupSourceAvailable }
+        await fixture.controller.chooseDestination()
+        try await organizationWait { model.backupSourceAvailable }
         let first = try #require(model.assets.first)
 
         model.backupOrganization = .singleFolder

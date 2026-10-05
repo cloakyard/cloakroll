@@ -254,6 +254,7 @@ final class AppModel {
 
     private func stopDeviceBrowsing() {
         backup.suspendHistory(resetSource: true)
+        backup.useDevice(nil)
         thumbnails.setSession(nil)
         catalogLoader?.stop()
         catalogLoader = nil
@@ -358,22 +359,6 @@ final class AppModel {
             applyInventory(inventory)
         case .stateChanged(let connection):
             applyConnection(connection)
-        }
-    }
-
-    private func applyConnection(_ connection: DeviceConnection) {
-        guard device != connection.device || deviceState != connection.state || deviceMessage != connection.message else { return }
-        device = connection.device
-        deviceState = connection.state
-        deviceMessage = connection.message
-        if connection.state != .ready {
-            backup.sourceBecameUnavailable()
-            backup.suspendHistory()
-        } else {
-            backup.retryHistoryCheck()
-        }
-        if connection.state != .ready { thumbnails.setSession(nil) } else if mediaScanState != .interrupted {
-            thumbnails.setSession(catalogSessionID)
         }
     }
 

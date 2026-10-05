@@ -7,7 +7,7 @@ import Testing
 @MainActor
 struct AppModelDeviceSelectionTests {
     @Test func switchingClearsSelectionAndRejectsRetiredCatalogAndConnectionEnvelopes() async throws {
-        let fixture = try BackupControllerFixture()
+        let fixture = try BackupControllerFixture(allowsFolderSelection: true)
         let source = SelectableLibrarySource()
         let model = AppModel(makeBrowser: { source }, backup: fixture.controller)
         model.startLive()
@@ -16,6 +16,7 @@ struct AppModelDeviceSelectionTests {
         let oldConnection = source.selectedConnection
         source.send(old)
         try await waitUntil { model.assets.count == 1 && !model.isProjecting }
+        await fixture.controller.chooseDestination()
         let asset = try #require(model.assets.first)
         model.select(asset, extendingRange: false, toggling: false)
         model.infoAsset = asset
@@ -89,11 +90,13 @@ struct AppModelDeviceSelectionTests {
     }
 
     @Test func activeAndStoppingBackupsRejectSwitchBeforeCallingTheCaptureSource() async throws {
-        let fixture = try BackupControllerFixture()
+        let fixture = try BackupControllerFixture(allowsFolderSelection: true)
         let source = SelectableLibrarySource()
         let model = AppModel(makeBrowser: { source }, backup: fixture.controller)
         model.startLive()
         defer { model.shutdown() }
+        try await waitUntil { model.device == source.selectedConnection.device }
+        await fixture.controller.chooseDestination()
         fixture.start([BackupLibraryFixture.asset()], session: UUID())
         #expect(!model.canSelectDevice)
         #expect(!model.selectDevice(id: source.secondID))

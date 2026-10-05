@@ -1,5 +1,6 @@
 import AppKit
 import Foundation
+import MediaModels
 import Observation
 
 struct BackupDestination: Codable, Sendable, Equatable, Identifiable {
@@ -8,6 +9,7 @@ struct BackupDestination: Codable, Sendable, Equatable, Identifiable {
     /// Presentation only. Access always resolves bookmarkData; this path is never a fallback.
     let lastKnownPath: String
     let bookmarkData: Data
+    var folderIdentity: BackupFolderIdentity?
 }
 
 /// A recent access check for presentation only. Every operation still acquires its own lease.
@@ -52,6 +54,11 @@ final class BackupDestinationStore {
     @ObservationIgnored private let operations: BackupDestinationOperations
     @ObservationIgnored private let selectFolder: @MainActor () async -> URL?
     @ObservationIgnored private let saveRecord: @MainActor (Data) throws -> Void
+    @ObservationIgnored private var rememberedDestinations: [BackupDestination] = []
+    @ObservationIgnored private var deviceFolders: [String: UUID] = [:]
+    @ObservationIgnored private var sessionFolders: [String: UUID] = [:]
+    @ObservationIgnored private var activeDeviceID: String?
+    @ObservationIgnored private var persistentDeviceKey: String?
     @ObservationIgnored private var readinessGeneration = 0
     @ObservationIgnored private var selectionGeneration = 0
     @ObservationIgnored private var acquisitionTail: Task<Void, Never>?
@@ -71,14 +78,45 @@ final class BackupDestinationStore {
         }
         if let data = defaults.data(forKey: Self.storageKey) {
             do {
-                let record = try JSONDecoder().decode(BackupDestination.self, from: data)
-                guard !record.bookmarkData.isEmpty else { throw BackupDestinationError.unavailable }
-                selection = record
+                let archive = try BackupDestinationArchive.decode(data)
+                selection = archive.selection
+                rememberedDestinations = archive.destinations
+                deviceFolders = archive.deviceFolders
             } catch { errorMessage = "The saved backup folder couldn't be read. Choose it again." }
         }
     }
 
     func clearError() { errorMessage = nil }
+
+    /// Switching phones invalidates pending picker/lease work immediately. A disconnected
+    /// phone leaves its folder visible for offline history, without assigning another phone.
+    @discardableResult
+    func selectDevice(_ device: ConnectedDevice?) -> Bool {
+        guard activeDeviceID != device?.id else { return false }
+        activeDeviceID = device?.id
+        persistentDeviceKey = device?.identity?.isPersistent == true ? device?.identity?.key : nil
+        selectionGeneration += 1
+        readinessGeneration += 1
+        errorMessage = nil
+        guard let device else { return false }
+        let identifier = persistentDeviceKey.flatMap { deviceFolders[$0] } ?? sessionFolders[device.id]
+        selection = rememberedDestinations.first { $0.id == identifier }
+        readiness = .unchecked
+        return true
+    }
+
+    /// Upgrade an older installation only when this exact iPhone's completed history points
+    /// to a bookmark we still own. Missing bookmarks require an explicit folder selection.
+    func restoreHistoricalDestination(_ id: UUID?, device: ConnectedDevice) throws {
+        guard !isChoosing, selection == nil, activeDeviceID == device.id, persistentDeviceKey == device.identity?.key,
+              persistentDeviceKey != nil, let id,
+              let record = rememberedDestinations.first(where: { $0.id == id }) else { return }
+        try persist(record)
+        selection = record
+        selectionGeneration += 1
+        readinessGeneration += 1
+        readiness = .unchecked
+    }
 
     @discardableResult
     func chooseFolder() async -> Bool {
@@ -86,13 +124,17 @@ final class BackupDestinationStore {
         isChoosing = true
         errorMessage = nil
         defer { isChoosing = false }
-        guard let url = await selectFolder(), !Task.isCancelled else { return false }
+        let generation = selectionGeneration
+        guard let url = await selectFolder(), !Task.isCancelled, generation == selectionGeneration else { return false }
         let previous = selection
+        let remembered = rememberedDestinations
         let operations = operations
         do {
-            let record = try await Self.work { try operations.prepareSelection(url: url, previous: previous) }
+            let record = try await Self.work { try operations.prepareSelection(url: url, remembered: remembered) }
             try Task.checkCancellation()
-            guard selection?.id == previous?.id else { throw BackupDestinationError.selectionChanged }
+            guard selectionGeneration == generation, selection?.id == previous?.id else {
+                throw BackupDestinationError.selectionChanged
+            }
             try persist(record)
             selection = record
             selectionGeneration += 1
@@ -103,6 +145,7 @@ final class BackupDestinationStore {
         } catch is CancellationError {
             return false
         } catch {
+            guard selectionGeneration == generation else { return false }
             errorMessage = Self.message(for: error)
             return false
         }
@@ -212,7 +255,13 @@ final class BackupDestinationStore {
     }
 
     private func persist(_ record: BackupDestination) throws {
-        do { try saveRecord(JSONEncoder().encode(record)) } catch { throw BackupDestinationError.persistenceFailed }
+        var mappings = deviceFolders
+        if let persistentDeviceKey { mappings[persistentDeviceKey] = record.id }
+        let archive = BackupDestinationArchive(selecting: record, remembered: rememberedDestinations, deviceFolders: mappings)
+        do { try saveRecord(JSONEncoder().encode(archive)) } catch { throw BackupDestinationError.persistenceFailed }
+        rememberedDestinations = archive.destinations
+        deviceFolders = mappings
+        if let activeDeviceID { sessionFolders[activeDeviceID] = record.id }
     }
 
     private static func message(for error: any Error) -> String {

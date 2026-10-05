@@ -76,6 +76,11 @@ struct SettingsView: View {
                     }
                 }
                 .disabled(model.isSample || model.backup.isBusy || model.backup.destination.isChoosing)
+                if !model.isSample, let device = model.device {
+                    Text("The backup folder is remembered for \(device.displayName). Other iPhones can use different folders.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
             }
             Section {
                 LabeledContent("Media format", value: "Keep originals")

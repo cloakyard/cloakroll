@@ -61,10 +61,16 @@ struct BackupBar: View {
 
     private var idleActions: some View {
         HStack(spacing: 10) {
-            Button(actionTitle) { model.backUpCurrentSelection() }
-                .buttonStyle(.borderedProminent)
-                .disabled(!model.canBackUp)
-                .help(model.isSample ? "Transfers are unavailable in the sample library." : "Copy originals to the backup folder.")
+            if !model.isSample, needsFolder {
+                Button("Choose Folder…") { Task { await model.backup.chooseDestination() } }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(model.backup.destination.isChoosing)
+            } else {
+                Button(actionTitle) { model.backUpCurrentSelection() }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(!model.canBackUp)
+                    .help(model.isSample ? "Transfers are unavailable in the sample library." : "Copy originals to the backup folder.")
+            }
         }
     }
 
@@ -138,8 +144,16 @@ struct BackupBar: View {
 
     private var destinationCaption: String {
         if model.isSample { return "Sample library · No files will be copied" }
+        if model.backup.destination.readiness.message != nil { return "Backup folder unavailable. Reconnect its drive or choose a folder." }
+        if model.backup.destination.selection == nil, let device = model.device {
+            return "Choose a backup folder for \(device.displayName)"
+        }
         guard let destination = model.backup.destination.selection else { return "Choose where to save your originals" }
         return "To \(destination.displayName)"
+    }
+
+    private var needsFolder: Bool {
+        model.backup.destination.selection == nil || model.backup.destination.readiness.message != nil
     }
 
     private var actionTitle: String {

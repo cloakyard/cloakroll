@@ -284,6 +284,7 @@ final class LibraryBackupController {
                 }
             }
             do {
+                try await restorePreviousDestination(for: pending.device)
                 let prepared = try await LibraryBackupPersistence.prepare(
                     source: pending.source, assets: pending.assets, device: pending.device,
                     previousIdentity: context?.identity
