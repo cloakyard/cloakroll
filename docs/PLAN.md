@@ -181,6 +181,17 @@ devices/destinations and verification failure. Hardware matrices stay separate f
 
 ## Progress evidence
 
+### 5 October 2026 — saved-backup integrity checks
+
+Backup History now offers a read-only check of a session’s saved originals without
+an iPhone connection. It verifies exact folder identity, sizes and SHA-256, shows
+current matches separately from historical completion, and supports cancellation,
+retry and bounded missing/changed-file results. A reselected original folder works
+without trusting its display path. All 363 core and 158 hosted app tests pass; real
+saved photo/Live Photo/video copies passed, including a temporary missing-file and
+Stop/retry check. See `verification/SAVED-BACKUP-CHECK.md`. Physical interruption,
+accessibility, performance and distribution gates remain open.
+
 ### 5 October 2026 — history filters and scrolling validation
 
 Added a native Backup History filter for each saved iPhone and completed/unfinished

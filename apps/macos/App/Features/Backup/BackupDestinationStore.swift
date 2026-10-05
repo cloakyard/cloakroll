@@ -108,9 +108,9 @@ final class BackupDestinationStore {
         }
     }
 
-    func acquireLease() async throws -> DestinationLease {
+    func acquireLease(readOnly: Bool = false) async throws -> DestinationLease {
         guard let destinationID = selection?.id else { throw BackupDestinationError.noSelection }
-        readinessGeneration += 1
+        if !readOnly { readinessGeneration += 1 }
         let generation = readinessGeneration
         let selectionGeneration = selectionGeneration
         let preceding = acquisitionTail
@@ -123,7 +123,7 @@ final class BackupDestinationStore {
             guard self.selectionGeneration == selectionGeneration, let original = selection else {
                 throw BackupDestinationError.selectionChanged
             }
-            return try await acquire(original, selectionGeneration: selectionGeneration)
+            return try await acquire(original, selectionGeneration: selectionGeneration, readOnly: readOnly)
         }
         acquisitionID = identifier
         let tail = Task { _ = await acquisition.result }
@@ -145,13 +145,13 @@ final class BackupDestinationStore {
                 lease.release()
                 throw CancellationError()
             }
-            if isCurrentCheck(generation, destinationID: destinationID) {
+            if !readOnly, isCurrentCheck(generation, destinationID: destinationID) {
                 readiness = .available
                 errorMessage = nil
             }
             return lease
         } catch {
-            if isCurrentCheck(generation, destinationID: destinationID) {
+            if !readOnly, isCurrentCheck(generation, destinationID: destinationID) {
                 readiness = error is CancellationError ? .unchecked : .unavailable(Self.message(for: error))
                 if !(error is CancellationError) { errorMessage = Self.message(for: error) }
             }
@@ -194,9 +194,9 @@ final class BackupDestinationStore {
         readinessGeneration == generation && selection?.id == destinationID
     }
 
-    private func acquire(_ original: BackupDestination, selectionGeneration: Int) async throws -> DestinationLease {
+    private func acquire(_ original: BackupDestination, selectionGeneration: Int, readOnly: Bool) async throws -> DestinationLease {
         let operations = operations
-        let acquired = try await Self.work { try operations.acquire(original) }
+        let acquired = try await Self.work { try operations.acquire(original, readOnly: readOnly) }
         var handedOff = false
         defer { if !handedOff { acquired.lease.release() } }
         try Task.checkCancellation()

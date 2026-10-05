@@ -4,6 +4,7 @@ import SwiftUI
 struct BackupHistoryRow: View {
     @Environment(AppModel.self) private var model
     let session: StoredBackupSession
+    let checkSavedFiles: (BackupDestination) -> Void
 
     var body: some View {
         DisclosureGroup {
@@ -16,16 +17,11 @@ struct BackupHistoryRow: View {
                 if let finishedAt = session.finishedAt {
                     LabeledContent("Finished") { Text(finishedAt, format: .dateTime.month(.abbreviated).day().hour().minute()) }
                 }
-                if let destination = model.backup.destination.selection, destination.id == session.destinationID {
-                    LabeledContent("Folder", value: destination.displayName)
-                    Button("Show in Finder") {
-                        Task {
-                            guard model.backup.destination.selection?.id == session.destinationID else { return }
-                            await model.backup.revealDestination()
-                        }
-                    }
+                if let destination = model.backup.destination.selection {
+                    destinationActions(destination)
                 } else {
-                    LabeledContent("Folder", value: model.backup.destination.selection == nil ? "Not selected" : "Another backup folder")
+                    Text("Choose the original backup folder in the sidebar to check its saved files.")
+                        .foregroundStyle(.secondary)
                 }
                 Text(session.status.historyDescription)
                     .foregroundStyle(.secondary)
@@ -33,6 +29,7 @@ struct BackupHistoryRow: View {
             }
             .font(.callout)
             .padding(.vertical, 8)
+            .accessibilityElement(children: .contain)
         } label: {
             HStack(alignment: .firstTextBaseline, spacing: 16) {
                 VStack(alignment: .leading, spacing: 4) {
@@ -51,6 +48,36 @@ struct BackupHistoryRow: View {
                 }
             }
             .padding(.vertical, 4)
+        }
+        .accessibilityActions {
+            if let destination = model.backup.destination.selection,
+               !model.backup.isBusy, !model.backup.destination.isChoosing, session.status != .running {
+                Button("Check Saved Files") { checkSavedFiles(destination) }
+            }
+        }
+    }
+
+    private func destinationActions(_ destination: BackupDestination) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            LabeledContent(destination.id == session.destinationID ? "Folder" : "Check folder", value: destination.displayName)
+            HStack {
+                if destination.id == session.destinationID {
+                    Button("Show in Finder") {
+                        Task {
+                            guard model.backup.destination.selection?.id == session.destinationID else { return }
+                            await model.backup.revealDestination()
+                        }
+                    }
+                }
+                Button("Check Saved Files…") { checkSavedFiles(destination) }
+                    .disabled(model.backup.isBusy || model.backup.destination.isChoosing || session.status == .running)
+                    .help("Check this backup in \(destination.displayName). Select its original folder in the sidebar first.")
+            }
+            if destination.id != session.destinationID {
+                Text("Select this backup’s original folder in the sidebar before checking.")
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
         }
     }
 
@@ -84,7 +111,7 @@ extension StoredBackupSessionStatus {
     var historyDescription: String {
         switch self {
         case .running: "This backup is still in progress."
-        case .completed: "Every original in this backup was verified."
+        case .completed: "Every original was verified when this backup finished."
         case .failed: "The backup didn’t finish. Any verified originals have been kept."
         case .cancelled: "The backup was stopped. Any verified originals have been kept."
         case .interrupted: "The backup was interrupted. Any verified originals have been kept."

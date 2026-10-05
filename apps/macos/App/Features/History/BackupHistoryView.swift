@@ -3,6 +3,7 @@ import SwiftUI
 
 struct BackupHistoryView: View {
     @Environment(AppModel.self) private var model
+    @State private var checkRequest: BackupSessionCheckRequest?
 
     var body: some View {
         Group {
@@ -11,6 +12,11 @@ struct BackupHistoryView: View {
             } else {
                 ContentUnavailableView("Backup History Unavailable", systemImage: "clock",
                                        description: Text("Backup history is not available in this session."))
+            }
+        }
+        .sheet(item: $checkRequest) { request in
+            if let persistence = model.backup.persistence {
+                BackupSessionCheckView(request: request, persistence: persistence, destination: model.backup.destination)
             }
         }
         .toolbar {
@@ -77,7 +83,9 @@ struct BackupHistoryView: View {
                 }
                 Section {
                     ForEach(persistence.recentSessions) { session in
-                        BackupHistoryRow(session: session)
+                        BackupHistoryRow(session: session) { destination in
+                            checkRequest = BackupSessionCheckRequest(session: session, destination: destination)
+                        }
                             .alignmentGuide(.listRowSeparatorLeading) { _ in 0 }
                     }
                 } header: {
@@ -96,7 +104,7 @@ struct BackupHistoryView: View {
                 }
                 Text("""
                 History shows what was verified during each backup.
-                Saved originals are checked again when you connect your iPhone.
+                Expand a backup to check its saved originals at any time.
                 """)
                     .font(.callout)
                     .foregroundStyle(.secondary)

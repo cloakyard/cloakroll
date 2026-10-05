@@ -16,6 +16,8 @@ struct BackupDestinationOperations: Sendable {
     var validateFolder: @Sendable (URL) throws -> String
     var sameFolder: @Sendable (URL, URL) throws -> Bool
 
+    var validateReadableFolder: @Sendable (URL) throws -> String = BackupFolderValidation.validateReadable
+
     static let live = Self(
         resolveBookmark: { data in
             var stale = false
@@ -45,12 +47,12 @@ struct BackupDestinationOperations: Sendable {
         return BackupDestination(id: identifier, displayName: name, lastKnownPath: url.path, bookmarkData: bookmark)
     }
 
-    func acquire(_ record: BackupDestination) throws -> AcquiredBackupDestination {
+    func acquire(_ record: BackupDestination, readOnly: Bool = false) throws -> AcquiredBackupDestination {
         let resolved: ResolvedBackupBookmark
         do { resolved = try resolveBookmark(record.bookmarkData) } catch { throw BackupDestinationError.unavailable }
         let lease = try open(resolved.url, destinationID: record.id)
         do {
-            let name = try validateFolder(resolved.url)
+            let name = try readOnly ? validateReadableFolder(resolved.url) : validateFolder(resolved.url)
             let bookmark = resolved.isStale ? try createBookmark(resolved.url) : record.bookmarkData
             let refreshed = BackupDestination(
                 id: record.id, displayName: name, lastKnownPath: resolved.url.path, bookmarkData: bookmark
@@ -110,6 +112,19 @@ private enum BackupFolderValidation {
             ])
             guard values.isDirectory == true else { throw BackupDestinationError.notDirectory }
             guard values.isWritable == true, values.volumeIsReadOnly != true else { throw BackupDestinationError.notWritable }
+            return values.localizedName ?? url.lastPathComponent
+        } catch let error as BackupDestinationError {
+            throw error
+        } catch { throw BackupDestinationError.unavailable }
+    }
+
+    static func validateReadable(_ url: URL) throws -> String {
+        guard url.isFileURL else { throw BackupDestinationError.notDirectory }
+        do {
+            guard try url.checkResourceIsReachable() else { throw BackupDestinationError.unavailable }
+            let values = try url.resourceValues(forKeys: [.isDirectoryKey, .isReadableKey, .localizedNameKey])
+            guard values.isDirectory == true else { throw BackupDestinationError.notDirectory }
+            guard values.isReadable == true else { throw BackupDestinationError.accessDenied }
             return values.localizedName ?? url.lastPathComponent
         } catch let error as BackupDestinationError {
             throw error

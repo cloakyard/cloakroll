@@ -100,6 +100,25 @@ public actor BackupStore {
         } catch { throw Self.failure(error) }
     }
 
+    /// Reads only committed originals from one settled session and its exact destination.
+    /// Reading does not promote partial backups or reconcile pending publication journals.
+    public func savedFiles(sessionID: UUID, destinationID: UUID) async throws -> [VerifiedBackupResource] {
+        do {
+            return try await database.read { db in
+                guard let session = try Row.fetchOne(db, sql: "SELECT * FROM backup_session WHERE id = ? AND destination_id = ?",
+                                                    arguments: [sessionID.uuidString, destinationID.uuidString]),
+                      let status = StoredBackupSessionStatus(rawValue: session["status"]), status != .running else {
+                    throw BackupStoreError.unknownSession
+                }
+                let records = try Row.fetchAll(db, sql: """
+                    SELECT * FROM backup_record WHERE session_id = ? AND destination_id = ? ORDER BY id
+                    """, arguments: [sessionID.uuidString, destinationID.uuidString]).map(BackupStoreReading.record)
+                guard records.count == session["verified_resources"] as Int else { throw BackupStoreError.invalidRecord }
+                return records
+            }
+        } catch { throw Self.failure(error) }
+    }
+
     public func historyDevices() async throws -> [BackupHistoryDevice] {
         do {
             return try await database.read { db in
