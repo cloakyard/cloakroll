@@ -45,7 +45,7 @@ signature or downloads credentials.
 To create a **local preview** ZIP, use a new output path:
 
 ```sh
-bash scripts/package_local.sh build/VerifyRelease/Build/Products/Release/CloakRoll.app build/releases/CloakRoll-0.1.0-2-local-universal.zip
+bash scripts/package_local.sh build/VerifyRelease/Build/Products/Release/CloakRoll.app build/releases/CloakRoll-0.1.0-3-local-universal.zip
 ```
 
 Packaging validates an isolated copy, checks the ZIP, reports SHA-256 and refuses
@@ -112,3 +112,13 @@ pass. [History-filter evidence](verification/HISTORY-FILTERS.md) records real hi
 [physical evidence](verification/HARDWARE-2026-10-05.md) records flat imports, zero-transfer
 repeat, early cancellation/retry, relaunch and bounded warm-thumbnail reuse. Outstanding
 physical interruptions, new-capture reconnect and distribution gates remain open.
+
+Installed and launched the audited universal Release at `/Applications/CloakRoll.app`.
+About shows **0.1.0 (3)**; the physical iPhone exposes 2,073 items and the new history
+filter is present. The original destination was restored through the native folder
+picker. Superseded installed/build apps were moved to Trash; backup originals and history
+were retained. The separate validation copies remain in `Backup/CloakRoll Acceptance 2026-10-05`.
+
+Latest local preview archive: `apps/macos/build/releases/CloakRoll-0.1.0-3-local-universal.zip`.
+SHA-256: `bf0d93033f6bd6df4ebd813278e930fe9b02a82aa4e27f40299fa5ea29252d22`.
+The packaged copy passed bundle validation and ZIP integrity checks; nothing was published.
