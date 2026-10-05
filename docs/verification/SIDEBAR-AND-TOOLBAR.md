@@ -49,3 +49,14 @@ retains its native appearance and still needs its separate runtime acceptance.
 No backup was started for this UI check. Two simultaneously connected phones,
 full VoiceOver navigation, older-OS runtime, frame profiling, physical interruption
 and distribution signing remain separate acceptance gates in `docs/RELEASE.md`.
+
+## Installed local preview
+
+Installed the audited universal Release at `/Applications/CloakRoll.app`.
+Native About shows **0.1.0 (6) · Development preview**. The destination and One Folder
+preference remain intact; All Photos loads the real iPhone and its last-backup summary.
+The previous installed app and temporary Debug/Release bundles were moved to Trash.
+Backups and existing history were retained; only the additive index migration applies.
+
+Archive: `apps/macos/build/releases/CloakRoll-0.1.0-6-local-universal.zip`.
+SHA-256: `88e25867c1f846367f0c2f836422eb721d89c31ebc29d89fee9d0985d808cb4f`.

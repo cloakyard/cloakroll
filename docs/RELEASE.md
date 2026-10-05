@@ -169,3 +169,23 @@ recoverable in Trash. The six pre-existing acceptance originals retain their exa
 inodes, sizes and independent SHA-256 digests. User backup originals were not changed.
 The separate physical interruption, performance, accessibility and distribution gates
 remain open; this is a Development preview.
+
+
+## 5 October sidebar and toolbar preview — build 6
+
+- Added device-specific last completed backup date, count and size, independent of
+  history filters and bounded lists. Removed the redundant USB-count strip and enabled
+  native seamless photo scrolling beneath the toolbar.
+- All **380 core and 166 hosted app tests** pass; the strengthened asynchronous
+  device-summary regressions also pass separately. Strict lint, normal Debug and
+  universal Release builds, and the actual Release-bundle audit pass.
+- Real 2,073-item iPhone library inspected in light/dark and compact layouts. Scrolled
+  photos visibly appear beneath the native translucent toolbar. The device summary
+  agrees with its stored completed session. No backup was initiated for this UI task.
+- Installed **0.1.0 (6)** at `/Applications/CloakRoll.app`; verified native About,
+  retained destination/One Folder settings and connected library. Previous app/build
+  copies are recoverable in Trash. Existing photos and backup records were retained.
+- Local preview ZIP SHA-256:
+  `88e25867c1f846367f0c2f836422eb721d89c31ebc29d89fee9d0985d808cb4f`.
+  See [sidebar verification](verification/SIDEBAR-AND-TOOLBAR.md). Remaining release
+  gates above are unchanged.
