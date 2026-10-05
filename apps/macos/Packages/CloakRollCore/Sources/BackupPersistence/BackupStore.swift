@@ -92,10 +92,22 @@ public actor BackupStore {
         } catch { throw Self.failure(error) }
     }
 
-    public func recentSessions(limit: Int = 20) async throws -> [StoredBackupSession] {
+    public func recentSessions(limit: Int = 20, filter: BackupHistoryFilter = .init()) async throws -> [StoredBackupSession] {
         do {
             return try await database.read { db in
-                try BackupStoreReading.sessions(db, limit: min(200, max(0, limit)))
+                try BackupStoreReading.sessions(db, limit: min(200, max(0, limit)), filter: filter)
+            }
+        } catch { throw Self.failure(error) }
+    }
+
+    public func historyDevices() async throws -> [BackupHistoryDevice] {
+        do {
+            return try await database.read { db in
+                try Row.fetchAll(db, sql: """
+                    SELECT device_key, display_name FROM device d
+                    WHERE EXISTS (SELECT 1 FROM backup_session s WHERE s.device_key = d.device_key)
+                    ORDER BY display_name COLLATE NOCASE, device_key
+                    """).map { BackupHistoryDevice(id: $0["device_key"], name: $0["display_name"]) }
             }
         } catch { throw Self.failure(error) }
     }

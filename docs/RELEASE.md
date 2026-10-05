@@ -9,7 +9,7 @@ restore-to-iPhone in the backlog. Additional feature expansion is not needed to 
 | --- | --- | --- |
 | Core V1 features | Implemented, including incremental history, separate iPhones, original companions, folder organization, measured progress and recovery | Fix failures found in the checks below |
 | Physical reliability | Bounded import, repeat, Stop and deferred Quit have recorded evidence | Cable removal during a large transfer; reconnect/retry; external-volume removal, full disk and restoration |
-| Incremental and thumbnails | Bounded real new-item/repeat and nearby-thumbnail evidence exists | Final same-device new capture/reconnect, zero-transfer repeat, preview reuse and flat-folder import/repeat |
+| Incremental and thumbnails | Bounded real new-item/repeat and nearby-thumbnail evidence exists | Final same-device new capture/reconnect and preview reuse across reconnect |
 | Scale and responsiveness | Generated 10k/50k/100k metadata/history measurements recorded | Sustained app RSS, frame/main-thread timing and rapid physical-library scrolling |
 | Accessibility and OS support | Current-macOS light/dark, compact layout, native labels/actions inspected | Full VoiceOver/keyboard pass, system accessibility variants, macOS 14 runtime |
 | Distribution | Local universal development preview | Developer ID signing, notarization, stapled ticket, clean-Mac launch and final release screenshots |
@@ -18,7 +18,7 @@ Hardware testing resumed on 5 October 2026. Physical flat-folder import, zero-by
 repeat, early Stop/retry and relaunch passed; see [the evidence](verification/HARDWARE-2026-10-05.md).
 New-capture reconnect, cable removal during transfer and destination interruption remain open.
 Software checks do not close those gates. The build remains labeled **Development preview**; 0.1.0
-build 2 identifies this closeout preview, not a public release approval.
+build 3 identifies this closeout preview, not a public release approval.
 
 ## Repeatable software validation
 
@@ -103,3 +103,12 @@ SHA-256: `457ae7d74bd95a66729c8733079b7153e8a9335346c44125f31b385ab9bed25a`.
 Logs: `/tmp/cloakroll-wrapup-core.log`, `/tmp/cloakroll-wrapup-app-tests.log`,
 `/tmp/cloakroll-wrapup-debug.log`, `/tmp/cloakroll-wrapup-release.log`,
 `/tmp/cloakroll-wrapup-lint.log` and `/tmp/cloakroll-wrapup-package.log`.
+
+## 5 October follow-up preview
+
+Version **0.1.0 (3)** adds native history filters by saved iPhone and result. All **354 core**
+and **150 hosted app** tests, Debug/Release builds, strict lint and the Release bundle audit
+pass. [History-filter evidence](verification/HISTORY-FILTERS.md) records real history/UI checks;
+[physical evidence](verification/HARDWARE-2026-10-05.md) records flat imports, zero-transfer
+repeat, early cancellation/retry, relaunch and bounded warm-thumbnail reuse. Outstanding
+physical interruptions, new-capture reconnect and distribution gates remain open.

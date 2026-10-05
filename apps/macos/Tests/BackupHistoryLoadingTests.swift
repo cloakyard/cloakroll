@@ -46,7 +46,7 @@ struct BackupHistoryLoadingTests {
         let first = historySession()
         let latest = historySession()
         let script = HistoryReadScript([.success([first]), .failure(HistoryReadError.unavailable), .success([latest])])
-        let persistence = LibraryBackupPersistence(databaseURL: unusedHistoryURL(), readSessions: { try await script.next() })
+        let persistence = LibraryBackupPersistence(databaseURL: unusedHistoryURL(), readSessions: { _ in try await script.next() })
         await persistence.loadSessions()
         #expect(persistence.recentSessions == [first])
         await persistence.loadSessions()
@@ -58,7 +58,7 @@ struct BackupHistoryLoadingTests {
 
     @Test func overlappingInitialLoadsMakeOnlyOneRead() async throws {
         let reader = ControlledHistoryReader()
-        let persistence = LibraryBackupPersistence(databaseURL: unusedHistoryURL(), readSessions: { try await reader.read() })
+        let persistence = LibraryBackupPersistence(databaseURL: unusedHistoryURL(), readSessions: { _ in try await reader.read() })
         let first = Task { await persistence.loadSessions() }
         try await reader.waitForRequests(1)
         #expect(persistence.isLoadingSessions)
@@ -72,7 +72,7 @@ struct BackupHistoryLoadingTests {
     @Test(arguments: [false, true])
     func olderRefreshCannotReplaceNewerSessionsOrPublishAnOldError(oldFails: Bool) async throws {
         let reader = ControlledHistoryReader()
-        let persistence = LibraryBackupPersistence(databaseURL: unusedHistoryURL(), readSessions: { try await reader.read() })
+        let persistence = LibraryBackupPersistence(databaseURL: unusedHistoryURL(), readSessions: { _ in try await reader.read() })
         let old = Task { try? await persistence.refreshSessions() }
         try await reader.waitForRequests(1)
         let current = Task { try await persistence.refreshSessions() }
@@ -85,6 +85,43 @@ struct BackupHistoryLoadingTests {
         await old.value
         #expect(persistence.recentSessions == [latest])
         #expect(persistence.sessionErrorMessage == nil && !persistence.isLoadingSessions)
+    }
+
+    @Test func filterChangeClearsPreviousRowsAndFencesAnOlderRead() async throws {
+        let reader = ControlledHistoryReader()
+        let persistence = LibraryBackupPersistence(databaseURL: unusedHistoryURL(), readSessions: { _ in try await reader.read() })
+        let old = Task { await persistence.loadSessions() }
+        try await reader.waitForRequests(1)
+        let filter = BackupHistoryFilter(deviceKey: "another-phone", outcome: .unfinished)
+        let current = Task { await persistence.applySessionFilter(filter) }
+        try await reader.waitForRequests(2)
+        #expect(persistence.sessionFilter == filter && persistence.recentSessions.isEmpty)
+        await reader.finish(0, result: .success([historySession()]))
+        await old.value
+        #expect(persistence.recentSessions.isEmpty && persistence.isLoadingSessions)
+        let latest = historySession()
+        await reader.finish(1, result: .success([latest]))
+        await current.value
+        #expect(persistence.recentSessions == [latest] && persistence.hasLoadedSessions)
+    }
+
+    @Test func failedFilterReadNeverShowsUnfilteredRowsAndRetryKeepsTheFilter() async throws {
+        let first = historySession()
+        let script = HistoryReadScript([.success([first]), .failure(HistoryReadError.unavailable), .success([])])
+        let filter = BackupHistoryFilter(deviceKey: "selected-phone")
+        let persistence = LibraryBackupPersistence(databaseURL: unusedHistoryURL(), readSessions: { request in
+            let result = try await script.next()
+            if result.isEmpty { #expect(request == filter) }
+            return result
+        })
+        await persistence.loadSessions()
+        #expect(persistence.recentSessions == [first])
+        await persistence.applySessionFilter(filter)
+        #expect(persistence.sessionFilter == filter && persistence.recentSessions.isEmpty)
+        #expect(persistence.sessionErrorMessage != nil && !persistence.hasLoadedSessions)
+        await persistence.loadSessions()
+        #expect(persistence.sessionFilter == filter && persistence.recentSessions.isEmpty)
+        #expect(persistence.sessionErrorMessage == nil && persistence.hasLoadedSessions)
     }
 
     @Test func historyLoadsAtMostOneHundredLatestSessions() async throws {

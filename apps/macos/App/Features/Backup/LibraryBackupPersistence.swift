@@ -16,8 +16,10 @@ struct PreparedBackupContext: Sendable {
 /// Coordinates persistent evidence, while the package owns SQL and safe local file verification.
 @MainActor @Observable
 final class LibraryBackupPersistence {
-    typealias SessionReader = @Sendable () async throws -> [StoredBackupSession]
+    typealias SessionReader = @Sendable (BackupHistoryFilter) async throws -> [StoredBackupSession]
 
+    private(set) var sessionFilter = BackupHistoryFilter()
+    private(set) var historyDevices: [BackupHistoryDevice] = []
     private(set) var recentSessions: [StoredBackupSession] = []
     private(set) var isLoadingSessions = false
     private(set) var sessionErrorMessage: String?
@@ -53,17 +55,25 @@ final class LibraryBackupPersistence {
     func refreshSessions() async throws {
         refreshGeneration += 1
         let generation = refreshGeneration
+        let filter = sessionFilter
         isLoadingSessions = true
         sessionErrorMessage = nil
         defer { if refreshGeneration == generation { isLoadingSessions = false } }
         do {
             let sessions: [StoredBackupSession]
-            if let readSessions { sessions = try await readSessions() } else {
-                sessions = try await store().recentSessions(limit: 100)
+            let devices: [BackupHistoryDevice]
+            if let readSessions {
+                sessions = try await readSessions(filter)
+                devices = historyDevices
+            } else {
+                let store = try await store()
+                sessions = try await store.recentSessions(limit: 100, filter: filter)
+                devices = try await store.historyDevices()
             }
             try Task.checkCancellation()
             guard refreshGeneration == generation else { return }
             recentSessions = sessions
+            historyDevices = devices
             hasLoadedSessions = true
         } catch {
             if refreshGeneration == generation, !(error is CancellationError) {
@@ -71,6 +81,15 @@ final class LibraryBackupPersistence {
             }
             throw error
         }
+    }
+
+    func applySessionFilter(_ filter: BackupHistoryFilter) async {
+        guard filter != sessionFilter else { return }
+        sessionFilter = filter
+        // Old rows must not be displayed under a newly selected filter, including after a failure.
+        recentSessions = []
+        hasLoadedSessions = false
+        do { try await refreshSessions() } catch { /* Keep the current filter and expose retry. */ }
     }
 
     /// Opens history independently of iPhone discovery. Concurrent initial loads share the

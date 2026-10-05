@@ -16,6 +16,11 @@ struct BackupHistoryView: View {
         .toolbar {
             ToolbarItem {
                 if let persistence = model.backup.persistence {
+                    BackupHistoryFilters(persistence: persistence)
+                }
+            }
+            ToolbarItem {
+                if let persistence = model.backup.persistence {
                     Button {
                         Task { await persistence.loadSessions() }
                     } label: {
@@ -47,6 +52,14 @@ struct BackupHistoryView: View {
                 } actions: {
                     Button("Try Again") { Task { await persistence.loadSessions() } }
                 }
+            } else if persistence.sessionFilter != BackupHistoryFilter() {
+                ContentUnavailableView {
+                    Label("No Matching Backups", systemImage: "line.3.horizontal.decrease.circle")
+                } description: {
+                    Text(BackupHistoryFilters(persistence: persistence).summary)
+                } actions: {
+                    Button("Clear Filters") { Task { await persistence.applySessionFilter(BackupHistoryFilter()) } }
+                }
             } else {
                 ContentUnavailableView("No Backups Yet", systemImage: "clock",
                                        description: Text("Your completed and interrupted backups will appear here."))
@@ -69,7 +82,15 @@ struct BackupHistoryView: View {
                     }
                 } header: {
                     HStack {
-                        Text(persistence.recentSessions.count == 100 ? "Latest 100 Backups" : "Previous Backups")
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(persistence.recentSessions.count == 100 ? "Latest 100 Matching Backups" : "Previous Backups")
+                            if persistence.sessionFilter != BackupHistoryFilter() {
+                                Text(BackupHistoryFilters(persistence: persistence).summary)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                    .textCase(nil)
+                            }
+                        }
                         if persistence.isLoadingSessions { ProgressView().controlSize(.small) }
                     }
                 }

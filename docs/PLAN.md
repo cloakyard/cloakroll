@@ -145,7 +145,7 @@ for the remaining physical interruption/reconnect, app performance, accessibilit
 Developer ID/notarization and release-screenshot gates. Historical evidence below records
 what was actually observed and does not supersede those outstanding checks.
 
-Current local preview: **0.1.0 (2)**. All 350 core and 148 hosted app tests pass. The normal
+Current local preview: **0.1.0 (3)**. All 354 core and 150 hosted app tests pass. The normal
 Debug and Release builds, strict lint and actual Release-bundle audit pass. The Release
 binary contains arm64 and x86_64; compilation is not runtime acceptance on both platforms.
 The Release app no longer contains the injected debugging entitlement. No public release
@@ -180,6 +180,17 @@ and destination, no overwrite, interruption/retry, database migration, fresh/reo
 devices/destinations and verification failure. Hardware matrices stay separate from simulated tests.
 
 ## Progress evidence
+
+### 5 October 2026 — history filters and scrolling validation
+
+Added a native Backup History filter for each saved iPhone and completed/unfinished
+results, with clear active scope and reset. Filtering precedes the bounded history query;
+identical names remain separate, old reads cannot replace a newer filter, and failed reads
+retain safe retry. Four core and two hosted tests were added; all 354 core/150 app tests,
+normal Debug/Release builds, strict lint and Release-bundle audit pass. Real history from
+two phones and light/dark/compact UI were inspected. Repeating a bounded real-library
+scroll route used cached previews with no new source loads. See `verification/HISTORY-FILTERS.md`
+and `verification/HARDWARE-2026-10-05.md`. Broader hardware/performance gates stay open.
 
 ### 5 October 2026 — physical flat-folder and retry checks
 

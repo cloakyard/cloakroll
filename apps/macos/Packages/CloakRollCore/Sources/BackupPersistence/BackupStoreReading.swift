@@ -148,9 +148,22 @@ enum BackupStoreReading {
         )
     }
 
-    static func sessions(_ db: Database, limit: Int) throws -> [StoredBackupSession] {
-        try Row.fetchAll(db, sql: "SELECT * FROM backup_session ORDER BY started_at DESC, id DESC LIMIT ?",
-                         arguments: [limit]).map { row in
+    static func sessions(_ db: Database, limit: Int, filter: BackupHistoryFilter) throws -> [StoredBackupSession] {
+        var conditions: [String] = []
+        var arguments = StatementArguments()
+        if let key = filter.deviceKey {
+            conditions.append("device_key = ?")
+            arguments += [key]
+        }
+        switch filter.outcome {
+        case .all: break
+        case .completed: conditions.append("status = 'completed'")
+        case .unfinished: conditions.append("status IN ('running', 'failed', 'cancelled', 'interrupted')")
+        }
+        let clause = conditions.isEmpty ? "" : " WHERE " + conditions.joined(separator: " AND ")
+        arguments += [limit]
+        return try Row.fetchAll(db, sql: "SELECT * FROM backup_session" + clause + " ORDER BY started_at DESC, id DESC LIMIT ?",
+                               arguments: arguments).map { row in
             guard let id = UUID(uuidString: row["id"]), let destinationID = UUID(uuidString: row["destination_id"]),
                   let status = StoredBackupSessionStatus(rawValue: row["status"]) else { throw BackupStoreError.unavailable }
             let finished: Double? = row["finished_at"]
