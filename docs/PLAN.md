@@ -166,6 +166,18 @@ devices/destinations and verification failure. Hardware matrices stay separate f
 
 ## Progress evidence
 
+### 5 October 2026 — available-space protection
+
+Before each original that needs downloading, the engine now checks the selected volume's
+capacity for important usage. A known shortfall stops before requesting that original;
+verified incremental reuse is checked first and needs no extra media capacity. Unknown
+capacity remains advisory, and normal write-failure safety is retained. Eight new tests
+cover capacity boundaries, partial Live Photo retry, missing saved originals and cancellation.
+All 350 core and 148 hosted app tests, Debug/Release builds and strict lint pass. Added the
+app privacy manifest for disk-space, scoped file-metadata and app-preference access. See
+`verification/PHASE-7.md`. Physical tests are deferred at the user's request. The new release
+bundle audit found an injected debugging entitlement; address that in the release stage.
+
 ### 5 October 2026 — compact backup glass strip
 
 The floating backup surface is centered and capped at 680 points, with smaller padding

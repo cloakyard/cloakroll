@@ -11,6 +11,7 @@ enum BackupFileError: Error, Equatable, Sendable {
     case sizeMismatch
     case changedDuringVerification
     case tooManyCollisions
+    case insufficientSpace
 }
 
 extension BackupFileError: LocalizedError {
@@ -30,6 +31,8 @@ extension BackupFileError: LocalizedError {
         case .sizeMismatch: "The downloaded original does not match its expected size."
         case .changedDuringVerification: "The original changed while it was being verified."
         case .tooManyCollisions: "A unique filename could not be created in the backup folder."
+        case .insufficientSpace:
+            "The backup drive doesn’t have enough space for the next original. Free some space or choose another folder, then try again."
         }
     }
 }

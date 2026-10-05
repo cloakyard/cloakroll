@@ -70,6 +70,11 @@ final class BackupFileStore: @unchecked Sendable {
         )
     }
 
+    func checkCapacity(for byteCount: Int64, using capacity: BackupCapacity) throws {
+        // Resolve the owned directory descriptor, rather than a stale display/bookmark path.
+        try capacity.check(directory: root.path(), requiredBytes: byteCount)
+    }
+
     func verifyAndFinalize(
         _ staged: StagedOriginal, returnedURL: URL, expectedByteCount: Int64, createdAt: Date?,
         afterPublication: @Sendable () throws -> Void = {}

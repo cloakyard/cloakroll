@@ -14,6 +14,7 @@ public actor BackupEngine {
     public nonisolated let snapshots: AsyncStream<BackupSnapshot>
     private let continuation: AsyncStream<BackupSnapshot>.Continuation
     private let timeZone: TimeZone
+    private let capacity: BackupCapacity
     private var worker: Task<BackupResult, Never>?
     private var state = BackupSnapshot()
     private var currentTransfer: UUID?
@@ -22,7 +23,12 @@ public actor BackupEngine {
     private var lastProgressPublication: ContinuousClock.Instant?
 
     public init(timeZone: TimeZone = .current, previousRecords: [VerifiedBackupResource] = []) {
+        self.init(timeZone: timeZone, previousRecords: previousRecords, capacity: .live)
+    }
+
+    init(timeZone: TimeZone = .current, previousRecords: [VerifiedBackupResource] = [], capacity: BackupCapacity) {
         self.timeZone = timeZone
+        self.capacity = capacity
         let stream = AsyncStream.makeStream(of: BackupSnapshot.self, bufferingPolicy: .bufferingNewest(1))
         snapshots = stream.stream
         continuation = stream.continuation
@@ -186,7 +192,11 @@ public actor BackupEngine {
             }
             history[evidenceKey] = nil
         }
-        let staged = try await detached { try store.prepare(filename: resource.filename) }
+        let capacity = capacity
+        let staged = try await detached {
+            try store.checkCapacity(for: resource.byteCount, using: capacity)
+            return try store.prepare(filename: resource.filename)
+        }
         do {
             guard let runID = state.runID else { throw BackupEngineError.invalidSelection }
             let intent = BackupStagingIntent(

@@ -208,3 +208,36 @@ Quit, unplug, external-drive or reconnect acceptance is claimed from this stage.
 Local logs: `/tmp/cloakroll-disconnect-app-tests.log` (initial ordering failures),
 `/tmp/cloakroll-disconnect-app-tests-final.log` (86 passing),
 `/tmp/cloakroll-disconnect-normal-build.log` (normal build success).
+
+## 5 October — check capacity before each new original
+
+The engine queries `volumeAvailableCapacityForImportantUsageKey` on a fresh URL resolved
+from its owned destination directory descriptor, in the detached filesystem worker.
+This is appropriate for user-requested original files; see Apple's
+[storage-capacity guidance](https://developer.apple.com/documentation/foundation/checking-volume-storage-capacity).
+A known shortfall returns an actionable failure before that original's staging intent
+or USB request. Previous verified originals and partial multi-file progress are retained.
+Retry freshly verifies existing components, then checks capacity for the missing ones.
+
+This is an advisory per-original check, not a reservation or a promise that the entire
+selection fits. Other writers, quotas, directory/history overhead and capacity changes
+can still cause write errors, which keep their existing failure handling. Nil, negative
+or unavailable capacity does not mean zero. Metadata/history writes still need space
+even when every original can be reused. No storage figures are logged or sent anywhere.
+
+Eight new tests cover zero/insufficient/exact/large/unknown capacity, query failure,
+remaining-companion failure and retry, zero-transfer reuse, missing saved files, a later
+out-of-space write and cancellation while the capacity probe is in flight. All **350 core
+tests** and **148 hosted app tests** pass. Debug/Release builds and strict lint pass;
+the existing hosted-test `linkd.autoShortcut` diagnostics do not cause failures.
+The app privacy manifest declares the disk-space check (E174.1), sandbox/user-selected
+file metadata (C617.1/3B52.1) and app-owned preferences (CA92.1), with no collected data
+or tracking. The manifest is included in the compiled app alongside GRDB's manifest.
+
+Logs: `/tmp/cloakroll-wrapup-core.log`, `/tmp/cloakroll-wrapup-app-tests.log`,
+`/tmp/cloakroll-wrapup-debug.log`, `/tmp/cloakroll-wrapup-release.log`,
+`/tmp/cloakroll-wrapup-lint.log`. These tests use isolated generated files and injected
+capacity values; no physical disk was filled or iPhone transfer started. The user explicitly
+deferred hardware testing. Cable removal, external-volume removal/full-disk and the
+remaining device acceptance gates stay open. A new release audit detected an injected
+debugging entitlement in Release; its correction follows as the separate release stage.
