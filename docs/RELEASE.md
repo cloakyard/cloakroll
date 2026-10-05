@@ -14,8 +14,10 @@ restore-to-iPhone in the backlog. Additional feature expansion is not needed to 
 | Accessibility and OS support | Current-macOS light/dark, compact layout, native labels/actions inspected | Full VoiceOver/keyboard pass, system accessibility variants, macOS 14 runtime |
 | Distribution | Local universal development preview | Developer ID signing, notarization, stapled ticket, clean-Mac launch and final release screenshots |
 
-Hardware tests are deferred at the user's request on 5 October 2026. Software checks
-do not close these gates. The build remains labeled **Development preview**; 0.1.0
+Hardware testing resumed on 5 October 2026. Physical flat-folder import, zero-byte
+repeat, early Stop/retry and relaunch passed; see [the evidence](verification/HARDWARE-2026-10-05.md).
+New-capture reconnect, cable removal during transfer and destination interruption remain open.
+Software checks do not close those gates. The build remains labeled **Development preview**; 0.1.0
 build 2 identifies this closeout preview, not a public release approval.
 
 ## Repeatable software validation

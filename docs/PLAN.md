@@ -139,8 +139,8 @@ Do not claim physical power-loss durability from a process-restart test.
 ## V1 closeout target — 5 October 2026
 
 The current feature set is implemented. Focus remaining work on acceptance failures and
-release readiness; restore-to-iPhone stays in the backlog. The user has requested software
-checks now and hardware testing later. [RELEASE.md](RELEASE.md) is the consolidated checklist
+release readiness; restore-to-iPhone stays in the backlog. Hardware testing resumed on 5 October after the user connected an iPhone.
+The current physical results are recorded in `verification/HARDWARE-2026-10-05.md`. [RELEASE.md](RELEASE.md) is the consolidated checklist
 for the remaining physical interruption/reconnect, app performance, accessibility/older-OS,
 Developer ID/notarization and release-screenshot gates. Historical evidence below records
 what was actually observed and does not supersede those outstanding checks.
@@ -180,6 +180,16 @@ and destination, no overwrite, interruption/retry, database migration, fresh/reo
 devices/destinations and verification failure. Hardware matrices stay separate from simulated tests.
 
 ## Progress evidence
+
+### 5 October 2026 — physical flat-folder and retry checks
+
+The connected iPhone exposed 2,073 items. A separate validation destination received
+three items/four originals in one device folder; independent sizes/SHA-256 matched.
+Repeating the selection transferred zero bytes and retained every file inode/hash.
+Two large videos also verified. Early Stop preserved a cancelled, zero-verified session;
+Try Again completed, and relaunch restored five backed-up items. Cable removal during
+transfer, new-capture reconnect and external-volume failure acceptance remain open.
+See `verification/HARDWARE-2026-10-05.md`; existing backups were not changed.
 
 ### 5 October 2026 — local release closeout
 
