@@ -10,6 +10,7 @@ restore-to-iPhone in the backlog. Additional feature expansion is not needed to 
 | Core V1 features | Implemented, including incremental history, separate iPhones, original companions, folder organization, measured progress and recovery | Fix failures found in the checks below |
 | Physical reliability | Bounded import, repeat, Stop and deferred Quit have recorded evidence | Cable removal during a large transfer; reconnect/retry; external-volume removal, full disk and restoration |
 | Incremental and thumbnails | Bounded real new-item/repeat and nearby-thumbnail evidence exists | Final same-device new capture/reconnect and preview reuse across reconnect |
+| Destination reselection | Saved-file checks validate the original filesystem root even after its selection UUID changes | Preserve prior destination IDs for incremental reuse after switching folders |
 | Scale and responsiveness | Generated 10k/50k/100k metadata/history measurements recorded | Sustained app RSS, frame/main-thread timing and rapid physical-library scrolling |
 | Accessibility and OS support | Current-macOS light/dark, compact layout, native labels/actions inspected | Full VoiceOver/keyboard pass, system accessibility variants, macOS 14 runtime |
 | Distribution | Local universal development preview | Developer ID signing, notarization, stapled ticket, clean-Mac launch and final release screenshots |
@@ -18,7 +19,7 @@ Hardware testing resumed on 5 October 2026. Physical flat-folder import, zero-by
 repeat, early Stop/retry and relaunch passed; see [the evidence](verification/HARDWARE-2026-10-05.md).
 New-capture reconnect, cable removal during transfer and destination interruption remain open.
 Software checks do not close those gates. The build remains labeled **Development preview**; 0.1.0
-build 3 identifies this closeout preview, not a public release approval.
+build 4 identifies this closeout preview, not a public release approval.
 
 ## Repeatable software validation
 
@@ -45,7 +46,7 @@ signature or downloads credentials.
 To create a **local preview** ZIP, use a new output path:
 
 ```sh
-bash scripts/package_local.sh build/VerifyRelease/Build/Products/Release/CloakRoll.app build/releases/CloakRoll-0.1.0-3-local-universal.zip
+bash scripts/package_local.sh build/VerifyRelease/Build/Products/Release/CloakRoll.app build/releases/CloakRoll-0.1.0-4-local-universal.zip
 ```
 
 Packaging validates an isolated copy, checks the ZIP, reports SHA-256 and refuses
@@ -119,6 +120,29 @@ filter is present. The original destination was restored through the native fold
 picker. Superseded installed/build apps were moved to Trash; backup originals and history
 were retained. The separate validation copies remain in `Backup/CloakRoll Acceptance 2026-10-05`.
 
-Latest local preview archive: `apps/macos/build/releases/CloakRoll-0.1.0-3-local-universal.zip`.
+Build 3 archive: `apps/macos/build/releases/CloakRoll-0.1.0-3-local-universal.zip`.
 SHA-256: `bf0d93033f6bd6df4ebd813278e930fe9b02a82aa4e27f40299fa5ea29252d22`.
 The packaged copy passed bundle validation and ZIP integrity checks; nothing was published.
+
+
+## 5 October saved-file-check preview
+
+Version **0.1.0 (4)** adds read-only saved-original checks from Backup History. All
+**363 core / 158 hosted app tests**, normal Debug/Release builds, strict lint and
+whitespace checks pass. The actual universal Release bundle and isolated package
+passed signature, entitlement, hardened-runtime, privacy-manifest and ZIP checks.
+[Feature evidence](verification/SAVED-BACKUP-CHECK.md) records real saved-file hash,
+missing-file/retry, cancellation, zero-record and native light/dark/keyboard checks.
+
+Installed and launched `/Applications/CloakRoll.app`. About reports **0.1.0 (4)**;
+Backup settings retain `iPhone 15 Pro Max` and **One Folder**. The connected iPhone
+exposes 2,073 items. System appearance and the original destination were restored,
+and the app was left in All Photos. Superseded app copies are recoverable in Trash.
+An independent post-check SHA-256/size read of all six validation originals passed
+(2,912,814,777 bytes); no temporary missing-file rename remains. No new transfer,
+iPhone write, history result change or distribution claim was made.
+
+Latest local preview: `apps/macos/build/releases/CloakRoll-0.1.0-4-local-universal.zip`.
+SHA-256: `c3077ce5c8873c6297f84bae68bea56c6bcc64c7a484e857bf21b6d2116336ae`.
+Release/package logs: `/tmp/cloakroll-saved-check-release.log` and
+`/tmp/cloakroll-saved-check-package.log`. Remaining gates above stay open.

@@ -66,6 +66,11 @@ from the earlier physical iPhone import. No new backup or device write was start
   Command-R retries. Native light/dark results and active progress were inspected;
   system appearance and the original backup destination were restored.
 
-Remaining V1 cable/external-volume interruption, new-capture reconnect, sustained
+The final universal **0.1.0 (4)** Release and packaged copy passed the bundle audit.
+Installed and launched the audited app; About and preserved destination/One Folder
+settings were checked. A separate final SHA-256/size read confirmed all six validation
+files (2,912,814,777 bytes) still match, with no held temporary filename remaining.
+
+Remaining V1 destination-reselection identity, cable/external-volume interruption, new-capture reconnect, sustained
 performance, full VoiceOver/accessibility, macOS 14 runtime and distribution gates
 remain open in `../RELEASE.md`. These local checks do not close those gates.

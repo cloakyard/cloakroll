@@ -11,6 +11,10 @@ checks remain open. The app includes offline Backup History, remembered browsing
 native search/menu actions, clearly labeled sample media, chronological groups, filtering,
 selection, camera metadata and Settings. Interrupted publication recovery and a per-original
 available-space check preserve completed files when a later operation fails.
+Backup History → expand a session → **Check Saved Files…** checks its recorded originals
+in the selected original backup folder, without needing the iPhone. The read-only check
+has progress, Stop/retry and missing-or-changed-file results; it does not change history.
+See [saved-file verification evidence](docs/verification/SAVED-BACKUP-CHECK.md).
 Follow [the implementation plan](docs/PLAN.md) for actual progress and verification evidence.
 The [release checklist](docs/RELEASE.md) consolidates the remaining gates, repeatable software
 checks and local packaging. See the [privacy policy](docs/PRIVACY.md) for local data handling.
@@ -32,9 +36,9 @@ Photos albums. A wired backup can only include originals exposed by the device; 
 otherwise unavailable media may be omitted.
 
 Requires macOS 14 or later; development uses Xcode 27, Swift 6, XcodeGen and SwiftLint.
-The current 0.1.0 (3) Release binary contains Apple silicon and Intel architectures.
+The current 0.1.0 (4) Release binary contains Apple silicon and Intel architectures.
 It is locally ad-hoc signed; Developer ID, notarization and older-system runtime acceptance
-remain release gates. Local software validation: 354 core tests and 150 hosted app tests.
+remain release gates. Local software validation: 363 core tests and 158 hosted app tests.
 
 **Feature backlog:** restore selected photos and videos from an existing backup folder to a new
 iPhone. This remains outside V1 until a supported public approach works without installing an

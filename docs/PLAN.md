@@ -145,10 +145,12 @@ for the remaining physical interruption/reconnect, app performance, accessibilit
 Developer ID/notarization and release-screenshot gates. Historical evidence below records
 what was actually observed and does not supersede those outstanding checks.
 
-Current local preview: **0.1.0 (3)**. All 354 core and 150 hosted app tests pass. The normal
+Current local preview: **0.1.0 (4)**. All 363 core and 158 hosted app tests pass. The normal
 Debug and Release builds, strict lint and actual Release-bundle audit pass. The Release
 binary contains arm64 and x86_64; compilation is not runtime acceptance on both platforms.
-The Release app no longer contains the injected debugging entitlement. No public release
+The Release app no longer contains the injected debugging entitlement.
+Folder reselection still needs to preserve prior destination IDs for incremental reuse;
+the new saved-file checker independently validates the actual original root. No public release
 is claimed, and phases with pending physical/accessibility/performance checks remain open.
 
 ## Feature backlog — restore to a new iPhone
