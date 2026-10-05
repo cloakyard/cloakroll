@@ -2,16 +2,18 @@
 
 **Your camera roll, safely on your Mac.** A native macOS photo and video backup app, part of Cloakyard.
 
-CloakRoll is being built in verified phases. The app browses a real USB-connected iPhone and
+CloakRoll is a development preview entering V1 closeout. The app browses a real USB-connected iPhone and
 backs up selected or filtered originals into separate iPhone folders, checking file sizes and local
 SHA-256 digests before reporting success. Bounded physical imports have covered photos, Live
-Photos, RAW and video. Persistent incremental history is implemented and tested; its physical
-reconnect/new-photo acceptance check remains pending. Thumbnail reconnect and broader reliability
-checks also remain open. The app includes offline Backup History, remembered browsing choices,
+Photos, RAW and video. Real incremental repeats, new-item detection, Stop and deferred Quit have
+bounded evidence; final cable/external-drive interruption, reconnect and sustained performance
+checks remain open. The app includes offline Backup History, remembered browsing choices,
 native search/menu actions, clearly labeled sample media, chronological groups, filtering,
-selection, media info and Settings. Interrupted publication recovery is implemented and tested
-with generated files; physical interruption checks remain pending.
+selection, camera metadata and Settings. Interrupted publication recovery and a per-original
+available-space check preserve completed files when a later operation fails.
 Follow [the implementation plan](docs/PLAN.md) for actual progress and verification evidence.
+The [release checklist](docs/RELEASE.md) consolidates the remaining gates, repeatable software
+checks and local packaging. See the [privacy policy](docs/PRIVACY.md) for local data handling.
 The [native UI refinement evidence](docs/verification/PHASE-8.md) covers history, menu parity,
 remembered preferences and compact light/dark layout checks. Small, Medium and Large thumbnail
 presets remain the only size controls.
@@ -30,6 +32,9 @@ Photos albums. A wired backup can only include originals exposed by the device; 
 otherwise unavailable media may be omitted.
 
 Requires macOS 14 or later; development uses Xcode 27, Swift 6, XcodeGen and SwiftLint.
+The current 0.1.0 (2) Release binary contains Apple silicon and Intel architectures.
+It is locally ad-hoc signed; Developer ID, notarization and older-system runtime acceptance
+remain release gates. Local software validation: 350 core tests and 148 hosted app tests.
 
 **Feature backlog:** restore selected photos and videos from an existing backup folder to a new
 iPhone. This remains outside V1 until a supported public approach works without installing an

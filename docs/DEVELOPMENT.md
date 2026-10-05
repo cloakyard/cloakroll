@@ -80,6 +80,10 @@ Local builds are sandboxed, hardened-runtime and ad-hoc signed. These checks do 
 Developer ID signing, notarization, behavior on macOS 14 hardware, or release readiness. Do not
 publish release claims until the corresponding Phase 10 checks are complete.
 
+[RELEASE.md](RELEASE.md) consolidates current closeout gates and provides a read-only
+Release-bundle checker and safe local ZIP packaging command. The app's
+[privacy policy](PRIVACY.md) describes local data and the bundled privacy manifest.
+
 Hosted AppModel tests use the scheme’s `CLOAKROLL_TESTING=1` environment to prevent the host app from starting hardware discovery; injected mock browsers drive their events. Core package tests remain headless.
 
 After `xcodebuild test`, run the normal `xcodebuild ... build` command before manual device checks. Xcode temporarily signs hosted-test apps with additional test-service/file permissions; the normal build removes those additions. Verify actual entitlements with `codesign -d --entitlements -` on the app bundle.

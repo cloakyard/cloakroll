@@ -134,7 +134,22 @@ Do not claim physical power-loss durability from a process-restart test.
 | 7 Reliability | Size and digest evidence, disconnect/full disk/retry/cancel/relaunch tests and real interruptions. No incomplete success or unrelated file overwrite. | In progress |
 | 8 Polish | Onboarding, info/search/sort/context menus/shortcuts, cloud availability copy, external volume UX, accessibility and final icon. Compare all screens to CloakDrop. | In progress |
 | 9 Performance | Generated 10k/50k/100k catalogs; timed catalog/matching/startup, bounded thumbnails, measured main-thread/scrolling and database behavior. | In progress |
-| 10 Release | Privacy/entitlement/sandbox review, Release build/lint/tests, docs/screenshots, signing/notarization with verified identity. | Planned |
+| 10 Release | Privacy/entitlement/sandbox review, Release build/lint/tests, docs/screenshots, signing/notarization with verified identity. | In progress — local preview validated; distribution gates open |
+
+## V1 closeout target — 5 October 2026
+
+The current feature set is implemented. Focus remaining work on acceptance failures and
+release readiness; restore-to-iPhone stays in the backlog. The user has requested software
+checks now and hardware testing later. [RELEASE.md](RELEASE.md) is the consolidated checklist
+for the remaining physical interruption/reconnect, app performance, accessibility/older-OS,
+Developer ID/notarization and release-screenshot gates. Historical evidence below records
+what was actually observed and does not supersede those outstanding checks.
+
+Current local preview: **0.1.0 (2)**. All 350 core and 148 hosted app tests pass. The normal
+Debug and Release builds, strict lint and actual Release-bundle audit pass. The Release
+binary contains arm64 and x86_64; compilation is not runtime acceptance on both platforms.
+The Release app no longer contains the injected debugging entitlement. No public release
+is claimed, and phases with pending physical/accessibility/performance checks remain open.
 
 ## Feature backlog — restore to a new iPhone
 
@@ -165,6 +180,17 @@ and destination, no overwrite, interruption/retry, database migration, fresh/reo
 devices/destinations and verification failure. Hardware matrices stay separate from simulated tests.
 
 ## Progress evidence
+
+### 5 October 2026 — local release closeout
+
+Added a privacy policy, consolidated release checklist, actual-bundle validation and safe
+local ZIP packaging. The audit found and removed the injected Release debugging entitlement;
+Debug retains development support. Version 0.1.0 (2) is a universal local preview with
+350 core and 148 app tests passing, clean builds/lint and a passing Release-bundle audit.
+The distribution gate correctly rejects the ad-hoc signature. Packaged, installed and
+launched the verified build; About and preserved Backup settings were inspected. The app
+remains a Development preview. See [RELEASE.md](RELEASE.md) for actual evidence and the
+remaining hardware, performance/accessibility/older-OS and distribution gates.
 
 ### 5 October 2026 — available-space protection
 
