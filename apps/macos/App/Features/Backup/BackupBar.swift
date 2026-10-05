@@ -6,7 +6,7 @@ struct BackupBar: View {
     var horizontalInset: CGFloat = Design.contentInset
 
     var body: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: 12) {
             if model.backup.isBusy {
                 BackupProgressView(
                     progress: BackupProgressPresentation(
@@ -29,7 +29,7 @@ struct BackupBar: View {
             }
         }
         .padding(.horizontal, horizontalInset)
-        .padding(.vertical, 16)
+        .padding(.vertical, 10)
     }
 
     private var idleSummary: some View {

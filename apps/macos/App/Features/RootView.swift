@@ -55,7 +55,9 @@ private struct BackupBarPlacement: ViewModifier {
             content.safeAreaInset(edge: .bottom, spacing: 0) {
                 if isVisible {
                     BackupBar(model: model, horizontalInset: 12)
-                        .glassEffect(.regular, in: .rect(cornerRadius: 20))
+                        .frame(maxWidth: 680)
+                        .glassEffect(.regular, in: .rect(cornerRadius: 16))
+                        .frame(maxWidth: .infinity)
                         .padding(12)
                 }
             }

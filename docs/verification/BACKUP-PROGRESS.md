@@ -119,3 +119,48 @@ The installed app showed the user's prior backup complete (5,141 items / 9,068 o
 before it was closed. This is observed app status, not an independent media audit. No backup
 was started during this pass. The verified Release build was installed and launched from
 `/Applications/CloakRoll.app`; superseded installed/debug/release copies were moved to Trash.
+
+## 5 October — compact glass controls
+
+The floating macOS 26+ surface now caps its width at 680 points and centers within
+the library. Vertical padding is reduced from 16 to 10 points and the native glass
+enclosure uses a 16-point corner radius. The safe-area inset still lets the final
+media row scroll completely above the controls. The older-system `.bar` fallback
+retains its system surface and shares the reduced padding and progress layout.
+
+Active progress has two rows: a vertically centered spinner, stable heading, Info
+button, completed-item count and percentage, followed by the native linear meter.
+The item count may wrap when space is limited; no fixed height clips the text.
+The Info button opens a native popover with the current original or operation detail,
+destination, processed/expected bytes and newly transferred bytes. Long current-file
+text can wrap and be selected. Byte accounting and the meter's accessibility value
+are unchanged, and 100% still does not announce completed history persistence.
+Idle destination context, Deselect All and all terminal recovery actions remain.
+
+This uses a single system glass surface for controls, consistent with Apple's
+[Materials guidance](https://developer.apple.com/design/human-interface-guidelines/materials).
+The narrower surface and lower information density are CloakRoll design decisions.
+
+Actual native UI checks on macOS 27:
+
+- Standard and compact windows in light/dark app-local appearances; System appearance
+  and standard size restored afterward.
+- Copying, Stopping, Preparing and Finishing examples using the production view.
+  Counts and percentage remain legible; indeterminate progress invents no percentage,
+  and the finishing example retains the active heading/spinner at 100%.
+- Info popover, byte totals and Escape dismissal.
+- Select all 20 sample items, then use the visible Deselect All action; the idle summary
+  returns. Scrolling to the bottom leaves the entire final row above the glass surface.
+
+Final Debug/Release builds pass without warnings, all 342 core tests pass, and strict
+lint, whitespace and both signatures pass. No new tests were added for this layout-only
+change. Logs: `/tmp/cloakroll-compact-bar-debug.log`,
+`/tmp/cloakroll-compact-bar-release.log`, `/tmp/cloakroll-compact-bar-core.log`,
+and `/tmp/cloakroll-compact-bar-lint.log`.
+
+Installed the byte-identical verified Release in `/Applications/CloakRoll.app` and
+launched it in normal live mode. The previous installed version and temporary build
+bundles went to Trash. No backup was active or started; backup files/settings were
+not changed. The iPhone was unavailable during this pass. The UI examples are layout
+evidence, not physical backup acceptance. Full VoiceOver, older macOS runtime and
+terminal failure layouts were not re-exercised in this pass; existing phase gates remain.

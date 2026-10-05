@@ -166,6 +166,18 @@ devices/destinations and verification failure. Hardware matrices stay separate f
 
 ## Progress evidence
 
+### 5 October 2026 — compact backup glass strip
+
+The floating backup surface is centered and capped at 680 points, with smaller padding
+and a two-row active layout. The stable heading, item count, percentage, native progress
+meter and Stop stay visible; a native Info popover provides file/destination and byte
+details. Selection reset and terminal recovery actions are retained. Standard/compact
+light/dark layouts, preparation/stopping/finalization previews, popover dismissal,
+selection reset and last-row clearance were inspected. Debug/Release builds, 342 core
+tests, strict lint, whitespace and signatures pass. Installed and launched the verified
+Release, with superseded app copies moved to Trash. See `verification/BACKUP-PROGRESS.md`.
+No physical transfer was started and no broader phase acceptance is claimed.
+
 ### 4 October 2026 — backup activity indicator alignment
 
 Changed the progress heading row from text-baseline alignment to vertical centering so the

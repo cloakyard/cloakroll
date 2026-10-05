@@ -4,50 +4,56 @@ struct BackupProgressView: View {
     let progress: BackupProgressPresentation
     let destinationCaption: String
     var isSample = false
+    @State private var showsDetails = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 4) {
             HStack(alignment: .center, spacing: 8) {
                 if progress.showsActivityIndicator {
                     ProgressView().controlSize(.mini).accessibilityHidden(true)
                 }
                 Text(isSample ? "Sample · \(progress.title)" : progress.title)
                     .fontWeight(.medium)
+                    .fixedSize()
+                Button("Backup Details", systemImage: "info.circle") { showsDetails.toggle() }
+                    .labelStyle(.iconOnly)
+                    .buttonStyle(.borderless)
+                    .help("Show the current original and transfer details.")
+                    .popover(isPresented: $showsDetails, arrowEdge: .top) { details }
                 Spacer(minLength: 12)
+                Text(progress.itemSummary)
+                    .font(.caption.monospacedDigit())
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
                 if let percentage = progress.percentage {
                     Text(percentage).monospacedDigit()
-                }
-            }
-            meter
-            ViewThatFits(in: .horizontal) {
-                HStack {
-                    Text(progress.itemSummary).fixedSize()
-                    Spacer(minLength: 12)
-                    if let bytes = progress.byteSummary { Text(bytes).fixedSize() }
-                }
-                VStack(alignment: .leading, spacing: 3) {
-                    Text(progress.itemSummary)
-                    if let bytes = progress.byteSummary { Text(bytes) }
-                }
-            }
-            .font(.caption.monospacedDigit())
-            .foregroundStyle(.secondary)
-            HStack(spacing: 12) {
-                Text(detail)
-                    .lineLimit(1)
-                    .truncationMode(.middle)
-                    .help(detail)
-                Spacer(minLength: 0)
-                if !isSample, progress.snapshot.transferredBytes > 0 {
-                    Text("\(Format.bytes(progress.snapshot.transferredBytes)) transferred")
-                        .monospacedDigit()
                         .fixedSize()
                 }
             }
-            .font(.caption)
-            .foregroundStyle(.secondary)
+            meter
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var details: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Backup Details").font(.headline)
+            if detail != destinationCaption {
+                Text(detail)
+                    .textSelection(.enabled)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Text(destinationCaption).foregroundStyle(.secondary)
+            if let bytes = progress.byteSummary {
+                LabeledContent("Data progress", value: bytes).monospacedDigit()
+            }
+            if !isSample, progress.snapshot.transferredBytes > 0 {
+                LabeledContent("Transferred", value: Format.bytes(progress.snapshot.transferredBytes))
+                    .monospacedDigit()
+            }
+        }
+        .padding(16)
+        .frame(width: 320, alignment: .leading)
     }
 
     private var meter: some View {
