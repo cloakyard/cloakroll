@@ -21,7 +21,8 @@ checks and local packaging. See the [privacy policy](docs/PRIVACY.md) for local 
 The [native UI refinement evidence](docs/verification/PHASE-8.md) covers history, menu parity,
 remembered preferences and compact light/dark layout checks. Small, Medium and Large thumbnail
 presets remain the only size controls. The connected iPhone shows its last completed
-backup date, count and size; photos scroll beneath the native translucent toolbar.
+backup date, count and size; photos scroll beneath the native translucent toolbar
+and compact Liquid Glass date labels.
 See [sidebar and toolbar verification](docs/verification/SIDEBAR-AND-TOOLBAR.md).
 Settings → Backup → Folder structure offers Year and Month (the default) or One Folder
 for photos and videos within each iPhone folder. The choice applies to new files;
@@ -38,7 +39,7 @@ Photos albums. A wired backup can only include originals exposed by the device; 
 otherwise unavailable media may be omitted.
 
 Requires macOS 14 or later; development uses Xcode 27, Swift 6, XcodeGen and SwiftLint.
-The current 0.1.0 (6) Release binary contains Apple silicon and Intel architectures.
+The current 0.1.0 (7) Release binary contains Apple silicon and Intel architectures.
 It is locally ad-hoc signed; Developer ID, notarization and older-system runtime acceptance
 remain release gates. Local software validation: 380 core tests and 166 hosted app tests.
 

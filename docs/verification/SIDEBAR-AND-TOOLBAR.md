@@ -60,3 +60,39 @@ Backups and existing history were retained; only the additive index migration ap
 
 Archive: `apps/macos/build/releases/CloakRoll-0.1.0-6-local-universal.zip`.
 SHA-256: `88e25867c1f846367f0c2f836422eb721d89c31ebc29d89fee9d0985d808cb4f`.
+
+## Compact date labels — build 7
+
+Removed the full-width opaque date/count strip. The native pinned section now has
+an intrinsic-width capsule with a semibold date and secondary count. Only that
+capsule receives regular Liquid Glass; the remaining row is transparent. The
+macOS 14/15 fallback uses native regular material in the same shape. The API follows
+[Apple's Liquid Glass guidance](https://developer.apple.com/documentation/SwiftUI/Applying-Liquid-Glass-to-custom-views).
+No interactive glass effect is applied to this static heading. It combines the
+date and count for accessibility and does not intercept clicks on photos beneath it.
+
+Changing grouping can leave SwiftUI's previous pinned-header positions cached.
+The grid now has the resolved grouping as its identity, resetting that layout only
+when the section hierarchy changes, not on progress or scroll updates.
+
+Actual checks on 5 October:
+
+- **380 core / 166 hosted app tests** pass. Strict lint has zero violations in
+  126 files. Final normal Debug and universal Release builds pass, including the
+  final grouping-identity refinement. The actual **0.1.0 (7)** bundle and isolated
+  ZIP pass architecture, signature, sandbox, hardened-runtime, icon, privacy-manifest
+  and archive integrity checks.
+- The connected physical iPhone exposed **2,073 items** after unlock. Scrolled from
+  October into September in light and dark appearances: the capsule stays pinned,
+  real photos remain visible across the rest of its row, and the toolbar retains
+  its native translucent backdrop.
+- Clicking through the pinned capsule selected its underlying photo; Escape cleared
+  the selection. The accessibility tree exposes a combined date/count heading.
+- Inspected day grouping in the compact window. After the layout refinement, switched
+  Day → Year, scrolled with the year capsule pinned, then restored Automatic and
+  resized to compact: the October capsule was immediately present. Restored standard
+  window size and system appearance before quitting the preview.
+
+Logs: `/tmp/cloakroll-date-glass-{core,tests,build,release,lint,package}.log`.
+No new backup or media mutation was initiated. This does not establish older-OS,
+full VoiceOver, accessibility-settings or sustained frame-time acceptance.

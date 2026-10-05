@@ -145,7 +145,7 @@ for the remaining physical interruption/reconnect, app performance, accessibilit
 Developer ID/notarization and release-screenshot gates. Historical evidence below records
 what was actually observed and does not supersede those outstanding checks.
 
-Current local preview: **0.1.0 (6)**. All 380 core and 166 hosted app tests pass. The normal
+Current local preview: **0.1.0 (7)**. All 380 core and 166 hosted app tests pass. The normal
 Debug and Release builds, strict lint and actual Release-bundle audit pass. The Release
 binary contains arm64 and x86_64; compilation is not runtime acceptance on both platforms.
 The Release app no longer contains the injected debugging entitlement.
@@ -791,3 +791,16 @@ Actual connected-iPhone scrolling shows photos beneath the translucent toolbar.
 Light/dark and compact layouts were inspected with real media. All 380 core and
 166 app tests, strict lint, normal Debug/Release builds and the build 6 bundle audit
 pass. See `verification/SIDEBAR-AND-TOOLBAR.md` for exact evidence and limits.
+
+### 5 October — compact floating date labels
+
+Replaced the full-width opaque pinned date strip with a compact native Liquid Glass
+capsule containing the date and item count. The rest of the header stays transparent
+and lets clicks reach underlying photos. A native material fallback supports the
+macOS 14 baseline. Grouping changes discard stale pinned-header layout positions.
+
+All 380 core and 166 hosted app tests pass, along with strict lint, final normal
+Debug/Release builds and the actual build 7 bundle/package audit. Checked the physical
+2,073-item library in light/dark and compact layouts, scrolling between months,
+changing grouping, and selecting through the capsule. See
+`verification/SIDEBAR-AND-TOOLBAR.md`. No backup was initiated or broader gate closed.

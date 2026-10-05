@@ -85,10 +85,13 @@ struct LibraryView: View {
                                         .id(asset.id)
                                     }
                                 } header: {
-                                    sectionHeader(section)
+                                    LibrarySectionHeader(section: section)
                                 }
                             }
                         }
+                        // Grouping changes the section hierarchy. Discard the previous
+                        // pinned-header layout instead of reusing its offscreen positions.
+                        .id(model.snapshot.grouping)
                         .padding(.horizontal, Design.contentInset)
                         .padding(.bottom, 24)
                     }
@@ -140,29 +143,6 @@ struct LibraryView: View {
 
     private func updateColumnCount(width: Double) {
         columns = max(1, Int((width - Design.contentInset * 2 + Design.gridSpacing) / (model.cellSize + Design.gridSpacing)))
-    }
-
-    private func sectionHeader(_ section: MediaSection) -> some View {
-        HStack(alignment: .firstTextBaseline) {
-            Text(sectionTitle(section)).font(.title3.weight(.semibold))
-            Spacer()
-            Text("\(section.assets.count.formatted()) \(section.assets.count == 1 ? "item" : "items")")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-        }
-        .padding(.top, 22)
-        .padding(.bottom, 10)
-        .background(Design.contentBackground)
-        .accessibilityAddTraits(.isHeader)
-    }
-
-    private func sectionTitle(_ section: MediaSection) -> String {
-        guard let date = section.date else { return "Date Unknown" }
-        switch section.grouping {
-        case .automatic, .day: return date.formatted(.dateTime.month(.wide).day().year())
-        case .month: return date.formatted(.dateTime.month(.wide).year())
-        case .year: return date.formatted(.dateTime.year())
-        }
     }
 }
 

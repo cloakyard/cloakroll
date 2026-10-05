@@ -19,7 +19,7 @@ Hardware testing resumed on 5 October 2026. Physical flat-folder import, zero-by
 repeat, early Stop/retry and relaunch passed; see [the evidence](verification/HARDWARE-2026-10-05.md).
 New-capture reconnect, cable removal during transfer and destination interruption remain open.
 Software checks do not close those gates. The build remains labeled **Development preview**; 0.1.0
-build 6 identifies this closeout preview, not a public release approval.
+build 7 identifies this closeout preview, not a public release approval.
 
 ## Repeatable software validation
 
@@ -46,7 +46,7 @@ signature or downloads credentials.
 To create a **local preview** ZIP, use a new output path:
 
 ```sh
-bash scripts/package_local.sh build/VerifyRelease/Build/Products/Release/CloakRoll.app build/releases/CloakRoll-0.1.0-6-local-universal.zip
+bash scripts/package_local.sh build/VerifyRelease/Build/Products/Release/CloakRoll.app build/releases/CloakRoll-0.1.0-7-local-universal.zip
 ```
 
 Packaging validates an isolated copy, checks the ZIP, reports SHA-256 and refuses
@@ -189,3 +189,18 @@ remain open; this is a Development preview.
   `88e25867c1f846367f0c2f836422eb721d89c31ebc29d89fee9d0985d808cb4f`.
   See [sidebar verification](verification/SIDEBAR-AND-TOOLBAR.md). Remaining release
   gates above are unchanged.
+
+## 5 October compact date-label preview — build 7
+
+The full-width opaque date header is now a compact Liquid Glass capsule with the
+date and item count. Photos remain visible behind the pinned header; the capsule
+does not intercept photo selection. Native material is the older-macOS fallback.
+Changing date grouping recreates the grid's pinned-header layout.
+
+All **380 core and 166 hosted app tests**, strict lint, final normal Debug/Release
+builds and actual Release-bundle checks pass. Physical-library light/dark, compact,
+scrolling, grouping and click-through checks are recorded in
+[sidebar verification](verification/SIDEBAR-AND-TOOLBAR.md). Remaining gates stay open.
+
+Local archive: `apps/macos/build/releases/CloakRoll-0.1.0-7-local-universal.zip`.
+SHA-256: `7439b0e20c5c6ec00b9e24bdb42ac10e37b0195bada98a065ca0be24b4a8d4b1`.
