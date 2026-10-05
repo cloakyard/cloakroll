@@ -96,3 +96,11 @@ Actual checks on 5 October:
 Logs: `/tmp/cloakroll-date-glass-{core,tests,build,release,lint,package}.log`.
 No new backup or media mutation was initiated. This does not establish older-OS,
 full VoiceOver, accessibility-settings or sustained frame-time acceptance.
+
+Installed the audited universal Release at `/Applications/CloakRoll.app`. Native
+About confirms **0.1.0 (7)**; Backup settings retain the original destination and
+**One Folder**. The installed app loads all 2,073 exposed items, the saved device
+summary and floating date capsules. Scrolled the installed Release to confirm the
+transparent pinned row over real photos. Superseded app/build bundles are recoverable
+in Trash; backup originals and history were retained. The installed bundle passes
+the release audit again. Installation log: `/tmp/cloakroll-date-glass-install.log`.

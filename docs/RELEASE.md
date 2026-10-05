@@ -204,3 +204,8 @@ scrolling, grouping and click-through checks are recorded in
 
 Local archive: `apps/macos/build/releases/CloakRoll-0.1.0-7-local-universal.zip`.
 SHA-256: `7439b0e20c5c6ec00b9e24bdb42ac10e37b0195bada98a065ca0be24b4a8d4b1`.
+
+Installed and launched **0.1.0 (7)** at `/Applications/CloakRoll.app`. Native About,
+retained destination/One Folder settings, the connected 2,073-item library and
+floating dates were verified. The installed bundle passes the audit. Previous
+app/build copies are recoverable in Trash; backup originals and history remain intact.
