@@ -153,6 +153,34 @@ Folder reselection still needs to preserve prior destination IDs for incremental
 the new saved-file checker independently validates the actual original root. No public release
 is claimed, and phases with pending physical/accessibility/performance checks remain open.
 
+## Recovery after loss of app data — requested 5 October 2026
+
+Implement a folder-owned recovery index that survives loss of the app container.
+Store versioned original identity, companion membership, relative paths, sizes and
+SHA-256 beside the media. Publish recovery intent before the original is finalized;
+recovery still requires a fresh local size/hash check before importing any record.
+A reconstructed history entry must be labeled recovered, never invent the date or
+successful completion of the original backup. Preserve separate iPhone identities,
+partial companions, cancellation, repeat safety and no-overwrite guarantees.
+
+Provide native **Rebuild Backup History…** and **Prepare Existing Backup…** actions.
+The latter verifies existing database evidence against the selected root and writes
+portable recovery records for older CloakRoll backups while that evidence survives.
+After rebuilding, the existing incremental matcher must skip verified resources and
+copy only missing components. Missing/corrupt/ambiguous files remain unverified.
+A copied or reselected root may be explicitly adopted only after checking its bytes.
+
+Media-only folders with neither app history nor recovery records require one-time
+source verification. Filenames/dates alone must never produce a backed-up status.
+The user was asked whether the extra USB read is acceptable; indexed-folder recovery
+and safe preparation of older known backups proceed independently.
+
+Acceptance: isolated empty-database recovery, repeated recovery, missing/corrupt files,
+partial Live Photos, two devices with repeated names, copied roots, unsafe paths,
+cancelled scans/imports, atomic metadata publication, and incremental zero-transfer
+reuse after reconstruction. Record real saved-file/device results separately from tests.
+Implementation and acceptance are pending; do not treat the feature as complete yet.
+
 ## Feature backlog — restore to a new iPhone
 
 Requested future feature: choose an existing Mac/external-drive backup folder, preview its photos
