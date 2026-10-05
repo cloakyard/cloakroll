@@ -1,3 +1,4 @@
+import BackupEngine
 import Foundation
 import MediaModels
 import MediaCatalog
@@ -198,13 +199,15 @@ final class AppModel {
     func currentAsset(id: String) -> MediaAsset? { lookup[id] }
 
     func startBackup(assets: [MediaAsset]) {
-        guard backupSourceAvailable, let sessionID = catalogSessionID,
-              let provider = browser as? any OriginalMediaDownloading else { return }
-        backup.start(assets: assets, sessionID: sessionID, folderLayout: backupOrganization.folderLayout) { request, progress in
-            try await provider.downloadOriginal(
-                resourceID: request.resource.id, sessionID: request.sessionID,
-                to: request.directory, filename: request.filename, progress: progress
-            )
+        guard let sessionID = catalogSessionID, let download = originalDownload else { return }
+        backup.start(assets: assets, sessionID: sessionID, folderLayout: backupOrganization.folderLayout, download: download)
+    }
+
+    var originalDownload: BackupEngine.Download? {
+        guard backupSourceAvailable, let provider = browser as? any OriginalMediaDownloading else { return nil }
+        return { request, progress in
+            try await provider.downloadOriginal(resourceID: request.resource.id, sessionID: request.sessionID,
+                                                to: request.directory, filename: request.filename, progress: progress)
         }
     }
 

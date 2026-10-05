@@ -3,6 +3,7 @@ import SwiftUI
 
 struct BackupHistoryView: View {
     @Environment(AppModel.self) private var model
+    @State private var isShowingRecovery = false
     @State private var checkRequest: BackupSessionCheckRequest?
 
     var body: some View {
@@ -19,7 +20,13 @@ struct BackupHistoryView: View {
                 BackupSessionCheckView(request: request, persistence: persistence, destination: model.backup.destination)
             }
         }
+        .sheet(isPresented: $isShowingRecovery) { BackupFolderRecoveryView() }
         .toolbar {
+            ToolbarItem {
+                Button("Rebuild History…", systemImage: "arrow.counterclockwise") { isShowingRecovery = true }
+                    .disabled(model.backup.isBusy || model.backup.destination.isChoosing || model.backup.persistence == nil)
+                    .help("Rebuild Backup History from an existing folder")
+            }
             ToolbarItem {
                 if let persistence = model.backup.persistence {
                     BackupHistoryFilters(persistence: persistence)
@@ -67,8 +74,17 @@ struct BackupHistoryView: View {
                     Button("Clear Filters") { Task { await persistence.applySessionFilter(BackupHistoryFilter()) } }
                 }
             } else {
-                ContentUnavailableView("No Backups Yet", systemImage: "clock",
-                                       description: Text("Your completed and interrupted backups will appear here."))
+                ContentUnavailableView {
+                    Label("No Backups Yet", systemImage: "clock")
+                } description: {
+                    Text("""
+                        Your completed and interrupted backups will appear here. If you already have a backup folder, you \
+                        can rebuild its history.
+                        """)
+                } actions: {
+                    Button("Rebuild Backup History…") { isShowingRecovery = true }
+                        .disabled(model.backup.isBusy)
+                }
             }
         } else {
             List {

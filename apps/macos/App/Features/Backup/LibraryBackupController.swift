@@ -20,7 +20,14 @@ final class LibraryBackupController {
     let destination: BackupDestinationStore
     let persistence: LibraryBackupPersistence?
     private(set) var snapshot: BackupSnapshot?
-    private(set) var isBusy = false
+    let recovery = BackupFolderRecoveryController()
+    private(set) var isBackingUp = false
+    var isBusy: Bool { isBackingUp || recovery.isRunning }
+    var recoveryContext: PreparedBackupContext? {
+        guard !isBusy, !isCheckingHistory, pendingCatalog?.source.state == .complete,
+              context?.identity.sessionID == pendingCatalog?.source.sessionID else { return nil }
+        return context
+    }
     private(set) var isStopping = false
     private(set) var stopReason: StopReason?
     private(set) var wasInterrupted = false
@@ -69,7 +76,7 @@ final class LibraryBackupController {
             guard pendingCatalog?.source.state == .complete, context?.identity.sessionID == sessionID,
                   !needsHistoryCheck else { return }
         }
-        isBusy = true
+        isBackingUp = true
         isStopping = false
         stopReason = nil
         wasInterrupted = false
@@ -89,7 +96,8 @@ final class LibraryBackupController {
     }
 
     private func requestStop(reason: StopReason) {
-        guard isBusy, !isStopping else { return }
+        if recovery.isRunning { recovery.stop(); return }
+        guard isBackingUp, !isStopping else { return }
         stopReason = reason
         isStopping = true
         runTask?.cancel()
@@ -97,7 +105,10 @@ final class LibraryBackupController {
     }
 
     /// The destination lease stays owned until the source's physical callback has settled.
-    func waitUntilStopped() async { await runTask?.value }
+    func waitUntilStopped() async {
+        await runTask?.value
+        await recovery.waitUntilStopped()
+    }
 
     func dismissSummary() {
         guard !isBusy else { return }
@@ -126,7 +137,7 @@ final class LibraryBackupController {
     ) async {
         defer {
             engine = nil
-            isBusy = false
+            isBackingUp = false
             isStopping = false
             runTask = nil
             if needsHistoryCheck { retryHistoryCheck() }
@@ -161,10 +172,18 @@ final class LibraryBackupController {
                     if let journal { try await journal.store.recordStaging(sessionID: journal.id, intent: intent) }
                 },
                 onPublication: { intent in
-                    if let journal { try await journal.store.recordPublication(sessionID: journal.id, intent: intent) }
+                    if let journal {
+                        try await BackupPortableEvidence.save(store: journal.store, sessionID: journal.id,
+                                                              record: intent.verifiedRecord, destination: lease.url)
+                        try await journal.store.recordPublication(sessionID: journal.id, intent: intent)
+                    }
                 },
                 onVerified: { record in
-                    if let journal { try await journal.store.recordVerified(sessionID: journal.id, record: record) }
+                    if let journal {
+                        try await BackupPortableEvidence.save(store: journal.store, sessionID: journal.id,
+                                                              record: record, destination: lease.url)
+                        try await journal.store.recordVerified(sessionID: journal.id, record: record)
+                    }
                 }, download: download
             )
             monitor.cancel()

@@ -5,7 +5,7 @@ import MediaModels
 
 /// One application-owned store. SQLite work runs on GRDB's queue, never the UI actor.
 public actor BackupStore {
-    private let database: DatabaseQueue
+    let database: DatabaseQueue
 
     public init(databaseURL: URL) async throws {
         do {
@@ -131,7 +131,7 @@ public actor BackupStore {
         } catch { throw Self.failure(error) }
     }
 
-    private static func failure(_ error: Error) -> Error {
+    static func failure(_ error: Error) -> Error {
         if let error = error as? BackupStoreError { return error }
         if error is CancellationError { return CancellationError() }
         return BackupStoreError.unavailable

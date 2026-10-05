@@ -19,6 +19,14 @@ enum BackupStoreSchema {
             // Completion checks concern one logical asset, not every resource in a large run.
             try db.execute(sql: "CREATE INDEX session_resource_asset_lookup ON session_resource(session_id, runtime_asset_id)")
         }
+        migrator.registerMigration("v4_folder_recovery") { db in
+            try db.execute(sql: """
+                CREATE TABLE recovery_import (
+                    destination_id TEXT NOT NULL REFERENCES destination(id),
+                    destination_identity TEXT NOT NULL, entry_key TEXT NOT NULL,
+                    PRIMARY KEY(destination_id, destination_identity, entry_key));
+                """)
+        }
         try migrator.migrate(queue)
         try queue.write { db in
             try db.execute(

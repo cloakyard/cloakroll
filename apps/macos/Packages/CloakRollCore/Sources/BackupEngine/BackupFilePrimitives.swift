@@ -76,7 +76,7 @@ final class BackupDescriptor: @unchecked Sendable {
         guard fsync(value) == 0 else { throw BackupFileError.unavailable(errno) }
     }
 
-    func entries() throws -> Set<String> {
+    func entries(limit: Int = Int.max) throws -> Set<String> {
         let copied = openat(value, ".", O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC)
         guard copied >= 0 else { throw BackupFileError.unavailable(errno) }
         guard let directory = fdopendir(copied) else {
@@ -90,7 +90,9 @@ final class BackupDescriptor: @unchecked Sendable {
             let name = withUnsafePointer(to: &entry.pointee.d_name) {
                 $0.withMemoryRebound(to: CChar.self, capacity: Int(MAXNAMLEN) + 1) { String(cString: $0) }
             }
+            if limit != Int.max { try Task.checkCancellation() }
             if name != "." && name != ".." { names.insert(name) }
+            guard names.count <= limit else { throw BackupRecoveryError.tooLarge }
         }
         guard errno == 0 else { throw BackupFileError.unavailable(errno) }
         return names

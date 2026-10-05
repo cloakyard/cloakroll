@@ -15,7 +15,9 @@ struct BackupHistoryRow: View {
                 LabeledContent("Verified size", value: Format.bytes(session.verifiedBytes))
                 LabeledContent("Transferred", value: Format.bytes(session.transferredBytes))
                 if let finishedAt = session.finishedAt {
-                    LabeledContent("Finished") { Text(finishedAt, format: .dateTime.month(.abbreviated).day().hour().minute()) }
+                    LabeledContent(session.status == .recovered ? "Recovered" : "Finished") {
+                        Text(finishedAt, format: .dateTime.month(.abbreviated).day().hour().minute())
+                    }
                 }
                 if let destination = model.backup.destination.selection {
                     destinationActions(destination)
@@ -90,6 +92,7 @@ struct BackupHistoryRow: View {
 extension StoredBackupSessionStatus {
     var historyTitle: String {
         switch self {
+        case .recovered: "Recovered"
         case .running: "In Progress"
         case .completed: "Completed"
         case .failed: "Incomplete"
@@ -100,6 +103,7 @@ extension StoredBackupSessionStatus {
 
     var historySymbol: String {
         switch self {
+        case .recovered: "arrow.counterclockwise.circle"
         case .running: "arrow.triangle.2.circlepath"
         case .completed: "checkmark.circle"
         case .failed: "exclamationmark.circle"
@@ -110,6 +114,7 @@ extension StoredBackupSessionStatus {
 
     var historyDescription: String {
         switch self {
+        case .recovered: "History was rebuilt by checking saved originals on this date. Missing companions remain eligible for backup."
         case .running: "This backup is still in progress."
         case .completed: "Every original was verified when this backup finished."
         case .failed: "The backup didn’t finish. Any verified originals have been kept."

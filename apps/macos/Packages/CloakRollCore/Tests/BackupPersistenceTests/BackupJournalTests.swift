@@ -180,6 +180,8 @@ struct BackupJournalTests {
         // Later migrations are strictly additive. Removing their table/index recreates the
         // actual unchanged v1 schema and populated rows, rather than a hand-written lookalike.
         try await directory.database().write { db in
+            try db.execute(sql: "DROP TABLE recovery_import")
+            try db.execute(sql: "DELETE FROM grdb_migrations WHERE identifier = 'v4_folder_recovery'")
             try db.execute(sql: "DROP TABLE backup_journal")
             try db.execute(sql: "DROP INDEX session_resource_asset_lookup")
             try db.execute(sql: """
@@ -194,6 +196,6 @@ struct BackupJournalTests {
         #expect(try await migrated.pendingJournal(destinationID: fixture.destinationID).isEmpty)
         #expect(try await directory.journalCounts().pending == 0)
         let migrations = try await directory.database().read { try String.fetchAll($0, sql: "SELECT identifier FROM grdb_migrations") }
-        #expect(migrations == ["v1_original_backup_history", "v2_publication_journal", "v3_session_asset_lookup"])
+        #expect(migrations == ["v1_original_backup_history", "v2_publication_journal", "v3_session_asset_lookup", "v4_folder_recovery"])
     }
 }

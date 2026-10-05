@@ -160,6 +160,7 @@ final class LibraryBackupPersistence {
             // A proved published original owns this transaction through completion. The caller's
             // destination lease remains open even if its catalog check is cancelled meanwhile.
             try await Task {
+                try await BackupPortableEvidence.save(store: store, sessionID: entry.sessionID, record: record, destination: lease.url)
                 try await store.reconcilePublication(sessionID: entry.sessionID, intent: intent, record: record)
             }.value
         }

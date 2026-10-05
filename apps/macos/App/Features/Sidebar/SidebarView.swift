@@ -33,7 +33,9 @@ struct SidebarView: View {
                                     .lineLimit(1)
                                     .truncationMode(.middle)
                                     .help(destination.lastKnownPath)
-                                if model.backup.isBusy {
+                                if model.backup.recovery.isRunning {
+                                    Text("Rebuilding History…").font(.caption).foregroundStyle(.secondary)
+                                } else if model.backup.isBackingUp {
                                     Text(BackupProgressPresentation(
                                         snapshot: model.backup.snapshot ?? .init(phase: .preparing),
                                         isStopping: model.backup.isStopping

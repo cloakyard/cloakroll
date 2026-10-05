@@ -27,6 +27,8 @@ struct BackupCompletionIndexTests {
         // Drop only the additive v3 index/registration, leaving the real populated v2 schema,
         // verified original and pending companion journal intact for the migration under test.
         try await directory.database().write { db in
+            try db.execute(sql: "DROP TABLE recovery_import")
+            try db.execute(sql: "DELETE FROM grdb_migrations WHERE identifier = 'v4_folder_recovery'")
             try db.execute(sql: "DROP INDEX session_resource_asset_lookup")
             try db.execute(sql: "DELETE FROM grdb_migrations WHERE identifier = 'v3_session_asset_lookup'")
         }
@@ -64,7 +66,7 @@ struct BackupCompletionIndexTests {
         let migrations = try await directory.database().read {
             try String.fetchAll($0, sql: "SELECT identifier FROM grdb_migrations")
         }
-        #expect(migrations == ["v1_original_backup_history", "v2_publication_journal", "v3_session_asset_lookup"])
+        #expect(migrations == ["v1_original_backup_history", "v2_publication_journal", "v3_session_asset_lookup", "v4_folder_recovery"])
     }
 
     @Test func indexedActiveCompletionCountsAnAssetOnlyAfterItsLastDistinctResource() async throws {

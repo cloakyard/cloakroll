@@ -40,6 +40,15 @@ The current 0.1.0 (4) Release binary contains Apple silicon and Intel architectu
 It is locally ad-hoc signed; Developer ID, notarization and older-system runtime acceptance
 remain release gates. Local software validation: 363 core tests and 158 hosted app tests.
 
+**Recover after losing app data:** open **Backup History → Rebuild History…**, choose
+an existing backup folder, and use saved recovery records. New backups store these
+records beside the originals; surviving app history can prepare older backups automatically.
+For a folder containing only media, choose **Verify older files with iPhone over USB**.
+This reads potential matches once, verifies full size/SHA-256, and preserves saved files
+in place. The next backup copies only missing originals, including missing Live Photo
+companions. Keep hidden `.cloakroll-recovery` records when copying a backup folder.
+See [folder recovery](docs/verification/FOLDER-RECOVERY.md) for evidence and limits.
+
 **Feature backlog:** restore selected photos and videos from an existing backup folder to a new
 iPhone. This remains outside V1 until a supported public approach works without installing an
 extra iPhone app; no companion app is planned. Apple's manual Finder synchronization is an

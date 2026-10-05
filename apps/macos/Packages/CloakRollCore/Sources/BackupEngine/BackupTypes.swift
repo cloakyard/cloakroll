@@ -89,7 +89,7 @@ public struct BackupSnapshot: Sendable, Equatable {
 
 /// Evidence about one finalized local original. The SHA-256 is local byte evidence, not a source
 /// hash comparison. A local record alone does not establish that the persistence hook succeeded.
-public struct VerifiedBackupResource: Sendable, Equatable {
+public struct VerifiedBackupResource: Codable, Sendable, Equatable {
     public let assetID: String
     public let resourceID: String
     public let deviceID: String

@@ -28,7 +28,7 @@ public struct StoredBackupCandidate: Sendable, Equatable {
 }
 
 public enum StoredBackupSessionStatus: String, Sendable, Equatable {
-    case running, completed, failed, cancelled, interrupted
+    case running, completed, failed, cancelled, interrupted, recovered
 }
 
 public struct StoredBackupSession: Sendable, Equatable, Identifiable {

@@ -66,7 +66,7 @@ struct BackupSessionCheckView: View {
                 .font(.callout)
                 .foregroundStyle(.secondary)
                 .help(request.destination.lastKnownPath)
-            if request.session.status != .completed {
+            if request.session.verifiedResources < request.session.totalResources {
                 Text("This backup was unfinished. This check covers only the originals that were saved.")
                     .font(.callout)
                     .foregroundStyle(.secondary)

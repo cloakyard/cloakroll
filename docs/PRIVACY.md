@@ -18,6 +18,14 @@ service. It does not upload your photos, videos or device information to Cloakya
 - Local backup history containing source metadata, device and destination references,
   relative paths, verification digests and session outcomes. This supports incremental
   backup, detecting missing/changed saved files and interruption recovery.
+- Portable recovery records in `.cloakroll-recovery` inside the selected backup folder.
+  These include source/device identity, original companion membership, relative paths,
+  sizes and SHA-256. They let you rebuild history after losing app data. They contain
+  metadata, not thumbnail or original-file copies.
+- During optional verification of older media-only folders, a temporary original read
+  from the iPhone is compared byte-for-byte by size/SHA-256 with the saved file. A verified
+  temporary copy is removed after comparison; uncertain interrupted copies are preserved
+  in isolated hidden staging rather than deleted by filename.
 - App preferences, a security-scoped bookmark for your chosen folder, and bounded,
   disposable thumbnail caches inside the macOS app sandbox.
 - Available space on the destination volume before downloading a new original. This
@@ -35,7 +43,11 @@ The local database is `Application Support/CloakRoll/Backups.sqlite` inside the 
 sandbox; cached thumbnails are in its Caches directory. The app retains history across
 launches and device reconnections. Removing the app bundle alone does not erase your
 backups, history or preferences. Removing the app's sandbox data discards local history
-and preferences; later backups may copy originals again because prior evidence is gone.
+and preferences. Use Backup History → Rebuild History to verify the selected folder and
+restore its evidence. Copy the entire backup folder, including its hidden recovery records,
+when moving it to another drive. Older folders without those records can be checked once
+against a connected iPhone over USB. Without successful recovery, later backups may copy
+originals again rather than trust filenames.
 
 Diagnostic logging covers operations, cache counts and error codes. Framework error
 descriptions may be logged with macOS's private-data designation and may contain file

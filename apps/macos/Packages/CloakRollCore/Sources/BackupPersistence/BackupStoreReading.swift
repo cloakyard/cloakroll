@@ -157,8 +157,12 @@ enum BackupStoreReading {
         }
         switch filter.outcome {
         case .all: break
-        case .completed: conditions.append("status = 'completed'")
-        case .unfinished: conditions.append("status IN ('running', 'failed', 'cancelled', 'interrupted')")
+        case .completed: conditions.append("(status = 'completed' OR (status = 'recovered' AND verified_resources = total_resources))")
+        case .unfinished:
+            conditions.append("""
+                (status IN ('running', 'failed', 'cancelled', 'interrupted')
+                OR (status = 'recovered' AND verified_resources < total_resources))
+                """)
         }
         let clause = conditions.isEmpty ? "" : " WHERE " + conditions.joined(separator: " AND ")
         arguments += [limit]

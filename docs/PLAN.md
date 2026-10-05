@@ -163,23 +163,28 @@ A reconstructed history entry must be labeled recovered, never invent the date o
 successful completion of the original backup. Preserve separate iPhone identities,
 partial companions, cancellation, repeat safety and no-overwrite guarantees.
 
-Provide native **Rebuild Backup History…** and **Prepare Existing Backup…** actions.
-The latter verifies existing database evidence against the selected root and writes
-portable recovery records for older CloakRoll backups while that evidence survives.
+Provide a native **Rebuild History…** action in Backup History, also available in its
+empty state. Preparation is integrated into the same flow: verify existing database
+evidence against the actual selected root and write portable recovery records for older
+CloakRoll backups while that evidence survives.
 After rebuilding, the existing incremental matcher must skip verified resources and
 copy only missing components. Missing/corrupt/ambiguous files remain unverified.
 A copied or reselected root may be explicitly adopted only after checking its bytes.
 
 Media-only folders with neither app history nor recovery records require one-time
 source verification. Filenames/dates alone must never produce a backed-up status.
-The user was asked whether the extra USB read is acceptable; indexed-folder recovery
-and safe preparation of older known backups proceed independently.
+The user approved a one-time USB verification. The optional native method reads candidate
+originals one at a time, compares full size/SHA-256 with the saved files and removes only
+its own verified temporary copy. Saved originals stay in place, including renamed files.
 
 Acceptance: isolated empty-database recovery, repeated recovery, missing/corrupt files,
 partial Live Photos, two devices with repeated names, copied roots, unsafe paths,
 cancelled scans/imports, atomic metadata publication, and incremental zero-transfer
 reuse after reconstruction. Record real saved-file/device results separately from tests.
-Implementation and acceptance are pending; do not treat the feature as complete yet.
+Implementation, 376 core/162 hosted app tests and bounded real indexed/media-only recovery
+are verified. The physical media-only repeat completed with zero transferred bytes.
+See `verification/FOLDER-RECOVERY.md` for actual evidence and remaining interruption,
+scale, accessibility and release limits; no broader phase gate is promoted.
 
 ## Feature backlog — restore to a new iPhone
 

@@ -160,6 +160,19 @@ final class BackupFileStore: @unchecked Sendable {
         try BackupReadOnlyFiles.verifyExisting(root: root, relativePath: relativePath, expectedByteCount: expectedByteCount, sha256: sha256)
     }
 
+    /// A completed USB comparison may discard only its own freshly verified temporary copy.
+    func discardVerified(_ verified: VerifiedStagedOriginal) throws {
+        let staged = verified.staged
+        guard BackupReadOnlyFiles.matches(root: root, relativePath: relativePath(staged), evidence: verified.evidence),
+              try verified.evidence.matches(staged.descriptor.file(staged.filename).status()) else {
+            throw BackupFileError.changedDuringVerification
+        }
+        guard unlinkat(staged.descriptor.value, staged.filename, 0) == 0 else { throw BackupFileError.unavailable(errno) }
+        try staged.descriptor.sync()
+        _ = unlinkat(staging.value, staged.container, AT_REMOVEDIR)
+        try staging.sync()
+    }
+
     func discard(_ staged: StagedOriginal) {
         // No filename-only deletion: an unverified source failure can leave partial bytes, or
         // another process can replace that name. Preserve such files with the ownership marker.
