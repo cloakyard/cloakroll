@@ -85,6 +85,15 @@ logical items. Actual app data was preserved; no uninstall or deletion of its da
 Indexed recovery session: `B382BE09-DC29-420E-99C9-3D7AFE6F6AC6`.
 Media-only recovery session: `88D1B6C5-E6FE-4271-89E3-3FE13C2222AD`.
 Original test-file baseline is recorded in `/tmp/cloakroll-recovery-before.json`.
+An independent final comparison confirmed every original inode, size and SHA-256 was
+unchanged. The four media-only copies also match the independent source digests.
+Final-build repeat recovery verified four originals and added zero history records.
+Light/dark, aligned result columns, Escape and unavailable-USB states were inspected.
+The temporary media-only test folder was moved to Trash after verification; the original
+backup destination and system appearance were restored. Both app versions were closed
+before installing the verified universal 0.1.0 (5) Release. The installed app's About and
+preserved settings passed inspection; final launch exposed 2,075 iPhone items without
+history errors. Earlier transient device unavailability was not counted as an unplug test.
 
 ## Limits and remaining checks
 

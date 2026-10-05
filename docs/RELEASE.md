@@ -10,7 +10,7 @@ restore-to-iPhone in the backlog. Additional feature expansion is not needed to 
 | Core V1 features | Implemented, including incremental history, separate iPhones, original companions, folder organization, measured progress and recovery | Fix failures found in the checks below |
 | Physical reliability | Bounded import, repeat, Stop and deferred Quit have recorded evidence | Cable removal during a large transfer; reconnect/retry; external-volume removal, full disk and restoration |
 | Incremental and thumbnails | Bounded real new-item/repeat and nearby-thumbnail evidence exists | Final same-device new capture/reconnect and preview reuse across reconnect |
-| Destination reselection | Saved-file checks validate the original filesystem root even after its selection UUID changes | Preserve prior destination IDs for incremental reuse after switching folders |
+| Destination reselection | Saved-file checks validate the original root; explicit Rebuild History restores incremental evidence after reselection | Preserve prior destination IDs for incremental reuse after switching folders |
 | Scale and responsiveness | Generated 10k/50k/100k metadata/history measurements recorded | Sustained app RSS, frame/main-thread timing and rapid physical-library scrolling |
 | Accessibility and OS support | Current-macOS light/dark, compact layout, native labels/actions inspected | Full VoiceOver/keyboard pass, system accessibility variants, macOS 14 runtime |
 | Distribution | Local universal development preview | Developer ID signing, notarization, stapled ticket, clean-Mac launch and final release screenshots |
@@ -19,7 +19,7 @@ Hardware testing resumed on 5 October 2026. Physical flat-folder import, zero-by
 repeat, early Stop/retry and relaunch passed; see [the evidence](verification/HARDWARE-2026-10-05.md).
 New-capture reconnect, cable removal during transfer and destination interruption remain open.
 Software checks do not close those gates. The build remains labeled **Development preview**; 0.1.0
-build 4 identifies this closeout preview, not a public release approval.
+build 5 identifies this closeout preview, not a public release approval.
 
 ## Repeatable software validation
 
@@ -46,7 +46,7 @@ signature or downloads credentials.
 To create a **local preview** ZIP, use a new output path:
 
 ```sh
-bash scripts/package_local.sh build/VerifyRelease/Build/Products/Release/CloakRoll.app build/releases/CloakRoll-0.1.0-4-local-universal.zip
+bash scripts/package_local.sh build/VerifyRelease/Build/Products/Release/CloakRoll.app build/releases/CloakRoll-0.1.0-5-local-universal.zip
 ```
 
 Packaging validates an isolated copy, checks the ZIP, reports SHA-256 and refuses
@@ -146,3 +146,26 @@ Latest local preview: `apps/macos/build/releases/CloakRoll-0.1.0-4-local-univers
 SHA-256: `c3077ce5c8873c6297f84bae68bea56c6bcc64c7a484e857bf21b6d2116336ae`.
 Release/package logs: `/tmp/cloakroll-saved-check-release.log` and
 `/tmp/cloakroll-saved-check-package.log`. Remaining gates above stay open.
+
+## 5 October folder-recovery update
+
+Version **0.1.0 (5)** adds folder-owned recovery evidence, native Rebuild History and
+optional one-time USB verification for media-only folders. All **376 core / 162 hosted
+app tests**, strict lint, normal Debug/Release builds and the actual Release-bundle
+check pass. There are no compiler warnings or new entitlements/dependencies. The native
+light/dark sheet, idempotent repeat and unavailable-USB state were inspected; Escape
+closes the settled sheet. Physical indexed and media-only recovery, plus a normal
+zero-byte incremental repeat, are recorded in [folder recovery](verification/FOLDER-RECOVERY.md).
+
+The universal local ZIP passed its isolated bundle audit and archive CRC check:
+`apps/macos/build/releases/CloakRoll-0.1.0-5-local-universal.zip`, SHA-256
+`c8d4fce708587b7bbe3ea4b84c65110b50691c731084f9931a1ac750aac9516d`.
+Both running app versions were quit before replacement. The byte-identical verified
+Release is installed at `/Applications/CloakRoll.app`; About reports **0.1.0 (5)**.
+Settings preserves `iPhone 15 Pro Max` and **One Folder**. On final launch the connected
+iPhone exposed 2,075 items with no history error, and the app was left in All Photos.
+Superseded app/build bundles and the temporary 10.4 MB recovery-validation folder are
+recoverable in Trash. The six pre-existing acceptance originals retain their exact
+inodes, sizes and independent SHA-256 digests. User backup originals were not changed.
+The separate physical interruption, performance, accessibility and distribution gates
+remain open; this is a Development preview.

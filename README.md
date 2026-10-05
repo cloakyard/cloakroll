@@ -36,9 +36,9 @@ Photos albums. A wired backup can only include originals exposed by the device; 
 otherwise unavailable media may be omitted.
 
 Requires macOS 14 or later; development uses Xcode 27, Swift 6, XcodeGen and SwiftLint.
-The current 0.1.0 (4) Release binary contains Apple silicon and Intel architectures.
+The current 0.1.0 (5) Release binary contains Apple silicon and Intel architectures.
 It is locally ad-hoc signed; Developer ID, notarization and older-system runtime acceptance
-remain release gates. Local software validation: 363 core tests and 158 hosted app tests.
+remain release gates. Local software validation: 376 core tests and 162 hosted app tests.
 
 **Recover after losing app data:** open **Backup History → Rebuild History…**, choose
 an existing backup folder, and use saved recovery records. New backups store these

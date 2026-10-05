@@ -145,12 +145,13 @@ for the remaining physical interruption/reconnect, app performance, accessibilit
 Developer ID/notarization and release-screenshot gates. Historical evidence below records
 what was actually observed and does not supersede those outstanding checks.
 
-Current local preview: **0.1.0 (4)**. All 363 core and 158 hosted app tests pass. The normal
+Current local preview: **0.1.0 (5)**. All 376 core and 162 hosted app tests pass. The normal
 Debug and Release builds, strict lint and actual Release-bundle audit pass. The Release
 binary contains arm64 and x86_64; compilation is not runtime acceptance on both platforms.
 The Release app no longer contains the injected debugging entitlement.
 Folder reselection still needs to preserve prior destination IDs for incremental reuse;
-the new saved-file checker independently validates the actual original root. No public release
+the saved-file checker independently validates the actual original root, and explicit folder
+recovery can rebuild its incremental evidence after reselection. No public release
 is claimed, and phases with pending physical/accessibility/performance checks remain open.
 
 ## Recovery after loss of app data — requested 5 October 2026
@@ -215,6 +216,21 @@ and destination, no overwrite, interruption/retry, database migration, fresh/reo
 devices/destinations and verification failure. Hardware matrices stay separate from simulated tests.
 
 ## Progress evidence
+
+### 5 October 2026 — folder recovery and one-time USB adoption
+
+Native Rebuild History, folder-owned recovery receipts, automatic preparation of older
+known backups, and optional media-only USB verification are implemented. Full size/SHA-256
+checks precede transactional recovered history; renamed files, partial Live Photos,
+multiple phones, copied roots, repeated scans and cancellation retain conservative behavior.
+All 376 core and 162 hosted app tests, strict lint, normal Debug/Release builds and the
+actual Release-bundle audit pass. Bounded real indexed recovery restored five items;
+media-only USB recovery restored three, whose normal backup repeat transferred zero bytes.
+The compact native sheet was inspected in light/dark, including repeat and unavailable-USB
+states. Build 0.1.0 (5) was packaged, installed and launched with the original destination
+and One Folder preference preserved. See `verification/FOLDER-RECOVERY.md` for exact
+scope and remaining physical interruption, scale, accessibility and release gates.
+
 
 ### 5 October 2026 — saved-backup integrity checks
 
