@@ -57,7 +57,7 @@ struct BackupBar: View {
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
                 .truncationMode(.middle)
-                .help(model.backup.destination.selection?.lastKnownPath ?? destinationCaption)
+                .help("\(idleCaption)\n\(model.backup.destination.selection?.lastKnownPath ?? "")")
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }

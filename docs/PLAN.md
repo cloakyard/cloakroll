@@ -155,7 +155,7 @@ three-Live-Photo backup and zero-transfer repeat, an 18-video import, independen
 of all 24 saved originals and observed OS sleep-activity release. Cable interruption is
 still pending user coordination; the first 4.98 GB batch completed in 11.12 seconds.
 
-Current local preview: **0.1.0 (12)**. All 390 core and 205 hosted app tests pass. The normal
+Current local preview: **0.1.0 (13)**. All 393 core and 207 hosted app tests pass. The normal
 Debug and Release builds, strict lint and actual Release-bundle audit pass. The Release
 binary contains arm64 and x86_64; compilation is not runtime acceptance on both platforms.
 The Release app no longer contains the injected debugging entitlement.
@@ -927,3 +927,16 @@ Software checks: 393 core tests and 207 hosted app tests pass, with strict lint.
 coverage for 23/25-hour days, endpoint inclusion, invalid dates, companion retention,
 full-source aggregates, selection pruning, backup scope and superseded queries.
 Visual and release verification follows in the refinement pass below.
+
+## UX refinement and build 13 — 7 October 2026
+
+Capture-date filtering and the feature-wide UX review are recorded in
+[the refinement evidence](verification/UX-REFINEMENT-2026-10-07.md). Native date controls,
+accurate filename search, clearer empty results, quieter idle backup state, consistent
+recovery/check completion actions and explicit progress-popover Escape handling are
+implemented. The review covered light/dark, compact/standard layouts, Media Info with
+long filenames and many originals, Settings, history, recovery prerequisites and Help.
+All 600 automated tests, normal Debug/universal Release builds, strict lint, bundle
+audit and archive integrity passed. Build 13 is installed; prior app bundles are in Trash.
+No new original transfer or recovery run was performed, and the outstanding physical,
+performance, full accessibility, older-OS and distribution gates remain open.

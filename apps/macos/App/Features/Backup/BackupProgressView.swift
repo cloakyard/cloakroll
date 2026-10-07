@@ -19,7 +19,9 @@ struct BackupProgressView: View {
                     .labelStyle(.iconOnly)
                     .buttonStyle(.borderless)
                     .help("Show the current original and transfer details.")
-                    .popover(isPresented: $showsDetails, arrowEdge: .top) { details }
+                    .popover(isPresented: $showsDetails, arrowEdge: .top) {
+                        details.onExitCommand { showsDetails = false }
+                    }
                 Spacer(minLength: 12)
                 Text(progress.itemSummary)
                     .font(.caption.monospacedDigit())

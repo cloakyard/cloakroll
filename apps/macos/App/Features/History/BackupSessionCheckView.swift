@@ -45,7 +45,7 @@ struct BackupSessionCheckView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") { checker.stop(); dismiss() }
-                        .keyboardShortcut(.cancelAction)
+                        .keyboardShortcut(.defaultAction)
                 }
             }
         }

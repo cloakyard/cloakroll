@@ -51,6 +51,17 @@ struct BackupHelpView: View {
                 Text("Keep an external drive connected until the backup finishes.")
                     .foregroundStyle(.secondary)
             }
+            Section("Find and Select Items") {
+                Text("""
+                Search by filename or use the calendar in the toolbar to filter by capture date. Clear the date filter to \
+                include undated items again.
+                """)
+                Text("""
+                Command-click to toggle a selection. Press Escape or Shift-Command-A to deselect all. Right-click a date \
+                label to select its group.
+                """)
+                    .foregroundStyle(.secondary)
+            }
             Section("Back Up Your Originals") {
                 Text("""
                 Select photos and videos, then choose Back Up Selected Items. With nothing selected, \
@@ -63,6 +74,17 @@ struct BackupHelpView: View {
                 """)
                     .foregroundStyle(.secondary)
                 Text("Each iPhone folder has a stable identifier. Earlier backups in Year / Month folders can still be checked and reused.")
+                    .foregroundStyle(.secondary)
+            }
+            Section("Review and Recover Backups") {
+                Text("""
+                Open Backup History to review previous backups. Use Check Saved Files to verify a backup without \
+                connecting your iPhone.
+                """)
+                Text("""
+                If app history is missing, choose Rebuild History and select the original backup folder. Verified \
+                originals are reused on your next backup.
+                """)
                     .foregroundStyle(.secondary)
             }
             Section("While Your Backup Runs") {

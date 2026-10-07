@@ -39,6 +39,12 @@ struct CaptureDateFilterTests {
         let date = try #require(asset.createdAt)
         let originalCount = model.snapshot.filteredCount
         model.captureDateRange = CaptureDateRange(from: .distantPast, through: .distantPast)
+        try await waitForPersistentState { !model.isProjecting }
+        #expect(model.snapshot.filteredCount == 0 && !model.showsBackupBar)
+        model.sampleProgress = true
+        #expect(model.showsBackupBar)
+        model.sampleProgress = false
+        model.captureDateRange = nil
         model.captureDateRange = CaptureDateRange(from: date, through: date)
         model.search = asset.filename
         try await waitForPersistentState { !model.isProjecting }

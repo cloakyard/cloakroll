@@ -38,9 +38,12 @@ struct BackupFolderRecoveryView: View {
                         Button(recovery.isStopping ? "Stopping…" : "Stop") { recovery.stop() }
                             .keyboardShortcut(".", modifiers: .command)
                             .disabled(recovery.isStopping || recovery.phase == .saving)
-                    } else {
-                        Button("Close") { dismiss() }
+                    } else if recovery.phase == .idle {
+                        Button("Cancel") { dismiss() }
                             .keyboardShortcut(.cancelAction)
+                    } else {
+                        Button("Start Again") { recovery.reset() }
+                            .keyboardShortcut("r", modifiers: .command)
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
@@ -50,8 +53,8 @@ struct BackupFolderRecoveryView: View {
                                 .keyboardShortcut(.defaultAction)
                                 .disabled(!canStart)
                         } else {
-                            Button("Start Again") { recovery.reset() }
-                                .keyboardShortcut("r", modifiers: .command)
+                            Button("Done") { dismiss() }
+                                .keyboardShortcut(.defaultAction)
                         }
                     }
                 }
@@ -60,6 +63,7 @@ struct BackupFolderRecoveryView: View {
         .frame(width: 560, height: 340)
         .interactiveDismissDisabled(recovery.isRunning)
         .task { recovery.reset() }
+        .onExitCommand { if !recovery.isRunning { dismiss() } }
     }
 
     private var destination: some View {
@@ -112,9 +116,11 @@ struct BackupFolderRecoveryView: View {
             if recovery.isRunning {
                 if recovery.total > 0 {
                     ProgressView(value: Double(recovery.checked), total: Double(recovery.total))
+                        .accessibilityLabel("Originals checked")
+                        .accessibilityValue("\(recovery.checked.formatted()) of \(recovery.total.formatted())")
                     Text("\(recovery.checked.formatted()) of \(recovery.total.formatted()) originals checked")
                         .font(.callout).foregroundStyle(.secondary).monospacedDigit()
-                } else { ProgressView().controlSize(.small) }
+                } else { ProgressView().controlSize(.small).accessibilityLabel(title) }
             } else if recovery.phase == .completed {
                 countRow("Verified originals", value: recovery.verified)
                 countRow("New history records", value: recovery.recovered)

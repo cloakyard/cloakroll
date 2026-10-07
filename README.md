@@ -22,6 +22,11 @@ Active backups, explicit saved-file checks and history rebuilding keep the Mac a
 while allowing the display to sleep. Stop waits for work to settle before releasing
 the activity. Keep a MacBook's lid open; explicit sleep can interrupt the connection.
 See [backup activity verification](docs/verification/BACKUP-ACTIVITY.md).
+Use the toolbar **calendar** to filter by capture date, with inclusive From/Through
+days and quick date choices. The range combines with filename search and limits backup
+candidates; clear it to include undated items again.
+See [the feature and UX audit](docs/verification/UX-REFINEMENT-2026-10-07.md).
+
 Backup History now includes **Newer/Older** navigation beyond the latest 100 sessions,
 with iPhone/result filters and retry that preserves the current page.
 See [history paging verification](docs/verification/HISTORY-PAGING.md).
@@ -57,9 +62,9 @@ Photos albums. A wired backup can only include originals exposed by the device; 
 otherwise unavailable media may be omitted.
 
 Requires macOS 14 or later; development uses Xcode 27, Swift 6, XcodeGen and SwiftLint.
-The current 0.1.0 (12) Release binary contains Apple silicon and Intel architectures.
+The current 0.1.0 (13) Release binary contains Apple silicon and Intel architectures.
 It is locally ad-hoc signed; Developer ID, notarization and older-system runtime acceptance
-remain release gates. Local software validation: 390 core tests and 205 hosted app tests.
+remain release gates. Local software validation: 393 core tests and 207 hosted app tests.
 
 **Recover after losing app data:** open **Backup History → Rebuild History…**, choose
 an existing backup folder, and use saved recovery records. New backups store these

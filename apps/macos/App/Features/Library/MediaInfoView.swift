@@ -115,7 +115,7 @@ struct MediaInfoView: View {
                     .font(.callout.weight(.medium))
                     .accessibilityLabel("Backup: \(status.title)\(model.isSample ? " (sample)" : "")")
                 if !model.isSample, let destination = model.backup.destination.selection {
-                    Text("In \(destination.displayName)")
+                    Text("Backup folder: \(destination.displayName)")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .textSelection(.enabled)

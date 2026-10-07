@@ -30,6 +30,8 @@ extension AppModel {
     }
 
     var showsBackupBar: Bool {
-        !backup.recovery.isRunning && (backup.isBusy || sampleProgress || backup.snapshot != nil || (isViewingLibrary && !assets.isEmpty))
+        !backup.recovery.isRunning && (
+            backup.isBusy || sampleProgress || backup.snapshot != nil || (isViewingLibrary && snapshot.filteredCount > 0)
+        )
     }
 }
