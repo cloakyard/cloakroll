@@ -27,8 +27,8 @@ struct RootView: View {
         }
         .sheet(item: $model.presentation) { presentation in
             switch presentation {
-            case .mediaInfo(let asset):
-                MediaInfoView(asset: asset)
+            case .mediaInfo:
+                MediaInfoSheet()
                     .environment(model)
             case .help(let topic):
                 BackupHelpView(topic: topic) { model.presentation = .help($0) }

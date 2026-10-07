@@ -6,7 +6,8 @@ enum LibraryPresentation: Identifiable {
 
     var id: String {
         switch self {
-        case .mediaInfo(let asset): "media:\(asset.id)"
+        // Browsing updates one sheet instead of dismissing/reopening it for each item.
+        case .mediaInfo: "media-info"
         case .help(let topic): "help:\(topic.rawValue)"
         }
     }

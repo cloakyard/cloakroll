@@ -20,7 +20,7 @@ Hardware testing resumed on 5 October 2026. Physical flat-folder import, zero-by
 repeat, early Stop/retry and relaunch passed; see [the evidence](verification/HARDWARE-2026-10-05.md).
 New-capture reconnect, cable removal during transfer and destination interruption remain open.
 Software checks do not close those gates. The build remains labeled **Development preview**; 0.1.0
-build 9 identifies this closeout preview, not a public release approval. Per the user's
+build 10 identifies this closeout preview, not a public release approval. Per the user's
 7 October request, remaining software work precedes the final hardware matrix.
 Hardware testing subsequently resumed on 7 October: build 9 passed original imports,
 zero-transfer Live Photo repeat, independent saved-file hashes and observed activity
@@ -52,7 +52,7 @@ signature or downloads credentials.
 To create a **local preview** ZIP, use a new output path:
 
 ```sh
-bash scripts/package_local.sh build/VerifyRelease/Build/Products/Release/CloakRoll.app build/releases/CloakRoll-0.1.0-9-local-universal.zip
+bash scripts/package_local.sh build/VerifyRelease/Build/Products/Release/CloakRoll.app build/releases/CloakRoll-0.1.0-10-local-universal.zip
 ```
 
 Packaging validates an isolated copy, checks the ZIP, reports SHA-256 and refuses
@@ -260,3 +260,25 @@ by user request, and no distribution or full-phase acceptance is claimed.
 
 Local archive: `apps/macos/build/releases/CloakRoll-0.1.0-9-local-universal.zip`.
 SHA-256: `abf27eca450548e796d28acfe3680afae15977fc5565ecc84b6146a35c3f0f93`.
+
+## 7 October Media Info navigation preview — build 10
+
+Media Info now browses adjacent items with native grouped buttons and ⌘[ / ⌘] shortcuts,
+following the current results and preserving the backup selection. Per-item content resets
+inside a stable sheet; invalidated/stale actions and unavailable devices cannot navigate.
+
+All **380 core and 192 hosted app tests**, strict lint, warning-free normal Debug and
+universal Release builds, Release/installed-bundle audits and ZIP validation pass.
+Native sample checks covered light/dark appearance, filtered boundaries, a single search
+result, keyboard dismissal and selection preservation. Installed Release browsing on the
+2,078-item physical library checked previews, camera metadata, missing EXIF and scroll reset.
+See [Info navigation evidence](verification/MEDIA-INFO-NAVIGATION.md).
+
+Installed **0.1.0 (10)** at `/Applications/CloakRoll.app`; About and General Settings show
+the version and new shortcuts. Restored the regular phone destination, which passed access
+checking on reconnect, and cleared temporary selections. The superseded installed app and
+Debug/Release build copies are recoverable in Trash. Backups, history and preferences remain.
+No transfer was initiated during this feature validation; outstanding hardware gates remain.
+
+Local archive: `apps/macos/build/releases/CloakRoll-0.1.0-10-local-universal.zip`.
+SHA-256: `042beb47239614a609205bee90ed9a181a905dc234ba6de796411a4837271087`.

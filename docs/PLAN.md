@@ -155,7 +155,7 @@ three-Live-Photo backup and zero-transfer repeat, an 18-video import, independen
 of all 24 saved originals and observed OS sleep-activity release. Cable interruption is
 still pending user coordination; the first 4.98 GB batch completed in 11.12 seconds.
 
-Current local preview: **0.1.0 (9)**. All 380 core and 186 hosted app tests pass. The normal
+Current local preview: **0.1.0 (10)**. All 380 core and 192 hosted app tests pass. The normal
 Debug and Release builds, strict lint and actual Release-bundle audit pass. The Release
 binary contains arm64 and x86_64; compilation is not runtime acceptance on both platforms.
 The Release app no longer contains the injected debugging entitlement.
@@ -228,6 +228,23 @@ and destination, no overwrite, interruption/retry, database migration, fresh/reo
 devices/destinations and verification failure. Hardware matrices stay separate from simulated tests.
 
 ## Progress evidence
+
+### 7 October 2026 — browse adjacent items in Media Info
+
+Native Previous/Next controls, a current-position label and ⌘[ / ⌘] shortcuts now browse
+the current filtered/sorted results inside one sheet. Browsing leaves the backup selection,
+active grid item and range anchor intact. Boundaries do not wrap; stale actions and unavailable
+device/catalog contexts cannot navigate. Each item's preview, camera state and scroll position
+reset together while the sheet controls remain stable.
+
+All 380 core and 192 hosted app tests, strict lint, normal Debug/universal Release builds,
+installed-bundle audit and local ZIP validation pass. Native light/dark sample checks covered
+buttons, shortcuts, filtered boundaries, one-result searches and selection preservation.
+Installed build 10 reconnected to the 2,078-item physical library; real previews, differing
+camera EXIF, missing EXIF and details-scroll reset passed. Restored the user's original
+destination and left All Photos without a test selection. No backup was started in this stage.
+See `verification/MEDIA-INFO-NAVIGATION.md`. Cable interruption and the other release gates
+remain open; this is bounded browsing validation, not full hardware acceptance.
 
 ### 7 October 2026 — physical imports and backup activity
 

@@ -1,6 +1,15 @@
 import MediaModels
 import SwiftUI
 
+/// Read the current item from the model while retaining the sheet's presentation identity.
+struct MediaInfoSheet: View {
+    @Environment(AppModel.self) private var model
+
+    var body: some View {
+        if let asset = model.infoAsset { MediaInfoView(asset: asset) }
+    }
+}
+
 struct MediaInfoView: View {
     let asset: MediaAsset
     @Environment(AppModel.self) private var model
@@ -33,8 +42,14 @@ struct MediaInfoView: View {
                 .contentMargins(.vertical, 24, for: .scrollContent)
                 .scrollBounceBehavior(.basedOnSize)
             }
+            // Reset preview, camera state and scroll position before showing another item.
+            // Toolbar controls keep their identity and keyboard focus while browsing.
+            .id(ContentIdentity(asset: asset, sessionID: model.catalogSessionID))
             .navigationTitle("Media Info")
             .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    MediaInfoNavigation(asset: asset)
+                }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") { dismiss() }
                         .keyboardShortcut(.defaultAction)
@@ -43,6 +58,11 @@ struct MediaInfoView: View {
         }
         .frame(width: 760, height: 500)
         .onExitCommand { dismiss() }
+    }
+
+    private struct ContentIdentity: Hashable {
+        let asset: MediaAsset
+        let sessionID: UUID?
     }
 
     private var preview: some View {

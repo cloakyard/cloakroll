@@ -19,7 +19,7 @@ struct LibraryHelpTests {
         #expect(model.navigation == .backupHistory)
 
         model.infoAsset = asset
-        #expect(model.presentation?.id == "media:\(asset.id)")
+        #expect(model.presentation?.id == "media-info")
         #expect(model.infoAsset == asset)
         model.presentation = .help(.gettingStarted)
         #expect(model.infoAsset == nil)

@@ -29,6 +29,7 @@ struct SettingsView: View {
                 Text("""
                 ⌘-click to select individual items. ⇧-click to select a range.
                 Press Space or ⌘I to show info for the selected item.
+                In Media Info, use ⌘[ and ⌘] to browse previous and next items.
                 """)
             }
             Section {
