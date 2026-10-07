@@ -16,7 +16,7 @@ struct RootView: View {
                     LibraryView()
                         .navigationTitle(model.filter.title)
                         .searchable(text: $model.search, isPresented: $model.searchPresented,
-                                    placement: .toolbar, prompt: "Search photos and videos")
+                                    placement: .toolbar, prompt: "Search by filename")
                         .toolbar { LibraryToolbar() }
                 case .backupHistory:
                     BackupHistoryView()
@@ -81,6 +81,9 @@ struct LibraryToolbar: ToolbarContent {
     var body: some ToolbarContent {
         ToolbarItem(placement: .automatic) {
             ViewOptionsButton()
+        }
+        ToolbarItem(placement: .automatic) {
+            CaptureDateFilterButton()
         }
         ToolbarItem(placement: .automatic) {
             Button { model.showSelectedInfo() } label: {

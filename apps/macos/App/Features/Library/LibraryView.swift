@@ -18,16 +18,8 @@ struct LibraryView: View {
             } else if model.assets.isEmpty {
                 DeviceEmptyView().frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if model.snapshot.filteredCount == 0 {
-                ContentUnavailableView {
-                    Label("No Matching Items", systemImage: "line.3.horizontal.decrease.circle")
-                } description: {
-                    Text(model.search.isEmpty ? "There are no items in this collection." : "Try another filename.")
-                } actions: {
-                    if !model.search.isEmpty {
-                        Button("Clear Search") { model.search = "" }
-                    }
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                LibraryEmptyResultsView()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 mediaGrid
             }

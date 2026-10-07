@@ -913,3 +913,17 @@ Debug/Release builds and the actual build 7 bundle/package audit. Checked the ph
 2,073-item library in light/dark and compact layouts, scrolling between months,
 changing grouping, and selecting through the capsule. See
 `verification/SIDEBAR-AND-TOOLBAR.md`. No backup was initiated or broader gate closed.
+
+## Capture-date filtering — 7 October 2026
+
+Added a native toolbar date-range popover with From/Through fields, quick date choices,
+Apply/Cancel and Clear Filter. The range combines with category and filename search;
+sidebar counts remain full-library counts. Applying a range resets the scroll position,
+reconciles selection and scopes backup candidates. Calendar-day boundaries include the
+entire end day across daylight-saving changes; unknown capture dates are excluded until
+cleared. Dates are temporary browsing state, not a saved preference.
+
+Software checks: 393 core tests and 207 hosted app tests pass, with strict lint. Added
+coverage for 23/25-hour days, endpoint inclusion, invalid dates, companion retention,
+full-source aggregates, selection pruning, backup scope and superseded queries.
+Visual and release verification follows in the refinement pass below.

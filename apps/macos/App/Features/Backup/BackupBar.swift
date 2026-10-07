@@ -34,7 +34,10 @@ struct BackupBar: View {
 
     private var idleSummary: some View {
         VStack(alignment: .leading, spacing: 4) {
-            if model.selection.selectedIDs.isEmpty {
+            if model.selection.selectedIDs.isEmpty && model.snapshot.visibleNewCount == 0 {
+                Text(model.isProjecting ? "Updating Library…" : "No new items in this view")
+                    .fontWeight(.medium)
+            } else if model.selection.selectedIDs.isEmpty {
                 HStack(spacing: 5) {
                     Text("\(model.snapshot.visibleNewCount.formatted()) new \(itemWord(model.snapshot.visibleNewCount))")
                         .fontWeight(.medium)
@@ -49,7 +52,7 @@ struct BackupBar: View {
                         .help("Clear the selection (⇧⌘A).")
                 }
             }
-            Text(destinationCaption)
+            Text(idleCaption)
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
@@ -65,7 +68,7 @@ struct BackupBar: View {
                 Button("Choose Folder…") { Task { await model.backup.chooseDestination() } }
                     .buttonStyle(.borderedProminent)
                     .disabled(model.backup.destination.isChoosing)
-            } else {
+            } else if model.snapshot.visibleNewCount > 0 || !model.selection.selectedIDs.isEmpty || model.backup.isCheckingHistory {
                 Button(actionTitle) { model.backUpCurrentSelection() }
                     .buttonStyle(.borderedProminent)
                     .disabled(!model.canBackUp)
@@ -150,6 +153,11 @@ struct BackupBar: View {
         }
         guard let destination = model.backup.destination.selection else { return "Choose where to save your originals" }
         return "To \(destination.displayName)"
+    }
+
+    private var idleCaption: String {
+        guard let range = model.captureDateRange else { return destinationCaption }
+        return "\(range.displayTitle) · \(destinationCaption)"
     }
 
     private var needsFolder: Bool {

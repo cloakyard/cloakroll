@@ -20,6 +20,13 @@ struct LibraryCommands: Commands {
         }
         CommandGroup(after: .toolbar) {
             Divider()
+            Button("Filter by Capture Date…") { model.dateFilterPresented = true }
+                .disabled(!model.isViewingLibrary)
+            if model.captureDateRange != nil {
+                Button("Clear Date Filter") { model.captureDateRange = nil }
+                    .disabled(!model.isViewingLibrary)
+            }
+            Divider()
             LibraryViewOptions(model: model)
                 .disabled(!model.isViewingLibrary)
         }

@@ -28,17 +28,20 @@ public struct CatalogQuery: Equatable, Sendable {
     public var search: String
     public var sort: CatalogSort
     public var grouping: CatalogGrouping
+    public var captureDateRange: CaptureDateRange?
 
     public init(
         filter: LibraryFilter = .all,
         search: String = "",
         sort: CatalogSort = .newestFirst,
-        grouping: CatalogGrouping = .automatic
+        grouping: CatalogGrouping = .automatic,
+        captureDateRange: CaptureDateRange? = nil
     ) {
         self.filter = filter
         self.search = search
         self.sort = sort
         self.grouping = grouping
+        self.captureDateRange = captureDateRange
     }
 }
 
@@ -66,7 +69,7 @@ public struct CatalogSnapshot: Equatable, Sendable {
     /// Every item without a confirmed backup remains eligible, including uncertain/failed items.
     public let newCount: Int
     public let newBytes: Int64
-    /// Eligible items after the current filter and filename search, matching backup candidates.
+    /// Eligible items after the current category, capture-date filter and filename search, matching backup candidates.
     public let visibleNewCount: Int
     public let visibleNewBytes: Int64
     public let totalBytes: Int64

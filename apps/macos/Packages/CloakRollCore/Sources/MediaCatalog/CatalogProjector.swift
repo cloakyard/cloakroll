@@ -37,6 +37,7 @@ public actor CatalogProjector {
                 newBytes = Self.addBytes(newBytes, asset.byteCount)
             }
             guard Self.matches(asset, status: status, isRecent: isRecent, filter: query.filter) else { continue }
+            guard query.captureDateRange.map({ $0.contains(asset.createdAt) }) ?? true else { continue }
             guard search.isEmpty || asset.resources.contains(where: {
                 $0.filename.range(of: search, options: [.caseInsensitive, .diacriticInsensitive]) != nil
             }) else { continue }

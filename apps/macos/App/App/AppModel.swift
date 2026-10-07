@@ -16,6 +16,8 @@ final class AppModel {
     var filter: LibraryFilter = .all { didSet { navigation = .library(filter); scheduleProjection() } }
     var search = "" { didSet { scheduleProjection() } }
     var searchPresented = false
+    var captureDateRange: CaptureDateRange? { didSet { scheduleProjection() } }
+    var dateFilterPresented = false
     var sort: CatalogSort = .newestFirst { didSet { preferences.save(sort); scheduleProjection() } }
     var grouping: CatalogGrouping = .automatic { didSet { preferences.save(grouping); scheduleProjection() } }
     var thumbnailSize = ThumbnailSize.medium { didSet { preferences.save(thumbnailSize) } }
@@ -417,7 +419,9 @@ final class AppModel {
     }
 
     private func project(generation requestedGeneration: Int) async {
-        let query = CatalogQuery(filter: filter, search: search, sort: sort, grouping: grouping)
+        let query = CatalogQuery(
+            filter: filter, search: search, sort: sort, grouping: grouping, captureDateRange: captureDateRange
+        )
         let result: CatalogSnapshot
         do {
             result = try await projector.project(assets: assets, statuses: statuses, backupDates: backupDates, query: query)
