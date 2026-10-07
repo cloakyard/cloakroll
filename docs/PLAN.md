@@ -940,3 +940,21 @@ All 600 automated tests, normal Debug/universal Release builds, strict lint, bun
 audit and archive integrity passed. Build 13 is installed; prior app bundles are in Trash.
 No new original transfer or recovery run was performed, and the outstanding physical,
 performance, full accessibility, older-OS and distribution gates remain open.
+
+
+## Backup history refinement and build 14 — 7 October 2026
+
+Expanded history uses compact aligned details, native secondary actions and a right-click
+check shortcut. Saved-file checks now review the session’s own remembered folder in an
+isolated, read-only flow, with a native picker that never reassigns the connected iPhone’s
+backup folder. Empty stopped sessions and partially saved Live Photos have accurate
+summaries and check availability.
+
+All 607 tests, strict lint, normal Debug/universal Release builds and bundle/package
+checks pass. The native UI verified six real saved originals, rejected a different
+folder, and successfully retried after choosing the original folder. Compact dark and
+standard light layouts, picker cancellation and Return/Escape were inspected. See
+[the refinement evidence](verification/HISTORY-REFINEMENT-2026-10-07.md). No new transfer
+or broader hardware acceptance is claimed.
+Build 14 is installed and shows the real 2,078-item library with its remembered folder.
+The replaced app bundles are recoverable in Trash; backups and history were retained.
