@@ -20,7 +20,7 @@ Hardware testing resumed on 5 October 2026. Physical flat-folder import, zero-by
 repeat, early Stop/retry and relaunch passed; see [the evidence](verification/HARDWARE-2026-10-05.md).
 New-capture reconnect, cable removal during transfer and destination interruption remain open.
 Software checks do not close those gates. The build remains labeled **Development preview**; 0.1.0
-build 14 identifies this closeout preview, not a public release approval. Per the user's
+build 15 identifies this closeout preview, not a public release approval. Per the user's
 7 October request, remaining software work precedes the final hardware matrix.
 Hardware testing subsequently resumed on 7 October: build 9 passed original imports,
 zero-transfer Live Photo repeat, independent saved-file hashes and observed activity
@@ -52,7 +52,7 @@ signature or downloads credentials.
 To create a **local preview** ZIP, use a new output path:
 
 ```sh
-bash scripts/package_local.sh build/VerifyRelease/Build/Products/Release/CloakRoll.app build/releases/CloakRoll-0.1.0-14-local-universal.zip
+bash scripts/package_local.sh build/VerifyRelease/Build/Products/Release/CloakRoll.app build/releases/CloakRoll-0.1.0-15-local-universal.zip
 ```
 
 Packaging validates an isolated copy, checks the ZIP, reports SHA-256 and refuses
@@ -343,3 +343,17 @@ See [build 14 evidence](verification/HISTORY-REFINEMENT-2026-10-07.md).
 Hardware and distribution gates above remain open.
 Build 14 is installed and its About version, physical library and destination recall
 were checked after replacement. Prior app bundles are recoverable in Trash.
+
+
+## 7 October build 15 refinement
+
+Grouped-grid keyboard movement now respects incomplete date rows, keeps its intended
+column and leaves system/VoiceOver modifier chords to the native responder chain.
+Recovery displays the actual folder path and preserves the parent sheet when its
+folder picker is cancelled. Finder reveal accepts readable, read-only destinations.
+All 616 tests, strict lint, normal Debug/universal Release builds and bundle/archive
+checks pass. Real-library navigation, selection reversal, Media Info focus return,
+recovery-picker cancellation and compact dark/standard light layouts were inspected.
+See [build 15 evidence](verification/DEEP-REFINEMENT-2026-10-07.md).
+Build 15 is installed; About, the physical 2,078-item library, remembered destination
+and last-backup summary were verified. Previous app bundles remain recoverable in Trash.

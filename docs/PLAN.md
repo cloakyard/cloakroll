@@ -958,3 +958,20 @@ standard light layouts, picker cancellation and Return/Escape were inspected. Se
 or broader hardware acceptance is claimed.
 Build 14 is installed and shows the real 2,078-item library with its remembered folder.
 The replaced app bundles are recoverable in Trash; backups and history were retained.
+
+
+## Deep interaction refinement and build 15 — 7 October 2026
+
+Fixed a real-library keyboard bug at incomplete month rows: vertical movement now
+follows the visible column across groups, with correct Shift-selection reversal.
+System modifier chords are preserved. Recovery has clearer folder-path presentation
+and independent native-picker cancellation; Finder reveal no longer requires write
+access. Settings explains keyboard range selection.
+
+All 616 tests, strict lint, normal Debug/universal Release builds and bundle/package
+checks pass. Native checks used the physical 2,078-item library, with additional
+compact dark/standard light progress-fixture inspection. See
+[the refinement evidence](verification/DEEP-REFINEMENT-2026-10-07.md).
+No new backup/recovery transfer or broader hardware acceptance is claimed.
+Build 15 is installed and reloaded the real library, remembered destination and last
+backup summary. Superseded app bundles are recoverable in Trash; user data was retained.
