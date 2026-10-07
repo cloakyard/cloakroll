@@ -30,9 +30,10 @@ See [the feature and UX audit](docs/verification/UX-REFINEMENT-2026-10-07.md).
 Backup History now includes **Newer/Older** navigation beyond the latest 100 sessions,
 with iPhone/result filters and retry that preserves the current page.
 See [history paging verification](docs/verification/HISTORY-PAGING.md).
-Backup History → expand a session → **Check Saved Files…** checks its recorded originals
-in the selected original backup folder, without needing the iPhone. The read-only check
-has progress, Stop/retry and missing-or-changed-file results; it does not change history.
+Backup History → expand or right-click a session → **Check Saved Files…** recalls that
+backup’s folder for review. You can choose it again without changing any iPhone’s backup
+mapping. The read-only check has progress, Stop/retry and missing-or-changed-file results;
+it does not need an iPhone or change history.
 See [saved-file verification evidence](docs/verification/SAVED-BACKUP-CHECK.md).
 Follow [the implementation plan](docs/PLAN.md) for actual progress and verification evidence.
 The [release checklist](docs/RELEASE.md) consolidates the remaining gates, repeatable software

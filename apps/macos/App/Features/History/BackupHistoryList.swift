@@ -19,8 +19,8 @@ struct BackupHistoryList: View {
             }
             Section {
                 ForEach(persistence.recentSessions) { session in
-                    BackupHistoryRow(session: session) { destination in
-                        onCheck(BackupSessionCheckRequest(session: session, destination: destination))
+                    BackupHistoryRow(session: session) {
+                        onCheck(BackupSessionCheckRequest(session: session))
                     }
                         .alignmentGuide(.listRowSeparatorLeading) { _ in 0 }
                 }

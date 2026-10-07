@@ -79,7 +79,8 @@ struct BackupHelpView: View {
             Section("Review and Recover Backups") {
                 Text("""
                 Open Backup History to review previous backups. Use Check Saved Files to verify a backup without \
-                connecting your iPhone.
+                connecting your iPhone. Review the remembered folder or choose it again before checking. \
+                This does not change your iPhone’s backup folder.
                 """)
                 Text("""
                 If app history is missing, choose Rebuild History and select the original backup folder. Verified \

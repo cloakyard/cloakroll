@@ -88,6 +88,31 @@ final class BackupDestinationStore {
 
     func clearError() { errorMessage = nil }
 
+    /// A history check owns its selection in memory. It must never reassign the
+    /// connected iPhone's destination, even when checking another phone's backup.
+    func selectionForHistoryCheck(
+        destinationID: UUID,
+        selectFolder: @escaping @MainActor () async -> URL? = BackupFolderPicker.chooseExisting
+    ) -> BackupDestinationStore {
+        BackupDestinationStore(
+            checking: rememberedDestinations.first { $0.id == destinationID },
+            operations: operations, selectFolder: selectFolder
+        )
+    }
+
+    private init(
+        checking record: BackupDestination?, operations: BackupDestinationOperations,
+        selectFolder: @escaping @MainActor () async -> URL?
+    ) {
+        var readOperations = operations
+        readOperations.validateFolder = operations.validateReadableFolder
+        self.operations = readOperations
+        self.selectFolder = selectFolder
+        saveRecord = { _ in }
+        selection = record
+        rememberedDestinations = record.map { [$0] } ?? []
+    }
+
     /// Switching phones invalidates pending picker/lease work immediately. A disconnected
     /// phone leaves its folder visible for offline history, without assigning another phone.
     @discardableResult
@@ -282,13 +307,22 @@ final class BackupDestinationStore {
 @MainActor
 private enum BackupFolderPicker {
     static func choose() async -> URL? {
+        await choose(existingOnly: false)
+    }
+
+    static func chooseExisting() async -> URL? {
+        await choose(existingOnly: true)
+    }
+
+    private static func choose(existingOnly: Bool) async -> URL? {
         guard !Task.isCancelled else { return nil }
         let panel = NSOpenPanel()
         panel.canChooseDirectories = true
         panel.canChooseFiles = false
-        panel.canCreateDirectories = true
+        panel.canCreateDirectories = !existingOnly
         panel.allowsMultipleSelection = false
         panel.prompt = "Choose"
+        if existingOnly { panel.message = "Choose the original backup folder to check its saved files." }
         let lifecycle = BackupFolderPickerLifecycle(panel: panel)
         return await withTaskCancellationHandler {
             await withCheckedContinuation { continuation in

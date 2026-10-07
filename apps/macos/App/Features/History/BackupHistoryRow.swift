@@ -4,33 +4,21 @@ import SwiftUI
 struct BackupHistoryRow: View {
     @Environment(AppModel.self) private var model
     let session: StoredBackupSession
-    let checkSavedFiles: (BackupDestination) -> Void
+    let checkSavedFiles: () -> Void
 
     var body: some View {
         DisclosureGroup {
-            VStack(alignment: .leading, spacing: 10) {
-                LabeledContent("Items saved", value: "\(session.completedAssets.formatted()) of \(session.totalAssets.formatted())")
-                LabeledContent("Original files verified",
-                               value: "\(session.verifiedResources.formatted()) of \(session.totalResources.formatted())")
-                LabeledContent("Verified size", value: Format.bytes(session.verifiedBytes))
-                LabeledContent("Transferred", value: Format.bytes(session.transferredBytes))
-                if let finishedAt = session.finishedAt {
-                    LabeledContent(session.status == .recovered ? "Recovered" : "Finished") {
-                        Text(finishedAt, format: .dateTime.month(.abbreviated).day().hour().minute())
-                    }
-                }
-                if let destination = model.backup.destination.selection {
-                    destinationActions(destination)
-                } else {
-                    Text("Choose the original backup folder in the sidebar to check its saved files.")
-                        .foregroundStyle(.secondary)
-                }
+            VStack(alignment: .leading, spacing: 16) {
+                details
                 Text(session.status.historyDescription)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
+                actions
             }
             .font(.callout)
-            .padding(.vertical, 8)
+            .padding(.vertical, 12)
+            .frame(maxWidth: 560, alignment: .leading)
+            .frame(maxWidth: .infinity, alignment: .leading)
             .accessibilityElement(children: .contain)
         } label: {
             HStack(alignment: .firstTextBaseline, spacing: 16) {
@@ -40,86 +28,74 @@ struct BackupHistoryRow: View {
                     Text(session.deviceName)
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
+                        .help(session.deviceName)
                 }
                 Spacer(minLength: 8)
                 VStack(alignment: .trailing, spacing: 4) {
                     Label(session.status.historyTitle, systemImage: session.status.historySymbol)
-                    Text(summary)
+                    Text(session.historySummary)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
+                .fixedSize(horizontal: true, vertical: false)
             }
             .padding(.vertical, 4)
         }
+        .contextMenu {
+            if session.canCheckSavedFiles {
+                Button("Check Saved Files…", action: checkSavedFiles).disabled(!canCheck)
+            }
+        }
+        .accessibilityElement(children: .contain)
         .accessibilityActions {
-            if let destination = model.backup.destination.selection,
-               !model.backup.isBusy, !model.backup.destination.isChoosing, session.status != .running {
-                Button("Check Saved Files") { checkSavedFiles(destination) }
+            if canCheck { Button("Check Saved Files", action: checkSavedFiles) }
+        }
+    }
+
+    private var details: some View {
+        Grid(alignment: .leading, horizontalSpacing: 24, verticalSpacing: 8) {
+            detail("Items saved", value: "\(session.completedAssets.formatted()) of \(session.totalAssets.formatted())")
+            detail("Original files verified", value: "\(session.verifiedResources.formatted()) of \(session.totalResources.formatted())")
+            detail("Verified size", value: Format.bytes(session.verifiedBytes))
+            detail("Transferred", value: session.transferredBytes == 0 ? "0 bytes" : Format.bytes(session.transferredBytes))
+            if let finishedAt = session.finishedAt {
+                GridRow {
+                    Text(session.status == .recovered ? "Recovered" : "Finished").foregroundStyle(.secondary)
+                    Text(finishedAt, format: .dateTime.month(.abbreviated).day().hour().minute())
+                }
+                .accessibilityElement(children: .combine)
             }
         }
     }
 
-    private func destinationActions(_ destination: BackupDestination) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            LabeledContent(destination.id == session.destinationID ? "Folder" : "Check folder", value: destination.displayName)
-            HStack {
-                if destination.id == session.destinationID {
-                    Button("Show in Finder") {
-                        Task {
-                            guard model.backup.destination.selection?.id == session.destinationID else { return }
-                            await model.backup.revealDestination()
-                        }
+    private func detail(_ label: String, value: String) -> some View {
+        GridRow {
+            Text(label).foregroundStyle(.secondary)
+            Text(value).monospacedDigit()
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    private var actions: some View {
+        HStack(spacing: 10) {
+            if model.backup.destination.selection?.id == session.destinationID {
+                Button("Show in Finder") {
+                    Task {
+                        guard model.backup.destination.selection?.id == session.destinationID else { return }
+                        await model.backup.revealDestination()
                     }
                 }
-                Button("Check Saved Files…") { checkSavedFiles(destination) }
-                    .disabled(model.backup.isBusy || model.backup.destination.isChoosing || session.status == .running)
-                    .help("Check this backup in \(destination.displayName). Select its original folder in the sidebar first.")
             }
-            if destination.id != session.destinationID {
-                Text("Select this backup’s original folder in the sidebar before checking.")
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
+            if session.canCheckSavedFiles {
+                Button("Check Saved Files…", action: checkSavedFiles)
+                    .disabled(!canCheck)
+                    .help("Choose a folder and check this backup’s saved originals")
             }
         }
+        .buttonStyle(.bordered)
     }
 
-    private var summary: String {
-        let itemCount = "\(session.completedAssets.formatted()) \(session.completedAssets == 1 ? "item" : "items")"
-        return "\(itemCount) · \(Format.bytes(session.verifiedBytes))"
-    }
-}
-
-extension StoredBackupSessionStatus {
-    var historyTitle: String {
-        switch self {
-        case .recovered: "Recovered"
-        case .running: "In Progress"
-        case .completed: "Completed"
-        case .failed: "Incomplete"
-        case .cancelled: "Stopped"
-        case .interrupted: "Interrupted"
-        }
-    }
-
-    var historySymbol: String {
-        switch self {
-        case .recovered: "arrow.counterclockwise.circle"
-        case .running: "arrow.triangle.2.circlepath"
-        case .completed: "checkmark.circle"
-        case .failed: "exclamationmark.circle"
-        case .cancelled: "stop.circle"
-        case .interrupted: "exclamationmark.arrow.circlepath"
-        }
-    }
-
-    var historyDescription: String {
-        switch self {
-        case .recovered: "History was rebuilt by checking saved originals on this date. Missing companions remain eligible for backup."
-        case .running: "This backup is still in progress."
-        case .completed: "Every original was verified when this backup finished."
-        case .failed: "The backup didn’t finish. Any verified originals have been kept."
-        case .cancelled: "The backup was stopped. Any verified originals have been kept."
-        case .interrupted: "The backup was interrupted. Any verified originals have been kept."
-        }
+    private var canCheck: Bool {
+        session.canCheckSavedFiles && !model.backup.isBusy && !model.backup.destination.isChoosing
     }
 }
