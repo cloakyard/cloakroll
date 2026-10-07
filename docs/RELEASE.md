@@ -8,7 +8,7 @@ restore-to-iPhone in the backlog. Additional feature expansion is not needed to 
 | Gate | Current position | Next acceptance |
 | --- | --- | --- |
 | Core V1 features | Implemented, including incremental history, separate iPhones, original companions, folder organization, measured progress and recovery | Fix failures found in the checks below |
-| Backup power activity | Native idle-sleep protection, balanced lifecycle tests and local OS assertion probe pass | Long backgrounded transfer with display sleep; explicit sleep/wake interruption and release after Stop |
+| Backup power activity | Native idle-sleep protection, lifecycle tests, local OS probe and real build-9 transfer assertion/release pass | Long backgrounded transfer with display sleep; explicit sleep/wake interruption and release after Stop |
 | Physical reliability | Bounded import, repeat, Stop and deferred Quit have recorded evidence | Cable removal during a large transfer; reconnect/retry; external-volume removal, full disk and restoration |
 | Incremental and thumbnails | Bounded real new-item/repeat and nearby-thumbnail evidence exists | Final same-device new capture/reconnect and preview reuse across reconnect |
 | Device destinations | Per-iPhone mappings, access checks and original-folder ID recall implemented; one connected phone's relaunch/missing-folder flow passed | Switch two physical phones with separate folders; external-volume removal/remount |
@@ -22,6 +22,10 @@ New-capture reconnect, cable removal during transfer and destination interruptio
 Software checks do not close those gates. The build remains labeled **Development preview**; 0.1.0
 build 9 identifies this closeout preview, not a public release approval. Per the user's
 7 October request, remaining software work precedes the final hardware matrix.
+Hardware testing subsequently resumed on 7 October: build 9 passed original imports,
+zero-transfer Live Photo repeat, independent saved-file hashes and observed activity
+release. The first intended cable-test batch completed before a disconnect; cable
+interruption remains unaccepted. See [current evidence](verification/HARDWARE-2026-10-07.md).
 
 ## Repeatable software validation
 

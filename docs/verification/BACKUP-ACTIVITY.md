@@ -76,3 +76,12 @@ assertion release, plus explicit sleep/wake recovery in that final matrix. The e
 cable-removal, external-volume, two-physical-phone mapping, reconnect/thumbnail,
 sustained performance, accessibility, older-OS and distribution gates remain open.
 No full phase is promoted by this software stage.
+
+## 7 October physical follow-up
+
+The user subsequently resumed hardware testing. During an actual 18-video transfer
+in the installed sandboxed build 9, ten OS samples observed the expected idle-system-
+sleep assertion; the completed sample had no such assertion. The Details popover's
+new guidance was inspected with real 64% progress and wrapped correctly. That batch
+finished in 11.12 seconds, so prolonged background/display-sleep and interruption
+behavior remain unaccepted. See [hardware evidence](HARDWARE-2026-10-07.md).

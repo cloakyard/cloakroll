@@ -140,7 +140,8 @@ Do not claim physical power-loss durability from a process-restart test.
 
 The current feature set is implemented. Focus remaining work on acceptance failures and
 release readiness; restore-to-iPhone stays in the backlog. Hardware testing resumed on 5 October after the user connected an iPhone.
-The current physical results are recorded in `verification/HARDWARE-2026-10-05.md`. [RELEASE.md](RELEASE.md) is the consolidated checklist
+The current physical results are recorded in `verification/HARDWARE-2026-10-07.md`, with earlier
+checks in `verification/HARDWARE-2026-10-05.md`. [RELEASE.md](RELEASE.md) is the consolidated checklist
 for the remaining physical interruption/reconnect, app performance, accessibility/older-OS,
 Developer ID/notarization and release-screenshot gates. Historical evidence below records
 what was actually observed and does not supersede those outstanding checks.
@@ -149,6 +150,10 @@ Per the user's 7 October instruction, continue software reliability/polish first
 leave physical acceptance for the end. Active file operations now hold a native activity
 that prevents idle system sleep while allowing the display to sleep; Stop/Quit retain
 it until work settles. See `verification/BACKUP-ACTIVITY.md` for scope and evidence.
+The user subsequently resumed hardware validation on 7 October. Build 9 passed a real
+three-Live-Photo backup and zero-transfer repeat, an 18-video import, independent hashes
+of all 24 saved originals and observed OS sleep-activity release. Cable interruption is
+still pending user coordination; the first 4.98 GB batch completed in 11.12 seconds.
 
 Current local preview: **0.1.0 (9)**. All 380 core and 186 hosted app tests pass. The normal
 Debug and Release builds, strict lint and actual Release-bundle audit pass. The Release
@@ -223,6 +228,20 @@ and destination, no overwrite, interruption/retry, database migration, fresh/reo
 devices/destinations and verification failure. Hardware matrices stay separate from simulated tests.
 
 ## Progress evidence
+
+### 7 October 2026 — physical imports and backup activity
+
+The installed sandboxed build 9 sees the connected 2,078-item iPhone library. In a
+separate destination, three Live Photos produced six verified originals (16,106,432
+bytes); the repeat transferred zero bytes and retained exact files/inodes/hashes.
+Eighteen videos then copied 4,981,765,434 bytes, finishing before cable removal could
+be observed. All 24 originals independently match their recorded size/SHA-256.
+The actual app's idle-sleep assertion was present during transfer and absent afterward;
+the native Details popover displayed intermediate 64% progress correctly.
+
+All 9,082 pre-existing backup files retained their inventoried inode, size and mtime.
+This batch is not cable-interruption acceptance. The user has one iPhone available,
+so two-device/external-drive checks remain open. See `verification/HARDWARE-2026-10-07.md`.
 
 ### 7 October 2026 — keep active backups awake
 
