@@ -3,6 +3,7 @@ import AppKit
 import SwiftUI
 
 struct DevelopmentCommands: Commands {
+    @Environment(\.openWindow) private var openWindow
     let model: AppModel
 
     var body: some Commands {
@@ -31,6 +32,7 @@ struct DevelopmentCommands: Commands {
                     Divider()
                     Button("Hide Sample Progress") { model.sampleProgress = false }
                 }
+                Button("Sample Backup History · 205 Sessions") { openWindow(id: "sample-backup-history") }
                 Menu("Media Info Examples") {
                     Button("Long Filenames and Many Originals") {
                         Task { await MediaInfoExamples.show(.longFilenames, in: model) }

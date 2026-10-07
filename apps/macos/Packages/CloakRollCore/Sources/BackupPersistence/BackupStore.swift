@@ -100,6 +100,18 @@ public actor BackupStore {
         } catch { throw Self.failure(error) }
     }
 
+    /// A bounded page using a stable date/ID boundary, independent of newly inserted sessions.
+    public func sessionPage(
+        limit: Int = 100, filter: BackupHistoryFilter = .init(), after cursor: BackupHistoryCursor? = nil
+    ) async throws -> BackupHistoryPage {
+        guard cursor == nil || cursor?.filter == filter else { throw BackupStoreError.invalidRecord }
+        do {
+            return try await database.read { db in
+                try BackupStoreReading.sessionPage(db, limit: min(200, max(1, limit)), filter: filter, after: cursor)
+            }
+        } catch { throw Self.failure(error) }
+    }
+
     /// The latest successfully finished backup for this exact device, across destinations.
     /// Recovery scans and unfinished attempts do not establish an original backup date.
     public func lastCompletedSession(deviceKey: String) async throws -> StoredBackupSession? {

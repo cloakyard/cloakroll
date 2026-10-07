@@ -46,7 +46,7 @@ struct BackupHistoryLoadingTests {
         let first = historySession()
         let latest = historySession()
         let script = HistoryReadScript([.success([first]), .failure(HistoryReadError.unavailable), .success([latest])])
-        let persistence = LibraryBackupPersistence(databaseURL: unusedHistoryURL(), readSessions: { _ in try await script.next() })
+        let persistence = LibraryBackupPersistence(databaseURL: unusedHistoryURL(), readSessions: { _, _ in try await script.next() })
         await persistence.loadSessions()
         #expect(persistence.recentSessions == [first])
         await persistence.loadSessions()
@@ -58,7 +58,7 @@ struct BackupHistoryLoadingTests {
 
     @Test func overlappingInitialLoadsMakeOnlyOneRead() async throws {
         let reader = ControlledHistoryReader()
-        let persistence = LibraryBackupPersistence(databaseURL: unusedHistoryURL(), readSessions: { _ in try await reader.read() })
+        let persistence = LibraryBackupPersistence(databaseURL: unusedHistoryURL(), readSessions: { _, _ in try await reader.read() })
         let first = Task { await persistence.loadSessions() }
         try await reader.waitForRequests(1)
         #expect(persistence.isLoadingSessions)
@@ -72,7 +72,7 @@ struct BackupHistoryLoadingTests {
     @Test(arguments: [false, true])
     func olderRefreshCannotReplaceNewerSessionsOrPublishAnOldError(oldFails: Bool) async throws {
         let reader = ControlledHistoryReader()
-        let persistence = LibraryBackupPersistence(databaseURL: unusedHistoryURL(), readSessions: { _ in try await reader.read() })
+        let persistence = LibraryBackupPersistence(databaseURL: unusedHistoryURL(), readSessions: { _, _ in try await reader.read() })
         let old = Task { try? await persistence.refreshSessions() }
         try await reader.waitForRequests(1)
         let current = Task { try await persistence.refreshSessions() }
@@ -89,7 +89,7 @@ struct BackupHistoryLoadingTests {
 
     @Test func filterChangeClearsPreviousRowsAndFencesAnOlderRead() async throws {
         let reader = ControlledHistoryReader()
-        let persistence = LibraryBackupPersistence(databaseURL: unusedHistoryURL(), readSessions: { _ in try await reader.read() })
+        let persistence = LibraryBackupPersistence(databaseURL: unusedHistoryURL(), readSessions: { _, _ in try await reader.read() })
         let old = Task { await persistence.loadSessions() }
         try await reader.waitForRequests(1)
         let filter = BackupHistoryFilter(deviceKey: "another-phone", outcome: .unfinished)
@@ -109,9 +109,9 @@ struct BackupHistoryLoadingTests {
         let first = historySession()
         let script = HistoryReadScript([.success([first]), .failure(HistoryReadError.unavailable), .success([])])
         let filter = BackupHistoryFilter(deviceKey: "selected-phone")
-        let persistence = LibraryBackupPersistence(databaseURL: unusedHistoryURL(), readSessions: { request in
+        let persistence = LibraryBackupPersistence(databaseURL: unusedHistoryURL(), readSessions: { request, _ in
             let result = try await script.next()
-            if result.isEmpty { #expect(request == filter) }
+            if result.sessions.isEmpty { #expect(request == filter) }
             return result
         })
         await persistence.loadSessions()
@@ -143,6 +143,13 @@ struct BackupHistoryLoadingTests {
         #expect(fixture.persistence.recentSessions.count == 100)
         #expect(Set(fixture.persistence.recentSessions.map(\.id)) == Set(identifiers.suffix(100)))
         #expect(fixture.persistence.recentSessions.allSatisfy { $0.status == .cancelled && $0.verifiedResources == 0 })
+        #expect(fixture.persistence.hasOlderSessions)
+        await fixture.persistence.loadOlderSessions()
+        #expect(fixture.persistence.sessionPageIndex == 1 && !fixture.persistence.hasOlderSessions)
+        #expect(fixture.persistence.recentSessions.map(\.id) == [identifiers[0]])
+        await fixture.persistence.loadNewerSessions()
+        #expect(fixture.persistence.sessionPageIndex == 0 && fixture.persistence.recentSessions.count == 100)
+
     }
 }
 
@@ -163,21 +170,21 @@ private enum HistoryReadError: Error { case unavailable }
 private actor HistoryReadScript {
     private var values: [Result<[StoredBackupSession], Error>]
     init(_ values: [Result<[StoredBackupSession], Error>]) { self.values = values }
-    func next() throws -> [StoredBackupSession] { try values.removeFirst().get() }
+    func next() throws -> BackupHistoryPage { try BackupHistoryPage(sessions: values.removeFirst().get()) }
 }
 
 private actor ControlledHistoryReader {
-    private var pending: [Int: CheckedContinuation<[StoredBackupSession], Error>] = [:]
+    private var pending: [Int: CheckedContinuation<BackupHistoryPage, Error>] = [:]
     private(set) var count = 0
 
-    func read() async throws -> [StoredBackupSession] {
+    func read() async throws -> BackupHistoryPage {
         let index = count
         count += 1
         return try await withCheckedThrowingContinuation { pending[index] = $0 }
     }
 
     func finish(_ index: Int, result: Result<[StoredBackupSession], Error>) {
-        pending.removeValue(forKey: index)?.resume(with: result)
+        pending.removeValue(forKey: index)?.resume(with: result.map { BackupHistoryPage(sessions: $0) })
     }
 
     func waitForRequests(_ expected: Int) async throws {

@@ -155,7 +155,7 @@ three-Live-Photo backup and zero-transfer repeat, an 18-video import, independen
 of all 24 saved originals and observed OS sleep-activity release. Cable interruption is
 still pending user coordination; the first 4.98 GB batch completed in 11.12 seconds.
 
-Current local preview: **0.1.0 (11)**. All 384 core and 199 hosted app tests pass. The normal
+Current local preview: **0.1.0 (12)**. All 390 core and 205 hosted app tests pass. The normal
 Debug and Release builds, strict lint and actual Release-bundle audit pass. The Release
 binary contains arm64 and x86_64; compilation is not runtime acceptance on both platforms.
 The Release app no longer contains the injected debugging entitlement.
@@ -228,6 +228,23 @@ and destination, no overwrite, interruption/retry, database migration, fresh/reo
 devices/destinations and verification failure. Hardware matrices stay separate from simulated tests.
 
 ## Progress evidence
+
+### 7 October 2026 — browse the full backup history
+
+History no longer stops at its latest 100 sessions. Native Newer/Older controls keep
+only one page of rows loaded, return each page to its top, and retain iPhone/result
+filters. Refresh returns to the latest page; failed navigation retains the current
+page and retries the requested boundary. Filter changes fence stale responses;
+cancellation cannot publish rows; an older page that becomes empty reloads current
+results. A date/ID cursor preserves database timestamp precision and avoids offset
+shifts when new backups arrive. Migration v6 adds ordered global/device indexes.
+
+All 390 core and 205 hosted app tests, strict lint and normal Debug/universal Release
+builds pass. Native 205-session fixture checks covered all three pages, forward/back,
+end controls, scroll reset, filters and light/dark appearance. Real history remained
+readable in compact dark layout; all 32 session rows and 18,229 verified-file records
+(and related evidence tables) were unchanged after migration. No backup was started.
+See `verification/HISTORY-PAGING.md`. Remaining physical/release gates stay open.
 
 ### 7 October 2026 — select media by date group
 

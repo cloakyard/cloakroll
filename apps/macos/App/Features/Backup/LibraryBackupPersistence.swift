@@ -16,7 +16,7 @@ struct PreparedBackupContext: Sendable {
 /// Coordinates persistent evidence, while the package owns SQL and safe local file verification.
 @MainActor @Observable
 final class LibraryBackupPersistence {
-    typealias SessionReader = @Sendable (BackupHistoryFilter) async throws -> [StoredBackupSession]
+    typealias SessionReader = @Sendable (BackupHistoryFilter, BackupHistoryCursor?) async throws -> BackupHistoryPage
 
     private(set) var sessionFilter = BackupHistoryFilter()
     private(set) var historyDevices: [BackupHistoryDevice] = []
@@ -25,6 +25,11 @@ final class LibraryBackupPersistence {
     private(set) var sessionErrorMessage: String?
     private(set) var hasLoadedSessions = false
     private(set) var sessionsRevision = 0
+    var sessionPageIndex: Int { sessionCursors.count }
+    var hasOlderSessions: Bool { nextSessionCursor != nil }
+    private var sessionCursors: [BackupHistoryCursor] = []
+    private var nextSessionCursor: BackupHistoryCursor?
+    @ObservationIgnored private var failedSessionRequest: [BackupHistoryCursor]?
     @ObservationIgnored private let databaseURL: URL
     @ObservationIgnored private let readSessions: SessionReader?
     @ObservationIgnored private var opening: Task<BackupStore, Error>?
@@ -53,32 +58,47 @@ final class LibraryBackupPersistence {
         }
     }
 
+    /// Explicit refresh and completed backup updates return to the latest matching page.
     func refreshSessions() async throws {
+        try await loadSessionPage(cursors: [])
+    }
+
+    private func loadSessionPage(cursors: [BackupHistoryCursor]) async throws {
         refreshGeneration += 1
         let generation = refreshGeneration
         let filter = sessionFilter
         isLoadingSessions = true
         sessionErrorMessage = nil
+        failedSessionRequest = nil
         defer { if refreshGeneration == generation { isLoadingSessions = false } }
         do {
-            let sessions: [StoredBackupSession]
+            let page: BackupHistoryPage
             let devices: [BackupHistoryDevice]
             if let readSessions {
-                sessions = try await readSessions(filter)
+                page = try await readSessions(filter, cursors.last)
                 devices = historyDevices
             } else {
                 let store = try await store()
-                sessions = try await store.recentSessions(limit: 100, filter: filter)
+                page = try await store.sessionPage(filter: filter, after: cursors.last)
                 devices = try await store.historyDevices()
             }
             try Task.checkCancellation()
             guard refreshGeneration == generation else { return }
-            recentSessions = sessions
+            // A running session can leave an outcome filter between requests. Avoid an
+            // empty, stranded older page; reload the latest matching results instead.
+            if page.sessions.isEmpty, !cursors.isEmpty {
+                try await refreshSessions()
+                return
+            }
+            recentSessions = page.sessions
+            sessionCursors = cursors
+            nextSessionCursor = page.nextCursor
             historyDevices = devices
             hasLoadedSessions = true
             sessionsRevision += 1
         } catch {
             if refreshGeneration == generation, !(error is CancellationError) {
+                failedSessionRequest = cursors
                 sessionErrorMessage = (error as? LocalizedError)?.errorDescription ?? "Backup history couldn’t be loaded. Try again."
             }
             throw error
@@ -90,6 +110,8 @@ final class LibraryBackupPersistence {
         sessionFilter = filter
         // Old rows must not be displayed under a newly selected filter, including after a failure.
         recentSessions = []
+        sessionCursors = []
+        nextSessionCursor = nil
         hasLoadedSessions = false
         do { try await refreshSessions() } catch { /* Keep the current filter and expose retry. */ }
     }
@@ -99,6 +121,25 @@ final class LibraryBackupPersistence {
     func loadSessions() async {
         guard !isLoadingSessions else { return }
         do { try await refreshSessions() } catch { /* The observable error keeps retry available. */ }
+    }
+
+    func loadOlderSessions() async {
+        guard !isLoadingSessions, let nextSessionCursor else { return }
+        await navigateSessions(cursors: sessionCursors + [nextSessionCursor])
+    }
+
+    func loadNewerSessions() async {
+        guard !isLoadingSessions, !sessionCursors.isEmpty else { return }
+        await navigateSessions(cursors: Array(sessionCursors.dropLast()))
+    }
+
+    func retrySessions() async {
+        guard !isLoadingSessions else { return }
+        await navigateSessions(cursors: failedSessionRequest ?? [])
+    }
+
+    private func navigateSessions(cursors: [BackupHistoryCursor]) async {
+        do { try await loadSessionPage(cursors: cursors) } catch { /* Retain the last good page and retry target. */ }
     }
 
     nonisolated static func prepare(

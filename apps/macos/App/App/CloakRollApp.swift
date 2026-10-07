@@ -37,6 +37,15 @@ struct CloakRollApp: App {
         .defaultSize(width: 1_100, height: 740)
         .commands { LibraryCommands(model: model) }
 
+        #if DEBUG
+        Window("Sample Backup History", id: "sample-backup-history") {
+            BackupHistoryExample()
+                .environment(model)
+                .tint(Design.accent)
+        }
+        .defaultSize(width: 720, height: 520)
+        #endif
+
         Settings {
             SettingsView()
                 .environment(model)

@@ -149,6 +149,23 @@ enum BackupStoreReading {
     }
 
     static func sessions(_ db: Database, limit: Int, filter: BackupHistoryFilter) throws -> [StoredBackupSession] {
+        try sessionRows(db, limit: limit, filter: filter, after: nil).map(session)
+    }
+
+    static func sessionPage(
+        _ db: Database, limit: Int, filter: BackupHistoryFilter, after cursor: BackupHistoryCursor?
+    ) throws -> BackupHistoryPage {
+        let rows = try sessionRows(db, limit: limit + 1, filter: filter, after: cursor)
+        let visible = rows.prefix(limit)
+        let next = rows.count > limit ? visible.last.map {
+            BackupHistoryCursor(startedAt: $0["started_at"], id: $0["id"], filter: filter)
+        } : nil
+        return try BackupHistoryPage(sessions: visible.map(session), nextCursor: next)
+    }
+
+    private static func sessionRows(
+        _ db: Database, limit: Int, filter: BackupHistoryFilter, after cursor: BackupHistoryCursor?
+    ) throws -> [Row] {
         var conditions: [String] = []
         var arguments = StatementArguments()
         if let key = filter.deviceKey {
@@ -164,10 +181,14 @@ enum BackupStoreReading {
                 OR (status = 'recovered' AND verified_resources < total_resources))
                 """)
         }
+        if let cursor {
+            conditions.append("(started_at, id) < (?, ?)")
+            arguments += [cursor.startedAt, cursor.id]
+        }
         let clause = conditions.isEmpty ? "" : " WHERE " + conditions.joined(separator: " AND ")
         arguments += [limit]
         return try Row.fetchAll(db, sql: "SELECT * FROM backup_session" + clause + " ORDER BY started_at DESC, id DESC LIMIT ?",
-                               arguments: arguments).map(session)
+                               arguments: arguments)
     }
 
     static func session(_ row: Row) throws -> StoredBackupSession {

@@ -20,7 +20,7 @@ Hardware testing resumed on 5 October 2026. Physical flat-folder import, zero-by
 repeat, early Stop/retry and relaunch passed; see [the evidence](verification/HARDWARE-2026-10-05.md).
 New-capture reconnect, cable removal during transfer and destination interruption remain open.
 Software checks do not close those gates. The build remains labeled **Development preview**; 0.1.0
-build 11 identifies this closeout preview, not a public release approval. Per the user's
+build 12 identifies this closeout preview, not a public release approval. Per the user's
 7 October request, remaining software work precedes the final hardware matrix.
 Hardware testing subsequently resumed on 7 October: build 9 passed original imports,
 zero-transfer Live Photo repeat, independent saved-file hashes and observed activity
@@ -52,7 +52,7 @@ signature or downloads credentials.
 To create a **local preview** ZIP, use a new output path:
 
 ```sh
-bash scripts/package_local.sh build/VerifyRelease/Build/Products/Release/CloakRoll.app build/releases/CloakRoll-0.1.0-11-local-universal.zip
+bash scripts/package_local.sh build/VerifyRelease/Build/Products/Release/CloakRoll.app build/releases/CloakRoll-0.1.0-12-local-universal.zip
 ```
 
 Packaging validates an isolated copy, checks the ZIP, reports SHA-256 and refuses
@@ -302,3 +302,24 @@ Hardware interruption, distribution and other remaining acceptance gates stay op
 
 Local archive: `apps/macos/build/releases/CloakRoll-0.1.0-11-local-universal.zip`.
 SHA-256: `c9d99e835afcdd04994717ed0ea4ec37f3af611e38e494d9c1e8378fc7c23969`.
+
+## 7 October full history browsing preview — build 12
+
+Backup History now pages beyond its latest 100 sessions with native Newer/Older controls,
+filter preservation, stable date/ID boundaries, bounded row loading and retry of the failed
+page. Migration v6 adds ordered global/device indexes and preserves original-file evidence.
+
+All **390 core and 205 hosted app tests**, strict lint, warning-free normal Debug/universal
+Release builds, actual bundle audits and ZIP validation pass. Native 205-session paging,
+filter/scroll reset, light/dark and compact real-history checks passed. Before/after row
+digests confirm the existing 32 sessions and 18,229 verified records, plus related evidence,
+were unchanged. See [history paging evidence](verification/HISTORY-PAGING.md).
+
+Installed and launched **0.1.0 (12)** at `/Applications/CloakRoll.app`. About, offline
+history loading, the returned 2,078-item physical library, sidebar last-backup details
+and remembered destination access were checked. All Photos is left at the top with no
+selection; superseded app bundles are recoverable in Trash. No backup was started.
+Outstanding hardware, accessibility/performance, older-OS and distribution gates remain.
+
+Local archive: `apps/macos/build/releases/CloakRoll-0.1.0-12-local-universal.zip`.
+SHA-256: `a11b16f361ef2b6b8542ca590023bb185324901122ff7088ddb801191eab45f3`.

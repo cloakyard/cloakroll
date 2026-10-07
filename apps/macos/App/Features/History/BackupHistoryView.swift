@@ -63,7 +63,7 @@ struct BackupHistoryView: View {
                 } description: {
                     Text(message)
                 } actions: {
-                    Button("Try Again") { Task { await persistence.loadSessions() } }
+                    Button("Try Again") { Task { await persistence.retrySessions() } }
                 }
             } else if persistence.sessionFilter != BackupHistoryFilter() {
                 ContentUnavailableView {
@@ -87,48 +87,7 @@ struct BackupHistoryView: View {
                 }
             }
         } else {
-            List {
-                if let message = persistence.sessionErrorMessage {
-                    Section {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text(message).foregroundStyle(.secondary)
-                            Button("Try Again") { Task { await persistence.loadSessions() } }
-                                .disabled(persistence.isLoadingSessions)
-                        }
-                    }
-                }
-                Section {
-                    ForEach(persistence.recentSessions) { session in
-                        BackupHistoryRow(session: session) { destination in
-                            checkRequest = BackupSessionCheckRequest(session: session, destination: destination)
-                        }
-                            .alignmentGuide(.listRowSeparatorLeading) { _ in 0 }
-                    }
-                } header: {
-                    HStack {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(persistence.recentSessions.count == 100 ? "Latest 100 Matching Backups" : "Previous Backups")
-                            if persistence.sessionFilter != BackupHistoryFilter() {
-                                Text(BackupHistoryFilters(persistence: persistence).summary)
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                                    .textCase(nil)
-                            }
-                        }
-                        if persistence.isLoadingSessions { ProgressView().controlSize(.small) }
-                    }
-                }
-                Text("""
-                History shows what was verified during each backup.
-                Expand a backup to check its saved originals at any time.
-                """)
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(nil)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .listRowSeparator(.hidden)
-            }
-            .listStyle(.inset)
+            BackupHistoryList(persistence: persistence) { checkRequest = $0 }
         }
     }
 }

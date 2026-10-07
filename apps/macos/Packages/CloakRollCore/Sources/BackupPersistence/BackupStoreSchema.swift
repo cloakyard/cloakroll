@@ -33,6 +33,13 @@ enum BackupStoreSchema {
                 WHERE status = 'completed';
                 """)
         }
+        migrator.registerMigration("v6_history_pages") { db in
+            try db.execute(sql: """
+                CREATE INDEX session_history_page ON backup_session(started_at DESC, id DESC);
+                CREATE INDEX session_device_history_page ON backup_session(device_key, started_at DESC, id DESC);
+                DROP INDEX session_recent;
+                """)
+        }
         try migrator.migrate(queue)
         try queue.write { db in
             try db.execute(
