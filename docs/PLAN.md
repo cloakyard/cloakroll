@@ -136,7 +136,7 @@ Do not claim physical power-loss durability from a process-restart test.
 | 9 Performance | Generated 10k/50k/100k catalogs; timed catalog/matching/startup, bounded thumbnails, measured main-thread/scrolling and database behavior. | In progress |
 | 10 Release | Privacy/entitlement/sandbox review, Release build/lint/tests, docs/screenshots, signing/notarization with verified identity. | In progress — local preview validated; distribution gates open |
 
-## V1 closeout target — 5 October 2026
+## V1 closeout — updated 7 October 2026
 
 The current feature set is implemented. Focus remaining work on acceptance failures and
 release readiness; restore-to-iPhone stays in the backlog. Hardware testing resumed on 5 October after the user connected an iPhone.
@@ -145,7 +145,12 @@ for the remaining physical interruption/reconnect, app performance, accessibilit
 Developer ID/notarization and release-screenshot gates. Historical evidence below records
 what was actually observed and does not supersede those outstanding checks.
 
-Current local preview: **0.1.0 (8)**. All 380 core and 180 hosted app tests pass. The normal
+Per the user's 7 October instruction, continue software reliability/polish first and
+leave physical acceptance for the end. Active file operations now hold a native activity
+that prevents idle system sleep while allowing the display to sleep; Stop/Quit retain
+it until work settles. See `verification/BACKUP-ACTIVITY.md` for scope and evidence.
+
+Current local preview: **0.1.0 (9)**. All 380 core and 186 hosted app tests pass. The normal
 Debug and Release builds, strict lint and actual Release-bundle audit pass. The Release
 binary contains arm64 and x86_64; compilation is not runtime acceptance on both platforms.
 The Release app no longer contains the injected debugging entitlement.
@@ -218,6 +223,21 @@ and destination, no overwrite, interruption/retry, database migration, fresh/reo
 devices/destinations and verification failure. Hardware matrices stay separate from simulated tests.
 
 ## Progress evidence
+
+### 7 October 2026 — keep active backups awake
+
+Scoped native ProcessInfo activities now cover backups, explicit saved-file checks and
+history rebuilding. They include verification, history finalization and cleanup, retain
+ownership during Stop/deferred Quit, and release on success or failure. Display sleep
+remains available. Folder-picker cancellation and ordinary browsing request no hold.
+The compact progress surface is unchanged; Details and Help explain the behavior.
+
+All 380 core and 186 hosted app tests, strict lint, Debug/universal Release builds and
+bundle/package audits pass. An isolated production-helper OS probe observed the expected
+idle-system-sleep assertion and its release. Installed build 9, inspected native Help
+and About, and confirmed retained destination/organization settings. No physical device
+test was run. Hardware checks are deferred to the end by user request; no phase is
+promoted. See `verification/BACKUP-ACTIVITY.md`.
 
 ### 5 October 2026 — per-iPhone destinations and folder recall
 

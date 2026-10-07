@@ -8,7 +8,8 @@ import Testing
 @MainActor
 struct BackupFolderRecoveryControllerTests {
     @Test func automaticReceiptsRecoverIntoFreshHistoryAndRepeatWithoutDuplicates() async throws {
-        let fixture = try PersistentLibraryFixture()
+        let activity = BackupActivityProbe()
+        let fixture = try PersistentLibraryFixture(activity: activity.activity)
         let catalog = PersistentLibraryCatalog(companion: true)
         try await fixture.accept(catalog)
         try await fixture.backup(catalog)
@@ -18,6 +19,7 @@ struct BackupFolderRecoveryControllerTests {
         await recovery.run(mode: .indexed, selectedDestinationID: selection.id, destination: fixture.controller.destination,
                            persistence: fresh, context: nil, download: nil)
         #expect(recovery.phase == .completed && recovery.recovered == 2 && recovery.verified == 2)
+        #expect(activity.activeCount == 0 && activity.started == 2 && activity.ended == 2)
         #expect(try await fresh.store().recentSessions().first?.completedAssets == 1)
         #expect(fixture.destinationFixture.scope.counts.active == 0)
         await recovery.run(mode: .indexed, selectedDestinationID: selection.id, destination: fixture.controller.destination,
@@ -27,17 +29,20 @@ struct BackupFolderRecoveryControllerTests {
     }
 
     @Test func wrongSelectionFailsBeforeFolderAccess() async throws {
-        let fixture = try PersistentLibraryFixture()
+        let activity = BackupActivityProbe()
+        let fixture = try PersistentLibraryFixture(activity: activity.activity)
         let recovery = fixture.controller.recovery
         await recovery.run(mode: .indexed, selectedDestinationID: UUID(), destination: fixture.controller.destination,
                            persistence: fixture.persistence, context: nil, download: nil)
         #expect(recovery.phase == .failed)
+        #expect(activity.activeCount == 0 && activity.started == 1 && activity.ended == 1)
         #expect(fixture.destinationFixture.scope.counts.started == 0)
         #expect(recovery.errorMessage == BackupDestinationError.selectionChanged.message)
     }
 
     @Test func stopWaitsForAccessWorkBeforeReleasingLease() async throws {
-        let fixture = try PersistentLibraryFixture()
+        let activity = BackupActivityProbe()
+        let fixture = try PersistentLibraryFixture(activity: activity.activity)
         let selection = try #require(fixture.controller.destination.selection)
         let gate = PersistentLeaseGate()
         var operations = fixture.destinationFixture.scope.operations
@@ -49,16 +54,19 @@ struct BackupFolderRecoveryControllerTests {
                                              persistence: fixture.persistence, context: nil, download: nil) }
         try await waitForPersistentState { gate.entered }
         #expect(fixture.controller.isBusy)
+        #expect(activity.activeCount == 1)
         fixture.controller.cancel()
         #expect(recovery.isRunning && fixture.destinationFixture.scope.counts.active == 1)
         gate.release()
         await task.value
         #expect(recovery.phase == .stopped && !fixture.controller.isBusy)
+        #expect(activity.activeCount == 0 && activity.started == 1 && activity.ended == 1)
         #expect(fixture.destinationFixture.scope.counts.active == 0)
     }
 
     @Test func USBStopKeepsTheLeaseUntilPhysicalCallbackAndBlocksNewBackup() async throws {
-        let fixture = try PersistentLibraryFixture()
+        let activity = BackupActivityProbe()
+        let fixture = try PersistentLibraryFixture(activity: activity.activity)
         let catalog = PersistentLibraryCatalog()
         try await fixture.accept(catalog)
         try Data([1, 1, 1]).write(to: fixture.destinationFixture.folder.appendingPathComponent("Old Photo.HEIC"))
@@ -75,6 +83,7 @@ struct BackupFolderRecoveryControllerTests {
         }
         await gate.waitUntilEntered()
         #expect(fixture.controller.isBusy)
+        #expect(activity.activeCount == 1)
         fixture.controller.start(assets: [catalog.asset], sessionID: catalog.source.sessionID) { _, _ in
             Issue.record("A backup must not start while recovery owns the source")
             throw BackupEngineError.invalidSelection
@@ -86,6 +95,7 @@ struct BackupFolderRecoveryControllerTests {
         await fixture.controller.waitUntilStopped()
         await task.value
         #expect(recovery.phase == .stopped && !fixture.controller.isBusy)
+        #expect(activity.activeCount == 0 && activity.started == 1 && activity.ended == 1)
         #expect(fixture.destinationFixture.scope.counts.active == 0)
         #expect(try await fixture.persistence.store().recentSessions().isEmpty)
     }

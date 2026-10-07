@@ -11,6 +11,10 @@ checks remain open. The app includes offline Backup History, remembered browsing
 native search/menu actions, clearly labeled sample media, chronological groups, filtering,
 selection, camera metadata and Settings. Interrupted publication recovery and a per-original
 available-space check preserve completed files when a later operation fails.
+Active backups, explicit saved-file checks and history rebuilding keep the Mac awake
+while allowing the display to sleep. Stop waits for work to settle before releasing
+the activity. Keep a MacBook's lid open; explicit sleep can interrupt the connection.
+See [backup activity verification](docs/verification/BACKUP-ACTIVITY.md).
 Backup History → expand a session → **Check Saved Files…** checks its recorded originals
 in the selected original backup folder, without needing the iPhone. The read-only check
 has progress, Stop/retry and missing-or-changed-file results; it does not change history.
@@ -43,9 +47,9 @@ Photos albums. A wired backup can only include originals exposed by the device; 
 otherwise unavailable media may be omitted.
 
 Requires macOS 14 or later; development uses Xcode 27, Swift 6, XcodeGen and SwiftLint.
-The current 0.1.0 (8) Release binary contains Apple silicon and Intel architectures.
+The current 0.1.0 (9) Release binary contains Apple silicon and Intel architectures.
 It is locally ad-hoc signed; Developer ID, notarization and older-system runtime acceptance
-remain release gates. Local software validation: 380 core tests and 180 hosted app tests.
+remain release gates. Local software validation: 380 core tests and 186 hosted app tests.
 
 **Recover after losing app data:** open **Backup History → Rebuild History…**, choose
 an existing backup folder, and use saved recovery records. New backups store these

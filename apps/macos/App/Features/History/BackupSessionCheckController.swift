@@ -11,6 +11,9 @@ final class BackupSessionCheckController {
     private(set) var errorMessage: String?
     private(set) var isStopping = false
     @ObservationIgnored private var operation: Task<SavedBackupCheckProgress, Error>?
+    @ObservationIgnored private let activity: BackupActivity
+
+    init(activity: BackupActivity = .system) { self.activity = activity }
 
     var isRunning: Bool { phase == .preparing || phase == .checking }
 
@@ -23,7 +26,7 @@ final class BackupSessionCheckController {
         progress = SavedBackupCheckProgress(totalFiles: 0)
         errorMessage = nil
         isStopping = false
-        let task = Task {
+        let task = Task { try await activity.perform(reason: "Checking saved iPhone originals") {
             guard destination.selection?.id == selectedDestinationID else { throw BackupDestinationError.selectionChanged }
             let lease = try await destination.acquireLease(readOnly: true)
             defer { lease.release() }
@@ -35,7 +38,7 @@ final class BackupSessionCheckController {
             return try await SavedBackupCheck.run(destination: lease.url, records: records) { [weak controller = self] update in
                 await controller?.updateProgress(update)
             }
-        }
+        } }
         operation = task
         defer { operation = nil; isStopping = false }
         do {

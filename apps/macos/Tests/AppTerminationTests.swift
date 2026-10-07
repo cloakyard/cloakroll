@@ -20,7 +20,8 @@ struct AppTerminationTests {
 
     @Test(arguments: [false, true])
     func quitWaitsForPhysicalSourceAndDurableSessionBeforeOneReply(sourceFails: Bool) async throws {
-        let fixture = try PersistentLibraryFixture()
+        let activity = BackupActivityProbe()
+        let fixture = try PersistentLibraryFixture(activity: activity.activity)
         let catalog = PersistentLibraryCatalog(companion: true)
         try await fixture.accept(catalog)
         let source = ControlledBackupOriginals()
@@ -38,6 +39,7 @@ struct AppTerminationTests {
         var replies: [Bool] = []
         let result = delegate.requestTermination { shouldTerminate in
             #expect(!controller.isBusy && !controller.isStopping)
+            #expect(activity.activeCount == 0 && activity.ended == 1)
             #expect(fixture.destinationFixture.scope.counts.active == 0)
             #expect(controller.snapshot?.phase == .cancelled)
             replies.append(shouldTerminate)
@@ -45,6 +47,7 @@ struct AppTerminationTests {
         #expect(result == .terminateLater)
         await source.waitForCancellation("old-motion")
         #expect(controller.isBusy && controller.isStopping)
+        #expect(activity.activeCount == 1 && activity.started == 1)
         #expect(fixture.destinationFixture.scope.counts.active == 1)
         #expect(replies.isEmpty && !didShutDown)
         #expect(delegate.requestTermination { _ in

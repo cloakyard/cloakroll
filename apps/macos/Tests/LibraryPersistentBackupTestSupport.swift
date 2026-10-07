@@ -42,11 +42,11 @@ final class PersistentLibraryFixture {
     let persistence: LibraryBackupPersistence
     let controller: LibraryBackupController
 
-    init(allowsFolderSelection: Bool = false) throws {
-        destinationFixture = try BackupControllerFixture(allowsFolderSelection: allowsFolderSelection)
+    init(allowsFolderSelection: Bool = false, activity: BackupActivity = .system) throws {
+        destinationFixture = try BackupControllerFixture(allowsFolderSelection: allowsFolderSelection, activity: activity)
         databaseURL = destinationFixture.folder.appendingPathComponent("Application Support/Backups.sqlite")
         persistence = LibraryBackupPersistence(databaseURL: databaseURL)
-        controller = LibraryBackupController(destination: destinationFixture.controller.destination, persistence: persistence)
+        controller = LibraryBackupController(destination: destinationFixture.controller.destination, persistence: persistence, activity: activity)
     }
 
     func accept(_ catalog: PersistentLibraryCatalog, controller: LibraryBackupController? = nil) async throws {

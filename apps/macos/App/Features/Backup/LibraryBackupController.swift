@@ -20,7 +20,7 @@ final class LibraryBackupController {
     let destination: BackupDestinationStore
     let persistence: LibraryBackupPersistence?
     private(set) var snapshot: BackupSnapshot?
-    let recovery = BackupFolderRecoveryController()
+    let recovery: BackupFolderRecoveryController
     private(set) var isBackingUp = false
     var isBusy: Bool { isBackingUp || recovery.isRunning }
     var recoveryContext: PreparedBackupContext? {
@@ -44,10 +44,14 @@ final class LibraryBackupController {
     @ObservationIgnored private var context: PreparedBackupContext?
     @ObservationIgnored private var pendingCatalog: PendingBackupCatalog?
     @ObservationIgnored private var needsHistoryCheck = false
+    @ObservationIgnored private let activity: BackupActivity
 
-    init(destination: BackupDestinationStore = BackupDestinationStore(), persistence: LibraryBackupPersistence? = nil) {
+    init(destination: BackupDestinationStore = BackupDestinationStore(), persistence: LibraryBackupPersistence? = nil,
+         activity: BackupActivity = .system) {
         self.destination = destination
         self.persistence = persistence
+        self.activity = activity
+        recovery = BackupFolderRecoveryController(activity: activity)
     }
 
     func chooseDestination() async {
@@ -152,63 +156,71 @@ final class LibraryBackupController {
                 onStatusesChanged?()
             }
             try Task.checkCancellation()
-            let lease = try await destination.acquireLease()
-            defer { lease.release() }
-            try Task.checkCancellation()
-            let scope = LibraryBackupHistory.Scope(sessionID: sessionID, destinationID: lease.destinationID)
-            let journal = try await beginJournal(assets: assets, sessionID: sessionID, destinationID: lease.destinationID)
-            let engine = BackupEngine(previousRecords: history.records(in: scope))
-            self.engine = engine
-            let monitor = Task { [weak self] in
-                for await value in engine.snapshots {
-                    guard !Task.isCancelled else { return }
-                    if value.phase != .idle { self?.snapshot = value }
-                }
+            try await activity.perform(reason: "Backing up iPhone originals") {
+                try await runBackup(assets: assets, sessionID: sessionID, folderLayout: folderLayout, download: download)
             }
-            defer { monitor.cancel() }
-            var result = try await engine.run(
-                assets: assets, sessionID: sessionID, destination: lease.url, folderLayout: folderLayout,
-                onStaged: { intent in
-                    if let journal { try await journal.store.recordStaging(sessionID: journal.id, intent: intent) }
-                },
-                onPublication: { intent in
-                    if let journal {
-                        try await BackupPortableEvidence.save(store: journal.store, sessionID: journal.id,
-                                                              record: intent.verifiedRecord, destination: lease.url)
-                        try await journal.store.recordPublication(sessionID: journal.id, intent: intent)
-                    }
-                },
-                onVerified: { record in
-                    if let journal {
-                        try await BackupPortableEvidence.save(store: journal.store, sessionID: journal.id,
-                                                              record: record, destination: lease.url)
-                        try await journal.store.recordVerified(sessionID: journal.id, record: record)
-                    }
-                }, download: download
-            )
-            monitor.cancel()
-            result = BackupResult(snapshot: terminalSnapshot(result.snapshot), records: result.records)
-            if let journal {
-                do {
-                    let terminal = result.snapshot
-                    try await Task { try await journal.store.finishSession(id: journal.id, result: terminal) }.value
-                } catch {
-                    wasInterrupted = false
-                    var terminal = result.snapshot
-                    terminal.phase = .failed
-                    terminal.message = "Backup history couldn’t be finalized. Try again to check saved originals and finish the backup."
-                    result = BackupResult(snapshot: terminal, records: result.records)
-                }
-            }
-            snapshot = result.snapshot
-            history.apply(result, assets: assets, scope: scope)
-            onStatusesChanged?()
-            if let persistence { try? await Task { try await persistence.refreshSessions() }.value }
         } catch is CancellationError {
             snapshot = terminalSnapshot(BackupSnapshot(phase: .cancelled, totalAssets: assets.count))
         } catch {
             snapshot = BackupSnapshot(phase: .failed, totalAssets: assets.count, message: error.localizedDescription)
         }
+    }
+
+    private func runBackup(
+        assets: [MediaAsset], sessionID: UUID, folderLayout: BackupFolderLayout, download: @escaping BackupEngine.Download
+    ) async throws {
+        let lease = try await destination.acquireLease()
+        defer { lease.release() }
+        try Task.checkCancellation()
+        let scope = LibraryBackupHistory.Scope(sessionID: sessionID, destinationID: lease.destinationID)
+        let journal = try await beginJournal(assets: assets, sessionID: sessionID, destinationID: lease.destinationID)
+        let engine = BackupEngine(previousRecords: history.records(in: scope))
+        self.engine = engine
+        let monitor = Task { [weak self] in
+            for await value in engine.snapshots {
+                guard !Task.isCancelled else { return }
+                if value.phase != .idle { self?.snapshot = value }
+            }
+        }
+        defer { monitor.cancel() }
+        var result = try await engine.run(
+            assets: assets, sessionID: sessionID, destination: lease.url, folderLayout: folderLayout,
+            onStaged: { intent in
+                if let journal { try await journal.store.recordStaging(sessionID: journal.id, intent: intent) }
+            },
+            onPublication: { intent in
+                if let journal {
+                    try await BackupPortableEvidence.save(store: journal.store, sessionID: journal.id,
+                                                          record: intent.verifiedRecord, destination: lease.url)
+                    try await journal.store.recordPublication(sessionID: journal.id, intent: intent)
+                }
+            },
+            onVerified: { record in
+                if let journal {
+                    try await BackupPortableEvidence.save(store: journal.store, sessionID: journal.id,
+                                                          record: record, destination: lease.url)
+                    try await journal.store.recordVerified(sessionID: journal.id, record: record)
+                }
+            }, download: download
+        )
+        monitor.cancel()
+        result = BackupResult(snapshot: terminalSnapshot(result.snapshot), records: result.records)
+        if let journal {
+            do {
+                let terminal = result.snapshot
+                try await Task { try await journal.store.finishSession(id: journal.id, result: terminal) }.value
+            } catch {
+                wasInterrupted = false
+                var terminal = result.snapshot
+                terminal.phase = .failed
+                terminal.message = "Backup history couldn’t be finalized. Try again to check saved originals and finish the backup."
+                result = BackupResult(snapshot: terminal, records: result.records)
+            }
+        }
+        snapshot = result.snapshot
+        history.apply(result, assets: assets, scope: scope)
+        onStatusesChanged?()
+        if let persistence { try? await Task { try await persistence.refreshSessions() }.value }
     }
 
     private func terminalSnapshot(_ value: BackupSnapshot) -> BackupSnapshot {

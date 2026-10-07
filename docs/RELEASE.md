@@ -8,6 +8,7 @@ restore-to-iPhone in the backlog. Additional feature expansion is not needed to 
 | Gate | Current position | Next acceptance |
 | --- | --- | --- |
 | Core V1 features | Implemented, including incremental history, separate iPhones, original companions, folder organization, measured progress and recovery | Fix failures found in the checks below |
+| Backup power activity | Native idle-sleep protection, balanced lifecycle tests and local OS assertion probe pass | Long backgrounded transfer with display sleep; explicit sleep/wake interruption and release after Stop |
 | Physical reliability | Bounded import, repeat, Stop and deferred Quit have recorded evidence | Cable removal during a large transfer; reconnect/retry; external-volume removal, full disk and restoration |
 | Incremental and thumbnails | Bounded real new-item/repeat and nearby-thumbnail evidence exists | Final same-device new capture/reconnect and preview reuse across reconnect |
 | Device destinations | Per-iPhone mappings, access checks and original-folder ID recall implemented; one connected phone's relaunch/missing-folder flow passed | Switch two physical phones with separate folders; external-volume removal/remount |
@@ -19,7 +20,8 @@ Hardware testing resumed on 5 October 2026. Physical flat-folder import, zero-by
 repeat, early Stop/retry and relaunch passed; see [the evidence](verification/HARDWARE-2026-10-05.md).
 New-capture reconnect, cable removal during transfer and destination interruption remain open.
 Software checks do not close those gates. The build remains labeled **Development preview**; 0.1.0
-build 8 identifies this closeout preview, not a public release approval.
+build 9 identifies this closeout preview, not a public release approval. Per the user's
+7 October request, remaining software work precedes the final hardware matrix.
 
 ## Repeatable software validation
 
@@ -46,7 +48,7 @@ signature or downloads credentials.
 To create a **local preview** ZIP, use a new output path:
 
 ```sh
-bash scripts/package_local.sh build/VerifyRelease/Build/Products/Release/CloakRoll.app build/releases/CloakRoll-0.1.0-8-local-universal.zip
+bash scripts/package_local.sh build/VerifyRelease/Build/Products/Release/CloakRoll.app build/releases/CloakRoll-0.1.0-9-local-universal.zip
 ```
 
 Packaging validates an isolated copy, checks the ZIP, reports SHA-256 and refuses
@@ -232,3 +234,25 @@ transfer or source-media change was initiated, and no remaining release gate is 
 
 Local archive: `apps/macos/build/releases/CloakRoll-0.1.0-8-local-universal.zip`.
 SHA-256: `c6fb1161ec6bfdbc9087357ee592601f35f175c9dacafc1f30a6c990d8d22eff`.
+
+
+## 7 October backup activity preview — build 9
+
+Backups, explicit saved-file checks and history rebuilding now hold a native activity
+through file work and cleanup. Idle system sleep is prevented while the display can
+sleep; Stop and deferred Quit retain the activity until outstanding callbacks settle.
+Details and Help explain the behavior without expanding the compact progress bar.
+
+All **380 core and 186 hosted app tests**, strict lint, warning-free normal Debug and
+universal Release builds, Release/installed-bundle audits and ZIP validation pass.
+A separate process running the production helper demonstrated the expected OS assertion
+and release. This is not prolonged physical backup or sleep/wake acceptance; see
+[backup activity evidence](verification/BACKUP-ACTIVITY.md).
+
+Installed **0.1.0 (9)** at `/Applications/CloakRoll.app`; native About, Help scrolling and
+retained destination/One Folder settings were checked. Superseded app copies are in
+Trash. Originals and history were retained. Hardware validation is deferred to the end
+by user request, and no distribution or full-phase acceptance is claimed.
+
+Local archive: `apps/macos/build/releases/CloakRoll-0.1.0-9-local-universal.zip`.
+SHA-256: `abf27eca450548e796d28acfe3680afae15977fc5565ecc84b6146a35c3f0f93`.

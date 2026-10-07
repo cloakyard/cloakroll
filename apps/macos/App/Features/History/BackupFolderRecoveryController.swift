@@ -19,6 +19,9 @@ final class BackupFolderRecoveryController {
     private(set) var errorMessage: String?
     private(set) var isStopping = false
     @ObservationIgnored private var operation: Task<Int, Error>?
+    @ObservationIgnored private let activity: BackupActivity
+
+    init(activity: BackupActivity = .system) { self.activity = activity }
 
     var isRunning: Bool { [.preparing, .checking, .verifying, .saving].contains(phase) }
 
@@ -33,7 +36,7 @@ final class BackupFolderRecoveryController {
         verified = 0
         errorMessage = nil
         isStopping = false
-        let task = Task {
+        let task = Task { try await activity.perform(reason: "Rebuilding iPhone backup history") {
             guard destination.selection?.id == selectedDestinationID else { throw BackupDestinationError.selectionChanged }
             let lease = try await destination.acquireLease()
             defer { lease.release() }
@@ -72,7 +75,7 @@ final class BackupFolderRecoveryController {
             // No cancellation check after commit: a successful import must never be reported as
             // rolled back just because Stop or sheet dismissal raced with the transaction's return.
             return try await store.importRecovery(scan, destinationID: lease.destinationID)
-        }
+        } }
         operation = task
         defer { operation = nil; isStopping = false }
         do {

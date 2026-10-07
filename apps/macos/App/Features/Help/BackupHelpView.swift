@@ -57,11 +57,17 @@ struct BackupHelpView: View {
                 Back Up New Items copies new items in the current view.
                 """)
                 Text("""
-                Original files are saved in separate iPhone folders, organized by year and month, and verified after copying. \
+                Original files are saved in separate iPhone folders and verified after copying. \
+                In Backup settings, choose year and month subfolders or one folder. \
                 Your photos and videos stay on your iPhone.
                 """)
                     .foregroundStyle(.secondary)
                 Text("Each iPhone folder has a stable identifier. Earlier backups in Year / Month folders can still be checked and reused.")
+                    .foregroundStyle(.secondary)
+            }
+            Section("While Your Backup Runs") {
+                Text("CloakRoll keeps your Mac awake while copying, verifying and saving backup history. The display can sleep.")
+                Text("Keep your MacBook’s lid open. Choosing Sleep or closing the lid can interrupt the connection.")
                     .foregroundStyle(.secondary)
             }
             Section {

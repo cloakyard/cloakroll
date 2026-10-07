@@ -51,6 +51,12 @@ struct BackupProgressView: View {
                 LabeledContent("Transferred", value: Format.bytes(progress.snapshot.transferredBytes))
                     .monospacedDigit()
             }
+            if !isSample {
+                Text("Your Mac stays awake while originals are copied and verified. The display can sleep.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
         }
         .padding(16)
         .frame(width: 320, alignment: .leading)

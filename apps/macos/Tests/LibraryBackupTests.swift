@@ -88,7 +88,8 @@ struct LibraryBackupTests {
     }
 
     @Test func cancellingKeepsControllerBusyAndDestinationScopeUntilTheSourceSettles() async throws {
-        let fixture = try BackupControllerFixture()
+        let activity = BackupActivityProbe()
+        let fixture = try BackupControllerFixture(activity: activity.activity)
         let asset = BackupLibraryFixture.asset()
         let session = UUID()
         fixture.start([asset], session: session)
@@ -100,6 +101,7 @@ struct LibraryBackupTests {
         await fixture.source.waitForCancellation("still")
         #expect(fixture.controller.isBusy)
         #expect(fixture.controller.isStopping)
+        #expect(activity.activeCount == 1 && activity.started == 1)
         #expect(fixture.scope.counts.stopped == 0)
 
         fixture.start([BackupLibraryFixture.asset(id: "ignored")], session: session)
@@ -107,6 +109,7 @@ struct LibraryBackupTests {
         try await fixture.source.finish("still", bytes: Data([1, 2, 3]))
         await fixture.controller.waitUntilStopped()
         #expect(!fixture.controller.isBusy)
+        #expect(activity.activeCount == 0 && activity.ended == 1)
         #expect(!fixture.controller.isStopping)
         #expect(fixture.controller.snapshot?.phase == .cancelled)
         #expect(fixture.scope.counts.started == 1)

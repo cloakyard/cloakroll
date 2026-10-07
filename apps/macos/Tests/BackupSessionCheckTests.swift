@@ -15,9 +15,11 @@ struct BackupSessionCheckTests {
         fixture.controller.suspendHistory(resetSource: true)
         let sessions = try await fixture.persistence.store().recentSessions()
         let session = try #require(sessions.first)
-        let checker = BackupSessionCheckController()
+        let activity = BackupActivityProbe()
+        let checker = BackupSessionCheckController(activity: activity.activity)
         await checker.run(session: session, selectedDestinationID: session.destinationID, destination: fixture.controller.destination, persistence: fixture.persistence)
         #expect(checker.phase == .completed && !checker.isRunning)
+        #expect(activity.activeCount == 0 && activity.started == 1 && activity.ended == 1)
         #expect(checker.progress.matchingFiles == 2 && checker.progress.unverifiedFiles == 0)
         #expect(try await fixture.persistence.store().recentSessions() == sessions)
         #expect(fixture.destinationFixture.scope.counts.active == 0)
@@ -32,7 +34,8 @@ struct BackupSessionCheckTests {
         let record = try #require(try await fixture.candidates(catalog).first?.record)
         let original = fixture.destinationFixture.folder.appendingPathComponent(record.relativePath)
         try FileManager.default.removeItem(at: original)
-        let checker = BackupSessionCheckController()
+        let activity = BackupActivityProbe()
+        let checker = BackupSessionCheckController(activity: activity.activity)
         await checker.run(session: session, selectedDestinationID: session.destinationID, destination: fixture.controller.destination, persistence: fixture.persistence)
         #expect(checker.phase == .completed && checker.progress.unverifiedFiles == 1)
         #expect(checker.progress.matchingFiles == 0 && checker.progress.unverifiedPaths == [record.relativePath])
@@ -52,7 +55,8 @@ struct BackupSessionCheckTests {
         try await fixture.backup(catalog)
         let session = try #require(try await fixture.persistence.store().recentSessions().first)
         let other = try BackupControllerFixture()
-        let checker = BackupSessionCheckController()
+        let activity = BackupActivityProbe()
+        let checker = BackupSessionCheckController(activity: activity.activity)
         await checker.run(session: session, selectedDestinationID: session.destinationID, destination: other.controller.destination, persistence: fixture.persistence)
         #expect(checker.phase == .failed && checker.errorMessage == BackupDestinationError.selectionChanged.message)
         #expect(other.scope.counts.started == 0)
@@ -70,7 +74,8 @@ struct BackupSessionCheckTests {
         let destination = BackupDestinationStore(defaults: try PersistentTestDefaults(record: reselected),
                                                 operations: fixture.destinationFixture.scope.operations,
                                                 selectFolder: { nil }, saveRecord: { _ in })
-        let checker = BackupSessionCheckController()
+        let activity = BackupActivityProbe()
+        let checker = BackupSessionCheckController(activity: activity.activity)
         await checker.run(session: session, selectedDestinationID: reselected.id,
                           destination: destination, persistence: fixture.persistence)
         #expect(checker.phase == .completed && checker.progress.matchingFiles == 1)
@@ -87,10 +92,12 @@ struct BackupSessionCheckTests {
         let session = try #require(try await fixture.persistence.store().recentSessions().first)
         let other = try BackupControllerFixture()
         let selection = try #require(other.controller.destination.selection)
-        let checker = BackupSessionCheckController()
+        let activity = BackupActivityProbe()
+        let checker = BackupSessionCheckController(activity: activity.activity)
         await checker.run(session: session, selectedDestinationID: selection.id,
                           destination: other.controller.destination, persistence: fixture.persistence)
         #expect(checker.phase == .failed && checker.errorMessage == SavedBackupCheckError.differentFolder.errorDescription)
+        #expect(activity.activeCount == 0 && activity.started == 1 && activity.ended == 1)
         #expect(checker.progress.checkedFiles == 0 && other.scope.counts.active == 0)
     }
 
@@ -107,14 +114,17 @@ struct BackupSessionCheckTests {
         operations.validateReadableFolder = { _ in gate.waitOnce(); return "Test Backup" }
         let destination = BackupDestinationStore(defaults: try PersistentTestDefaults(record: record), operations: operations,
                                                 selectFolder: { nil }, saveRecord: { _ in })
-        let checker = BackupSessionCheckController()
+        let activity = BackupActivityProbe()
+        let checker = BackupSessionCheckController(activity: activity.activity)
         let task = Task { await checker.run(session: session, selectedDestinationID: session.destinationID, destination: destination, persistence: fixture.persistence) }
         try await waitForPersistentState { gate.entered }
         if parentCancellation { task.cancel() } else { checker.stop() }
         #expect(checker.isRunning && fixture.destinationFixture.scope.counts.active == 1)
+        #expect(activity.activeCount == 1)
         gate.release()
         await task.value
         #expect(checker.phase == .stopped && !checker.isRunning)
+        #expect(activity.activeCount == 0 && activity.started == 1 && activity.ended == 1)
         #expect(checker.progress.checkedFiles == 0 && checker.errorMessage == nil)
         #expect(fixture.destinationFixture.scope.counts.active == 0)
     }
