@@ -154,4 +154,40 @@ struct MediaSelectionTests {
 
         #expect(selection == MediaSelection())
     }
+
+    @Test func addingAGroupPreservesOtherSelectionsAndAnchorsInVisibleOrder() {
+        var selection = MediaSelection(selectedIDs: ["f"], anchorID: "f")
+        selection.setSelected(true, ids: ["d", "c", "c", "missing"], orderedIDs: orderedIDs)
+        #expect(selection.selectedIDs == ["c", "d", "f"])
+        #expect(selection.anchorID == "c")
+        selection.select(id: "e", orderedIDs: orderedIDs, extendingRange: true)
+        #expect(selection.selectedIDs == ["c", "d", "e"])
+    }
+
+    @Test func removingAGroupRepairsOnlyAnAffectedAnchor() {
+        var selection = MediaSelection(selectedIDs: ["a", "c", "d", "f"], anchorID: "a")
+        selection.setSelected(false, ids: ["c", "d"], orderedIDs: orderedIDs)
+        #expect(selection.selectedIDs == ["a", "f"] && selection.anchorID == "a")
+        selection.setSelected(false, ids: ["a"], orderedIDs: orderedIDs)
+        #expect(selection.selectedIDs == ["f"] && selection.anchorID == "f")
+        selection.setSelected(false, ids: ["f"], orderedIDs: orderedIDs)
+        #expect(selection == MediaSelection())
+    }
+
+    @Test func repeatedGroupActionsAreIdempotentAndIgnoreUnknownGroups() {
+        var selection = MediaSelection(selectedIDs: ["f"], anchorID: "f")
+        for _ in 0..<2 { selection.setSelected(true, ids: ["a", "b"], orderedIDs: orderedIDs) }
+        #expect(selection.selectedIDs == ["a", "b", "f"] && selection.anchorID == "a")
+        for _ in 0..<2 { selection.setSelected(false, ids: ["a", "b"], orderedIDs: orderedIDs) }
+        let original = selection
+        selection.setSelected(true, ids: ["missing"], orderedIDs: orderedIDs)
+        selection.setSelected(false, ids: [], orderedIDs: orderedIDs)
+        #expect(selection == original)
+    }
+
+    @Test func aGroupCannotRetainHiddenSelectionOrAnchor() {
+        var selection = MediaSelection(selectedIDs: ["hidden", "a"], anchorID: "hidden")
+        selection.setSelected(false, ids: ["b"], orderedIDs: orderedIDs)
+        #expect(selection.selectedIDs == ["a"] && selection.anchorID == "a")
+    }
 }

@@ -1,17 +1,23 @@
 import MediaModels
 import SwiftUI
 
-/// A compact, noninteractive date marker; the rest of the pinned row stays transparent.
+/// Only the compact date marker has actions; the rest of the pinned row stays transparent.
 struct LibrarySectionHeader: View {
     let section: MediaSection
+    let onSelection: () -> Void
+    @Environment(AppModel.self) private var model
 
     var body: some View {
+        let target = model.dateGroupTarget(sectionID: section.id)
         surface
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.vertical, 8)
-            .allowsHitTesting(false)
+            .contentShape(Capsule())
+            .contextMenu { DateGroupSelectionActions(model: model, target: target, didSelect: onSelection) }
             .accessibilityElement(children: .combine)
             .accessibilityAddTraits(.isHeader)
+            .accessibilityActions { DateGroupSelectionActions(model: model, target: target, didSelect: onSelection) }
+            .help("Right-click to select or deselect this date group.")
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.vertical, 8)
     }
 
     @ViewBuilder

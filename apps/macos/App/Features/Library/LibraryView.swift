@@ -85,7 +85,7 @@ struct LibraryView: View {
                                         .id(asset.id)
                                     }
                                 } header: {
-                                    LibrarySectionHeader(section: section)
+                                    LibrarySectionHeader(section: section, onSelection: keyboard.focus)
                                 }
                             }
                         }

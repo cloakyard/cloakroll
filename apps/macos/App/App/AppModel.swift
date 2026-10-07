@@ -380,6 +380,14 @@ final class AppModel {
         activeID = nil
     }
 
+    func setDateGroupSelected(_ selected: Bool, target: DateGroupSelectionTarget) {
+        guard let section = currentDateGroup(for: target) else { return }
+        selection.setSelected(selected, ids: section.assets.map(\.id), orderedIDs: snapshot.orderedIDs)
+        if selected || activeID.map({ !selection.selectedIDs.contains($0) }) != false {
+            activeID = selection.anchorID
+        }
+    }
+
     func moveSelection(by offset: Int, extending: Bool) {
         let ids = snapshot.orderedIDs
         guard !ids.isEmpty else { return }

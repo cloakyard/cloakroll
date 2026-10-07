@@ -61,6 +61,7 @@ private struct LibraryActionItems: View {
                 model.copySelectedFilenames()
             }
             .disabled(model.selection.selectedIDs.isEmpty)
+            DateGroupSelectionActions(model: model, target: model.activeDateGroupTarget)
             Button("Deselect All") { model.clearSelection() }
                 .keyboardShortcut("a", modifiers: [.command, .shift])
                 .disabled(model.selection.selectedIDs.isEmpty)

@@ -155,7 +155,7 @@ three-Live-Photo backup and zero-transfer repeat, an 18-video import, independen
 of all 24 saved originals and observed OS sleep-activity release. Cable interruption is
 still pending user coordination; the first 4.98 GB batch completed in 11.12 seconds.
 
-Current local preview: **0.1.0 (10)**. All 380 core and 192 hosted app tests pass. The normal
+Current local preview: **0.1.0 (11)**. All 384 core and 199 hosted app tests pass. The normal
 Debug and Release builds, strict lint and actual Release-bundle audit pass. The Release
 binary contains arm64 and x86_64; compilation is not runtime acceptance on both platforms.
 The Release app no longer contains the injected debugging entitlement.
@@ -228,6 +228,24 @@ and destination, no overwrite, interruption/retry, database migration, fresh/reo
 devices/destinations and verification failure. Hardware matrices stay separate from simulated tests.
 
 ## Progress evidence
+
+### 7 October 2026 — select media by date group
+
+Date labels now offer native Select Date Group and Deselect Date Group context commands,
+with matching accessibility actions and Library menu commands for the active item. Groups
+follow the current filter, filename search, sort and date grouping. Adding a group preserves
+other selections; removing it preserves the others and repairs the selection anchor/focus.
+Projection and connection tokens prevent an old menu from acting on a changed library.
+The existing compact glass label retains its size and appearance; adjacent photos remain
+clickable behind the transparent part of a pinned header.
+
+All 384 core and 199 hosted app tests, strict lint, normal Debug/universal Release builds,
+installed-bundle and package checks pass. Native checks covered additive selection, group
+deselection, menu parity, accessibility actions, filtered results, subsequent Shift-arrow
+selection and compact dark pinned labels. Installed build 11 selected the physical library's
+19 October items, added 185 September items, removed October and retained exactly 185 items,
+then cleared the remaining group. No backup was started. See
+`verification/DATE-GROUP-SELECTION.md`; outstanding physical/release gates remain open.
 
 ### 7 October 2026 — browse adjacent items in Media Info
 

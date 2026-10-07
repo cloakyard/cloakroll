@@ -39,6 +39,23 @@ public struct MediaSelection: Equatable, Sendable {
         anchorID = ids.first
     }
 
+    /// Add or remove a visible group without replacing selections in other groups.
+    /// The first added item becomes the range anchor; removing that anchor repairs it.
+    public mutating func setSelected(_ selected: Bool, ids: [String], orderedIDs: [String]) {
+        let group = Set(ids).intersection(orderedIDs)
+        guard !group.isEmpty else { return }
+        selectedIDs.formIntersection(orderedIDs)
+        if selected {
+            selectedIDs.formUnion(group)
+            anchorID = orderedIDs.first(where: group.contains)
+        } else {
+            selectedIDs.subtract(group)
+            if anchorID.map({ selectedIDs.contains($0) }) != true {
+                anchorID = orderedIDs.first(where: selectedIDs.contains)
+            }
+        }
+    }
+
     /// Hidden or removed items cannot remain selected after a new projection.
     public mutating func reconcile(with ids: [String]) {
         let visibleIDs = Set(ids)

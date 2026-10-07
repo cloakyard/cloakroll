@@ -20,7 +20,7 @@ Hardware testing resumed on 5 October 2026. Physical flat-folder import, zero-by
 repeat, early Stop/retry and relaunch passed; see [the evidence](verification/HARDWARE-2026-10-05.md).
 New-capture reconnect, cable removal during transfer and destination interruption remain open.
 Software checks do not close those gates. The build remains labeled **Development preview**; 0.1.0
-build 10 identifies this closeout preview, not a public release approval. Per the user's
+build 11 identifies this closeout preview, not a public release approval. Per the user's
 7 October request, remaining software work precedes the final hardware matrix.
 Hardware testing subsequently resumed on 7 October: build 9 passed original imports,
 zero-transfer Live Photo repeat, independent saved-file hashes and observed activity
@@ -52,7 +52,7 @@ signature or downloads credentials.
 To create a **local preview** ZIP, use a new output path:
 
 ```sh
-bash scripts/package_local.sh build/VerifyRelease/Build/Products/Release/CloakRoll.app build/releases/CloakRoll-0.1.0-10-local-universal.zip
+bash scripts/package_local.sh build/VerifyRelease/Build/Products/Release/CloakRoll.app build/releases/CloakRoll-0.1.0-11-local-universal.zip
 ```
 
 Packaging validates an isolated copy, checks the ZIP, reports SHA-256 and refuses
@@ -282,3 +282,23 @@ No transfer was initiated during this feature validation; outstanding hardware g
 
 Local archive: `apps/macos/build/releases/CloakRoll-0.1.0-10-local-universal.zip`.
 SHA-256: `042beb47239614a609205bee90ed9a181a905dc234ba6de796411a4837271087`.
+
+## 7 October date group selection preview — build 11
+
+Date-label context commands now select/deselect the current group's displayed items while
+preserving other groups. Library menu parity and assistive actions use the same guarded
+operations. Pinned labels keep the existing compact glass appearance and allow clicks on
+adjacent photos. General Settings includes the new interaction hint.
+
+All **384 core and 199 hosted app tests**, strict lint, warning-free normal Debug and
+universal Release builds, bundle audits and ZIP validation pass. Native light/compact-dark
+checks and the installed physical-library 19 → 204 → 185 → 0 selection sequence passed.
+See [date group selection evidence](verification/DATE-GROUP-SELECTION.md).
+
+Installed **0.1.0 (11)** at `/Applications/CloakRoll.app`, verified About and Settings, and
+left All Photos at the top with no selection and the regular destination available. Older
+app bundles are recoverable in Trash. No backup was started or source original modified.
+Hardware interruption, distribution and other remaining acceptance gates stay open.
+
+Local archive: `apps/macos/build/releases/CloakRoll-0.1.0-11-local-universal.zip`.
+SHA-256: `c9d99e835afcdd04994717ed0ea4ec37f3af611e38e494d9c1e8378fc7c23969`.

@@ -12,6 +12,10 @@ native search/menu actions, clearly labeled sample media, chronological groups, 
 selection, camera metadata and Settings. Media Info has native Previous/Next controls and
 ⌘[ / ⌘] shortcuts for browsing the current results without changing the backup selection.
 See [Info navigation verification](docs/verification/MEDIA-INFO-NAVIGATION.md).
+Right-click a date label to **Select Date Group** or **Deselect Date Group**. These actions
+affect only the current filtered results and preserve selections in other groups; they are
+also available in the Library menu for the active photo's group.
+See [date selection verification](docs/verification/DATE-GROUP-SELECTION.md).
 Interrupted publication recovery and a per-original
 available-space check preserve completed files when a later operation fails.
 Active backups, explicit saved-file checks and history rebuilding keep the Mac awake
@@ -50,9 +54,9 @@ Photos albums. A wired backup can only include originals exposed by the device; 
 otherwise unavailable media may be omitted.
 
 Requires macOS 14 or later; development uses Xcode 27, Swift 6, XcodeGen and SwiftLint.
-The current 0.1.0 (10) Release binary contains Apple silicon and Intel architectures.
+The current 0.1.0 (11) Release binary contains Apple silicon and Intel architectures.
 It is locally ad-hoc signed; Developer ID, notarization and older-system runtime acceptance
-remain release gates. Local software validation: 380 core tests and 192 hosted app tests.
+remain release gates. Local software validation: 384 core tests and 199 hosted app tests.
 
 **Recover after losing app data:** open **Backup History → Rebuild History…**, choose
 an existing backup folder, and use saved recovery records. New backups store these
