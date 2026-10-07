@@ -4,6 +4,7 @@ struct BackupFolderRecoveryView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
     @State private var mode = BackupFolderRecoveryController.Mode.indexed
+    @State private var folderRequest = 0
 
     private var recovery: BackupFolderRecoveryController { model.backup.recovery }
     private var canStart: Bool {
@@ -41,6 +42,7 @@ struct BackupFolderRecoveryView: View {
                     } else if recovery.phase == .idle {
                         Button("Cancel") { dismiss() }
                             .keyboardShortcut(.cancelAction)
+                            .disabled(model.backup.destination.isChoosing)
                     } else {
                         Button("Start Again") { recovery.reset() }
                             .keyboardShortcut("r", modifiers: .command)
@@ -61,22 +63,31 @@ struct BackupFolderRecoveryView: View {
             }
         }
         .frame(width: 560, height: 340)
-        .interactiveDismissDisabled(recovery.isRunning)
+        .interactiveDismissDisabled(recovery.isRunning || model.backup.destination.isChoosing)
         .task { recovery.reset() }
-        .onExitCommand { if !recovery.isRunning { dismiss() } }
+        .task(id: folderRequest) {
+            if folderRequest > 0 { await model.backup.chooseDestination() }
+        }
+        .onExitCommand {
+            if !recovery.isRunning, !model.backup.destination.isChoosing { dismiss() }
+        }
     }
 
     private var destination: some View {
         HStack(spacing: 12) {
             Image(systemName: "folder").font(.title2).foregroundStyle(Color.accentColor)
+                .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 3) {
                 Text(model.backup.destination.selection?.displayName ?? "Choose a Backup Folder")
                     .fontWeight(.medium).lineLimit(1).truncationMode(.middle)
-                Text("Select the folder originally chosen as the backup destination.")
+                Text(model.backup.destination.selection?.lastKnownPath
+                     ?? "Select the folder originally chosen as the backup destination.")
                     .font(.caption).foregroundStyle(.secondary)
+                    .lineLimit(2).truncationMode(.middle)
+                    .help(model.backup.destination.selection?.lastKnownPath ?? "Choose the original backup folder")
             }
             Spacer(minLength: 0)
-            Button("Choose…") { Task { await model.backup.chooseDestination() } }
+            Button(model.backup.destination.selection == nil ? "Choose Folder…" : "Change…") { folderRequest += 1 }
                 .disabled(recovery.phase != .idle || model.backup.isBusy || model.backup.destination.isChoosing)
         }
     }

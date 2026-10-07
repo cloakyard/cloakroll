@@ -54,6 +54,7 @@ final class AppModel {
     @ObservationIgnored private var sourceGeneration = 0
     @ObservationIgnored private var isLoadingSource = false
     @ObservationIgnored private var started = false
+    @ObservationIgnored private var gridNavigation = GridNavigation()
     @ObservationIgnored private var lookup: [String: MediaAsset] = [:]
     @ObservationIgnored private let makeBrowser: @MainActor () -> any DeviceBrowsing
     @ObservationIgnored private var browser: (any DeviceBrowsing)?
@@ -368,37 +369,42 @@ final class AppModel {
 
     func select(_ asset: MediaAsset, extendingRange: Bool, toggling: Bool) {
         guard snapshot.orderedIDs.contains(asset.id) else { return }
+        gridNavigation.reset()
         selection.select(id: asset.id, orderedIDs: snapshot.orderedIDs, extendingRange: extendingRange, toggling: toggling)
         activeID = asset.id
     }
 
     func selectAll() {
+        gridNavigation.reset()
         selection.selectAll(snapshot.orderedIDs)
         if activeID == nil { activeID = snapshot.orderedIDs.first }
     }
 
     func clearSelection() {
+        gridNavigation.reset()
         selection.clear()
         activeID = nil
     }
 
     func setDateGroupSelected(_ selected: Bool, target: DateGroupSelectionTarget) {
         guard let section = currentDateGroup(for: target) else { return }
+        gridNavigation.reset()
         selection.setSelected(selected, ids: section.assets.map(\.id), orderedIDs: snapshot.orderedIDs)
         if selected || activeID.map({ !selection.selectedIDs.contains($0) }) != false {
             activeID = selection.anchorID
         }
     }
 
-    func moveSelection(by offset: Int, extending: Bool) {
+    func moveSelection(_ direction: GridDirection, columns: Int, extending: Bool) {
+        guard isViewingLibrary, presentation == nil else { return }
         let ids = snapshot.orderedIDs
-        guard !ids.isEmpty else { return }
         let hasSelection = !selection.selectedIDs.isEmpty
-        let current = activeID.flatMap { ids.firstIndex(of: $0) }
-            ?? ids.firstIndex { selection.selectedIDs.contains($0) }
-        let index = hasSelection && current != nil
-            ? min(ids.count - 1, max(0, (current ?? 0) + offset))
-            : 0
+        let current = hasSelection ? activeID.flatMap { ids.firstIndex(of: $0) }
+            ?? ids.firstIndex { selection.selectedIDs.contains($0) } : nil
+        guard let index = gridNavigation.target(
+            from: current, direction: direction, sectionCounts: snapshot.sections.map { $0.assets.count },
+            columns: columns, revision: scrollReset
+        ) else { return }
         let target = ids[index]
         selection.select(id: target, orderedIDs: ids, extendingRange: extending && hasSelection, toggling: false)
         activeID = target

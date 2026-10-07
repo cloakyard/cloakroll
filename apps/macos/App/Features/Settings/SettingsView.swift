@@ -28,6 +28,7 @@ struct SettingsView: View {
             } footer: {
                 Text("""
                 ⌘-click to select individual items. ⇧-click to select a range.
+                Use arrow keys to move; hold ⇧ to extend the selection.
                 Right-click a date label to select or deselect its group.
                 Press Space or ⌘I to show info for the selected item.
                 In Media Info, use ⌘[ and ⌘] to browse previous and next items.

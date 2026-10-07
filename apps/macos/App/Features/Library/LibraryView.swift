@@ -94,9 +94,9 @@ struct LibraryView: View {
                 .coordinateSpace(name: ThumbnailViewport.coordinateSpace)
                 .background {
                     GridKeyboardBridge(
-                        controller: keyboard, columns: columns,
-                        onMove: { offset, extending in
-                            model.moveSelection(by: offset, extending: extending)
+                        controller: keyboard,
+                        onMove: { direction, extending in
+                            model.moveSelection(direction, columns: columns, extending: extending)
                             if let id = model.activeID { scroll.scrollTo(id) }
                         },
                         onSelectAll: model.selectAll,

@@ -121,11 +121,13 @@ final class LibraryBackupController {
         wasInterrupted = false
     }
 
-    func revealDestination() async {
+    func revealDestination(open: (URL) -> Void = {
+        NSWorkspace.shared.selectFile(nil, inFileViewerRootedAtPath: $0.path)
+    }) async {
         do {
-            let lease = try await destination.acquireLease()
+            let lease = try await destination.acquireLease(readOnly: true)
             defer { lease.release() }
-            NSWorkspace.shared.selectFile(nil, inFileViewerRootedAtPath: lease.url.path)
+            open(lease.url)
         } catch {
             errorMessage = error.localizedDescription
         }
