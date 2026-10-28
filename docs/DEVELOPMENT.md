@@ -2,7 +2,7 @@
 
 ## Toolchain and layout
 
-The first build uses Xcode 27.0 and Swift 6.4 with Swift 6 language mode and macOS 14 deployment
+Development uses Xcode 27+ with Swift 6 language mode, an arm64-only app and macOS 26 deployment
 target. Install XcodeGen and SwiftLint. `apps/macos/project.yml` is authoritative; regenerate the
 ignored Xcode project after adding sources or changing configuration. GRDB 7.11.1 is the only third-party Swift dependency, pinned in the package lockfile. CloakDrop is a read-only architectural/design reference.
 
@@ -59,7 +59,7 @@ restricted, disconnected and illustrative in-progress states.
 
 View Options contains native Small/Medium/Large thumbnail-size choices alongside sort and group
 menus. Settings and the View menu use the same choices. Medium is the first-launch fallback;
-thumbnail size, sort, grouping and the last Settings pane are persisted locally. Check all three
+thumbnail size, sort and grouping are persisted locally. Settings reopens on General. Check all three
 sizes at compact and standard widths, and relaunch after changing preferences. See
 `verification/UI-PRESETS-PERFORMANCE.md` and `verification/PHASE-8.md` for recorded evidence.
 
@@ -76,7 +76,7 @@ The checklist in `APPLE_APIS.md` records what mocks cannot prove. Never call a h
 complete from compile-time probes or sample UI tests.
 
 Local builds are sandboxed, hardened-runtime and ad-hoc signed. These checks do not establish
-Developer ID signing, notarization, behavior on macOS 14 hardware, or release readiness. Do not
+Developer ID signing, notarization, behavior on the minimum macOS 26 runtime, or release readiness. Do not
 publish release claims until the corresponding Phase 10 checks are complete.
 
 [RELEASE.md](RELEASE.md) consolidates current closeout gates and provides a read-only
@@ -173,11 +173,17 @@ older-runtime, icon and hardware gates.
 ## Beta packaging and Settings
 
 [Release](RELEASE.md) documents the isolated build-tool setup and `scripts/prepare_beta.sh`.
-It produces a dated universal beta DMG plus logs, checksums and a source-commit manifest.
-Use the arm64 destination on Apple silicon and `platform=macOS,arch=x86_64` for a local Intel
-Debug/test destination; compiling both architectures is not runtime acceptance on both.
+It produces an Apple silicon-only beta DMG plus logs, checksums and a source-commit manifest.
+The project and beta pipeline use arm64. Packaging rejects Intel/universal executables and
+checks both the bundle and Mach-O minimum macOS version (26.0).
 
 Settings follows the family’s native tabbed window, grouped forms and centered About header.
-General, Backup, Privacy and About remain app-side components. The selected tab is remembered.
+General, Backup, Privacy and About remain app-side components. Closing Settings resets the next opening to General, matching CloakDrop.
 The source/bug/privacy links are explicit user actions; there are no background network requests.
 Bundled MIT and GRDB notices are readable offline from About → Open-Source Licenses.
+
+Five taps on the About icon toggle the family Matrix easter egg. Tap the icon or card to stop;
+leaving About resets it. Reduce Motion shows a still frame, and inactive scenes pause animation.
+The Debug Dock Progress Examples window uses the production AppKit tile renderer. Sample
+Backup Progress also updates the actual Dock without transferring files. The app-owned observer
+coalesces whole-percent updates and survives closing the library window.

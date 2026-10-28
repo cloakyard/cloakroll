@@ -59,7 +59,7 @@ let image = NSImage(size: NSSize(width: W, height: H), flipped: true) { _ in
     // Keep the original mark, with the family's quiet single-colour wordmark.
     NSImage(contentsOfFile: iconPath)?.draw(in: NSRect(x: 40, y: 28, width: 36, height: 36))
     text("CloakRoll", size: 18, weight: .medium, color: ink, x: 86, y: 46, tracking: -0.5)
-    text("macOS 14+ · Universal beta", size: 12, color: secondary,
+    text("macOS 26+ · Apple silicon only", size: 12, color: secondary,
          x: 548, y: 46)
 
     text("Your camera roll.", size: 34, color: ink,

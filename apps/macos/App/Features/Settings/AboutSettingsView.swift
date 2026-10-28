@@ -6,24 +6,8 @@ struct AboutSettingsView: View {
     var body: some View {
         Form {
             Section {
-                VStack(spacing: 12) {
-                    Image("AboutAppIcon")
-                        .resizable().interpolation(.high)
-                        .frame(width: 84, height: 84)
-                        .accessibilityHidden(true)
-                    VStack(spacing: 3) {
-                        Text(wordmark).font(.title2.weight(.semibold))
-                            .accessibilityLabel("CloakRoll")
-                        Text("Version \(version) · \(releaseChannel)")
-                            .font(.callout).monospacedDigit().foregroundStyle(.secondary)
-                            .textSelection(.enabled)
-                        Text("Created by Sumit Sahoo")
-                            .font(.footnote).foregroundStyle(.secondary).padding(.top, 3)
-                    }
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 20)
-                .listRowInsets(EdgeInsets())
+                AboutHeaderView(version: "\(version) · \(releaseChannel)")
+                    .listRowInsets(EdgeInsets())
             }
             Section {
                 if let url = SettingsLinks.author {
@@ -45,14 +29,6 @@ struct AboutSettingsView: View {
         .formStyle(.grouped)
         .scrollBounceBehavior(.basedOnSize)
         .sheet(isPresented: $showingLicenses) { LicensesView() }
-    }
-
-    private var wordmark: AttributedString {
-        var text = AttributedString("Cloak")
-        var suffix = AttributedString("Roll")
-        suffix.foregroundColor = Design.accent
-        text.append(suffix)
-        return text
     }
 
     private var version: String {

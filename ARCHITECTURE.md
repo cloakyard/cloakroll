@@ -1,6 +1,6 @@
 # CloakRoll architecture
 
-CloakRoll is a native, local-first macOS 14+ wired photo/video backup utility, part of Cloakyard.
+CloakRoll is a native, local-first macOS 26+ Apple silicon wired photo/video backup utility, part of Cloakyard.
 It browses available originals without becoming a photo library replacement. See `docs/PLAN.md`
 for phase status and acceptance evidence; planned capabilities are not claims about shipped behavior.
 
@@ -61,7 +61,7 @@ Every resource is retained once, including ambiguous/orphaned sidecars. A still-
 resource gives RAW pairs and Live Photos stable selection and preview identity as companions
 arrive. These session resource IDs address device requests; they are not persistent backup keys.
 
-Thumbnail requests are lazy and viewport-driven. A macOS 14-compatible geometry observer reduces
+Thumbnail requests are lazy and viewport-driven. A viewport geometry observer reduces
 cell positions to visible, nearby prefetch, or no demand; scrolling does not publish every pixel.
 The grid and Info share one controller, an encoded pipeline actor, and a serial decoded-image actor.
 Visible consumers outrank queued prefetch. At most two logical source loads run, including at most

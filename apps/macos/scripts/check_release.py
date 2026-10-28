@@ -24,12 +24,12 @@ def plist(path):
         return plistlib.load(source)
 
 
-def check(app, distribution, universal=False, build=None, channel=None):
+def check(app, distribution, build=None, channel=None):
     require(app.is_dir() and app.suffix == ".app", "Provide a built CloakRoll.app bundle.")
     info = plist(app / "Contents/Info.plist")
     require(info.get("CFBundleIdentifier") == "com.cloakyard.cloakroll", "Unexpected app identifier.")
     require(info.get("CFBundleExecutable") == "CloakRoll", "Unexpected executable.")
-    require(info.get("LSMinimumSystemVersion") == "14.0", "Review the changed macOS deployment baseline.")
+    require(info.get("LSMinimumSystemVersion") == "26.0", "Review the changed macOS deployment baseline.")
     for key in ("CFBundleShortVersionString", "CFBundleVersion"):
         require(re.fullmatch(r"\d+(?:\.\d+){0,2}", info.get(key, "")), f"Invalid version: {key}")
     require(info.get("CloakRollReleaseChannel") in {"Beta", "Development preview"}, "Unknown release channel.")
@@ -59,10 +59,10 @@ def check(app, distribution, universal=False, build=None, channel=None):
     require(re.search(r"flags=.*\([^\n]*runtime", signature), "Hardened runtime is missing.")
     architectures, _ = command("/usr/bin/lipo", "-archs", str(app / "Contents/MacOS/CloakRoll"))
     architectures = architectures.decode().strip()
-    require(set(architectures.split()) <= {"arm64", "x86_64"} and architectures,
-            "Unexpected or missing executable architecture.")
-    if universal:
-        require(set(architectures.split()) == {"arm64", "x86_64"}, "Universal packaging requires both architectures.")
+    require(architectures.split() == ["arm64"], "CloakRoll requires an Apple silicon-only (arm64) executable.")
+    build_info, _ = command("/usr/bin/xcrun", "vtool", "-show-build", str(app / "Contents/MacOS/CloakRoll"))
+    require(re.search(r"minos\s+26\.0(?:\.0)?(?:\s|$)", build_info.decode()),
+            "The executable must target macOS 26.0, matching the bundle requirement.")
 
     privacy = plist(app / "Contents/Resources/PrivacyInfo.xcprivacy")
     manifests = list((app / "Contents/Resources").rglob("PrivacyInfo.xcprivacy"))
@@ -96,12 +96,11 @@ def main():
     parser.add_argument("app", type=Path)
     parser.add_argument("--require-distribution", action="store_true",
                         help="Also require Developer ID, Gatekeeper acceptance and a stapled notarization ticket.")
-    parser.add_argument("--require-universal", action="store_true")
     parser.add_argument("--build", help="Require this exact CFBundleVersion.")
     parser.add_argument("--channel", choices=["Beta", "Development preview"])
     arguments = parser.parse_args()
     try:
-        check(arguments.app.resolve(), arguments.require_distribution, arguments.require_universal,
+        check(arguments.app.resolve(), arguments.require_distribution,
               arguments.build, arguments.channel)
     except (OSError, ValueError, KeyError, TypeError, plistlib.InvalidFileException, subprocess.CalledProcessError) as error:
         print(f"Release check failed: {error}", file=sys.stderr)

@@ -10,7 +10,7 @@ Built with SwiftUI and a separately tested Swift engine. No account, analytics o
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
-  <img src="https://img.shields.io/badge/platform-macOS%2014%2B%20%C2%B7%20Universal-lightgrey" alt="Target: macOS 14+, Apple silicon and Intel">
+  <img src="https://img.shields.io/badge/platform-macOS%2026%2B%20%C2%B7%20Apple%20silicon-lightgrey" alt="Requires macOS 26+, Apple silicon only">
   <img src="https://img.shields.io/badge/beta-0.1.0%20%2820261028.2%29-714BC4" alt="Beta: 0.1.0 (20261028.2)">
   <img src="https://img.shields.io/badge/Swift-6-F05138?logo=swift&logoColor=white" alt="Swift 6">
   <img src="https://img.shields.io/badge/SwiftUI-Liquid%20Glass-8A2BE2" alt="SwiftUI · Liquid Glass">
@@ -37,16 +37,16 @@ artifact, checksum and validation; release binaries are kept out of source contr
 3. Connect and unlock your iPhone over USB, accepting Trust if prompted. Choose a backup folder.
 4. Back up new items, or select items and back up the selection.
 
-Targets **macOS 14+ on Apple silicon and Intel**. This beta is locally ad-hoc signed and
+Requires **macOS 26 or later on Apple silicon**. Intel Macs are not supported. This beta is locally ad-hoc signed and
 **not notarized**. If macOS blocks a trusted copy after your first launch attempt, see
 [Apple’s opening guidance](https://support.apple.com/en-us/102445). Current runtime validation
-is on Apple silicon with macOS 27; macOS 14 and Intel runtime checks remain open.
+is on Apple silicon with macOS 27; macOS 26 runtime acceptance remains open.
 
 Keep another independent copy of irreplaceable originals while evaluating the beta.
 
 ## Version 0.1.0 beta
 
-The first beta brings the implemented USB-backup workflow into a dated universal build,
+The first beta brings the implemented USB-backup workflow into a dated Apple silicon build,
 with family-aligned Settings, bundled license notices and an Air drag-to-Applications installer.
 See the [beta readiness audit](docs/verification/BETA-2026-10-28.md) for exact checks and limits.
 
@@ -58,11 +58,11 @@ See the [beta readiness audit](docs/verification/BETA-2026-10-28.md) for exact c
 | **Keep originals** | Copies original components, including Live Photo companions, without conversion or deletion on the phone. |
 | **Incremental backups** | Device- and destination-scoped evidence, with fresh local size/SHA-256 checks before reusing a saved original. Missing or changed files stay eligible for backup. |
 | **Organize multiple iPhones** | Each stable iPhone identity remembers its selected folder. New files use a separate device folder, with Year/Month or One Folder organization. |
-| **Follow progress** | Compact Liquid Glass controls, measured progress, a stable heading and Stop. Completed components remain recorded if later work fails. |
+| **Follow progress** | Compact Liquid Glass controls, measured progress in the app and Dock, a stable heading and Stop. Completed components remain recorded if later work fails. |
 | **Review history** | Offline sessions, iPhone/result filters, paging, original counts and read-only saved-file checks. |
 | **Recover lost history** | Rebuild from a backup folder’s portable recovery records. Older media-only folders can use one-time size/hash verification over USB. |
 | **Inspect and select** | Camera/lens, ISO, aperture and other supplied metadata; Info navigation, range/date-group selection and quick deselection. |
-| **Feel at home on Mac** | Native menus, keyboard actions, light/dark appearance and system materials; photos scroll beneath the toolbar. Liquid Glass uses native fallbacks on older macOS. |
+| **Feel at home on Mac** | Native menus, keyboard actions, light/dark appearance and system materials; photos scroll beneath the toolbar. Designed for macOS 26 and later. |
 
 ### Current boundaries
 
@@ -119,7 +119,7 @@ open build/Verify/Build/Products/Debug/CloakRoll.app
 
 `project.yml` is authoritative; the generated Xcode project is ignored. `GIT_CONFIG_COUNT=0`
 avoids inherited agent Git configuration interfering with SwiftPM. See
-[development instructions](docs/DEVELOPMENT.md) for sample UI, Intel build destinations and tests.
+[development instructions](docs/DEVELOPMENT.md) for sample UI, Apple silicon builds and tests.
 
 | Layer | Choice |
 |---|---|
@@ -139,7 +139,7 @@ To prepare a dated beta and DMG, follow the setup in [Release](docs/RELEASE.md),
 scripts/prepare_beta.sh --build 20261028.3
 ```
 
-This checks a clean source commit, runs tests/lint/builds, packages a universal Release app,
+This checks a clean source commit, runs tests/lint/builds, packages an arm64-only Release app,
 validates the mounted DMG and writes checksums and a build manifest. It does not publish a release.
 
 ## Testing

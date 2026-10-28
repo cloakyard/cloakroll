@@ -16,6 +16,7 @@ struct SettingsView: View {
             AboutSettingsView().tabItem { Label("About", systemImage: "info.circle") }.tag(SettingsTab.about)
         }
         .frame(width: 640, height: 600)
+        .onDisappear { model.settingsTab = .general }
     }
 
     private var general: some View {

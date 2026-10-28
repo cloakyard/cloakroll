@@ -11,6 +11,13 @@ A passing mock test never substitutes for a real iPhone acceptance check. Follow
 may proceed while an explicitly recorded hardware check is pending. A phase is not accepted or
 called complete until its actual evidence is recorded. No source media is modified or deleted.
 
+## Current platform decision — 28 October 2026
+
+Per the user’s latest direction, CloakRoll now targets **Apple silicon only, macOS 26+**.
+This supersedes the macOS 14/Intel baseline recorded in earlier phase evidence. App, package,
+beta build, bundle checks, website and installer must agree. Historical verification remains
+unchanged; minimum macOS 26 runtime acceptance is still required.
+
 ## Current closeout checklist — 28 October 2026
 
 This is the current implementation queue; the phase sections below retain historical gates
@@ -60,7 +67,7 @@ Reference files were inspected under `../cloakdrop`:
 Do not copy CloakDrop's networking, web browser, segmented downloads, menu-bar ambient systems,
 download actions, helper executables, or permanent inspector. The macOS 14 baseline provides
 Observation, SwiftUI split navigation and Settings. Following the user's Liquid Glass refinement
-request, use newer system UI APIs behind availability checks with native macOS 14 fallbacks.
+request, use newer system UI APIs behind availability checks with native macOS 14 fallbacks. This original baseline is superseded by the current platform decision above.
 Purple is semantic `AppAccent`, with separate light/dark asset values; source-list selection stays native.
 
 ## Planned architecture and directory structure

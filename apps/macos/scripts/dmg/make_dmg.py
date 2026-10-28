@@ -29,7 +29,7 @@ def main():
     output = args.output.absolute()
     if output.suffix != ".dmg" or os.path.lexists(output):
         parser.error("Choose a new .dmg path; existing artifacts are never overwritten.")
-    run("python3", HERE.parent / "check_release.py", app, "--require-universal", "--channel", "Beta")
+    run("python3", HERE.parent / "check_release.py", app, "--channel", "Beta")
     output.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix=".cloakroll-dmg-", dir=output.parent) as temporary:
         work = Path(temporary)

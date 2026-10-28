@@ -33,7 +33,7 @@ final class AppModel {
     private(set) var deviceInventory = DeviceInventory()
     var isProjecting = false
     var presentation: LibraryPresentation?
-    var settingsTab = SettingsTab.general { didSet { preferences.save(settingsTab) } }
+    var settingsTab = SettingsTab.general
     var backupOrganization = BackupOrganization.byDate { didSet { preferences.save(backupOrganization) } }
     var sampleProgress = false
     var sampleProgressExample = BackupProgressExample.copying
@@ -75,7 +75,6 @@ final class AppModel {
         thumbnailSize = preferences.thumbnailSize
         sort = preferences.sort
         grouping = preferences.grouping
-        settingsTab = preferences.settingsTab
         backupOrganization = preferences.backupOrganization
         if let makeBrowser {
             self.makeBrowser = makeBrowser

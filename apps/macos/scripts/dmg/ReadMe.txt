@@ -30,9 +30,9 @@ HISTORY AND RECOVERY
 BETA LIMITS
   Keep another independent copy of irreplaceable originals while testing.
   Final cable/removable-drive interruption, full-disk, sustained performance,
-  full assistive-technology and older-macOS runtime checks remain open.
-  The universal build targets macOS 14+, but current runtime validation is
-  on Apple silicon with macOS 27. Restore to iPhone is not implemented.
+  full assistive-technology and macOS 26 runtime checks remain open.
+  Requires an Apple silicon Mac with macOS 26 or later. Intel Macs are not
+  supported. Current runtime validation is on Apple silicon with macOS 27. Restore to iPhone is not implemented.
 
 PRIVACY AND FEEDBACK
   No account, analytics or media uploads. History and previews stay local.

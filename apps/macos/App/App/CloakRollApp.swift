@@ -31,6 +31,7 @@ struct CloakRollApp: App {
                 .task {
                     appDelegate.onTerminate = model.shutdown
                     appDelegate.backup = model.backup
+                    appDelegate.observeDock(model: model)
                     await model.bootstrap()
                 }
         }
@@ -44,6 +45,11 @@ struct CloakRollApp: App {
                 .tint(Design.accent)
         }
         .defaultSize(width: 720, height: 520)
+
+        Window("Dock Progress Examples", id: "dock-progress-examples") {
+            BackupDockExamples()
+        }
+        .windowResizability(.contentSize)
         #endif
 
         Settings {
@@ -59,6 +65,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     var onTerminate: (() -> Void)?
     weak var backup: LibraryBackupController?
     private var isWaitingToQuit = false
+    private let dockRenderer = BackupDockRenderer()
+    private var dockProgress: BackupDockProgress?
+
+    func observeDock(model: AppModel) {
+        guard dockProgress == nil, ProcessInfo.processInfo.environment["CLOAKROLL_TESTING"] != "1" else { return }
+        dockProgress = BackupDockProgress(model: model, render: dockRenderer.render)
+    }
 
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
         requestTermination { sender.reply(toApplicationShouldTerminate: $0) }
@@ -78,5 +91,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         return .terminateLater
     }
 
-    func applicationWillTerminate(_ notification: Notification) { onTerminate?() }
+    func applicationWillTerminate(_ notification: Notification) {
+        dockProgress?.stop()
+        onTerminate?()
+    }
 }

@@ -3,7 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "CloakRollCore",
-    platforms: [.macOS(.v14)],
+    platforms: [.macOS("26.0")],
     products: [
         .library(name: "MediaModels", targets: ["MediaModels"]),
         .library(name: "MediaCatalog", targets: ["MediaCatalog"]),

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build a dated universal beta from a clean commit, with logs and artifact provenance."""
+"""Build a dated Apple silicon beta from a clean commit, with logs and artifact provenance."""
 import argparse
 from datetime import datetime
 import hashlib
@@ -54,12 +54,12 @@ def main():
                     "-derivedDataPath", release / "Debug"]
     run("app-tests", debug + ["test"])
     run("debug-build", debug + ["build"])
-    run("release-build", base + ["-destination", "platform=macOS", "-configuration", "Release",
-        "-derivedDataPath", release / "Release", "ARCHS=arm64 x86_64", "ONLY_ACTIVE_ARCH=NO",
+    run("release-build", base + ["-destination", "platform=macOS,arch=arm64", "-configuration", "Release",
+        "-derivedDataPath", release / "Release", "ARCHS=arm64", "ONLY_ACTIVE_ARCH=NO",
         f"MARKETING_VERSION={version}", f"CURRENT_PROJECT_VERSION={args.build}",
         "CLOAKROLL_RELEASE_CHANNEL=Beta", "build"])
     app = release / "Release/Build/Products/Release/CloakRoll.app"
-    run("bundle-check", [sys.executable, HERE / "check_release.py", app, "--require-universal",
+    run("bundle-check", [sys.executable, HERE / "check_release.py", app,
                          "--build", args.build, "--channel", "Beta"])
     dmg = release / f"CloakRoll-v{version}-beta.{args.build}.dmg"
     run("dmg", [sys.executable, HERE / "dmg/make_dmg.py", app, dmg])

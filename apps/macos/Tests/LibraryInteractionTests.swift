@@ -7,7 +7,7 @@ import Testing
 @Suite("Native library interactions and preferences")
 @MainActor
 struct LibraryInteractionTests {
-    @Test func browsingChoicesAndSettingsPaneSurviveModelRelaunch() throws {
+    @Test func browsingChoicesPersistButSettingsReopensOnGeneral() throws {
         let suite = "CloakRollPreferencesTests-" + UUID().uuidString
         let defaults = try #require(UserDefaults(suiteName: suite))
         defer { defaults.removePersistentDomain(forName: suite) }
@@ -24,7 +24,7 @@ struct LibraryInteractionTests {
         #expect(reopened.thumbnailSize == .large)
         #expect(reopened.sort == .oldestFirst)
         #expect(reopened.grouping == .month)
-        #expect(reopened.settingsTab == .backup)
+        #expect(reopened.settingsTab == .general)
         #expect(reopened.backupOrganization == .singleFolder)
     }
 

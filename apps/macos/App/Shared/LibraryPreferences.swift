@@ -21,9 +21,6 @@ struct LibraryPreferences {
     var grouping: CatalogGrouping {
         defaults?.string(forKey: "browsing.grouping").flatMap(CatalogGrouping.init(rawValue:)) ?? .automatic
     }
-    var settingsTab: SettingsTab {
-        defaults?.string(forKey: "settings.selectedTab").flatMap(SettingsTab.init(rawValue:)) ?? .general
-    }
     var backupOrganization: BackupOrganization {
         defaults?.string(forKey: "backup.organization").flatMap(BackupOrganization.init(rawValue:)) ?? .byDate
     }
@@ -31,6 +28,5 @@ struct LibraryPreferences {
     func save(_ size: ThumbnailSize) { defaults?.set(size.rawValue, forKey: "browsing.thumbnailSize") }
     func save(_ sort: CatalogSort) { defaults?.set(sort.rawValue, forKey: "browsing.sort") }
     func save(_ grouping: CatalogGrouping) { defaults?.set(grouping.rawValue, forKey: "browsing.grouping") }
-    func save(_ tab: SettingsTab) { defaults?.set(tab.rawValue, forKey: "settings.selectedTab") }
     func save(_ organization: BackupOrganization) { defaults?.set(organization.rawValue, forKey: "backup.organization") }
 }

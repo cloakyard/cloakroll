@@ -2,15 +2,16 @@ name: CloakRoll
 options:
   bundleIdPrefix: com.cloakyard
   deploymentTarget:
-    macOS: "14.0"
+    macOS: "26.0"
   createIntermediateGroups: true
   groupSortPosition: top
   developmentLanguage: en
 settings:
   base:
+    ARCHS: arm64
     SWIFT_VERSION: "6.0"
     SWIFT_STRICT_CONCURRENCY: complete
-    MACOSX_DEPLOYMENT_TARGET: "14.0"
+    MACOSX_DEPLOYMENT_TARGET: "26.0"
     SWIFT_TREAT_WARNINGS_AS_ERRORS: YES
     GCC_TREAT_WARNINGS_AS_ERRORS: YES
     CODE_SIGN_STYLE: Automatic
@@ -62,7 +63,7 @@ targets:
         CFBundleShortVersionString: "$(MARKETING_VERSION)"
         CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
         CloakRollReleaseChannel: "$(CLOAKROLL_RELEASE_CHANNEL)"
-        LSMinimumSystemVersion: "14.0"
+        LSMinimumSystemVersion: "26.0"
         LSApplicationCategoryType: public.app-category.photography
         NSPhotoLibraryUsageDescription: "CloakRoll reads photos and videos from your connected iPhone for local browsing and backup. It does not modify or delete them."
         NSHumanReadableCopyright: "CloakRoll is part of Cloakyard. Your camera roll, safely on your Mac."

@@ -1,0 +1,90 @@
+import SwiftUI
+
+// Adapted from CloakDrop’s MIT-licensed native About artwork.
+/// Matrix-style "digital rain": per-column trails of glyphs falling down a black field, each with a
+/// near-white head and a fading green tail. Drawn in one `Canvas` with no per-frame stored state —
+/// every column's motion and every cell's glyph are a pure function of elapsed time via a hash, so
+/// there's nothing to keep in sync between frames. Reduce Motion renders a single still frame.
+struct MatrixRainView: View {
+    @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
+        Group {
+            if reduceMotion {
+                Canvas { context, size in
+                    Self.draw(in: &context, size: size, time: 1.2)
+                }
+            } else {
+                TimelineView(.animation(minimumInterval: 1.0 / 30.0, paused: scenePhase != .active)) { timeline in
+                    Canvas { context, size in
+                        Self.draw(in: &context, size: size,
+                                  time: timeline.date.timeIntervalSinceReferenceDate)
+                    }
+                }
+            }
+        }
+        .background(.black)
+        .accessibilityHidden(true)
+    }
+
+    // MARK: Rendering
+
+    private static let fontSize: CGFloat = 11
+    private static let cell: CGFloat = 12
+    private static let tail = 14
+    private static let font = Font.system(size: fontSize, weight: .semibold, design: .monospaced)
+
+    /// Half-width katakana (the canonical Matrix glyphs) plus digits.
+    private static let glyphs: [String] = {
+        let katakana = (0xFF66...0xFF9D).compactMap { UnicodeScalar($0).map(String.init) }
+        let digits = (0...9).map(String.init)
+        return katakana + digits
+    }()
+
+    private static func draw(in context: inout GraphicsContext, size: CGSize, time: TimeInterval) {
+        let cols = max(1, Int(size.width / cell))
+        let rows = max(1, Int(size.height / cell) + 1)
+        let gap = 6.0
+        let cycle = Double(rows) + Double(tail) + gap   // rows the head travels before repeating
+
+        for col in 0..<cols {
+            let speed = 6.0 + hash01(col, 1) * 16.0                    // rows per second
+            let offset = hash01(col, 2) * cycle                       // desync the columns
+            let head = (time * speed + offset).truncatingRemainder(dividingBy: cycle)
+
+            for tailIndex in 0..<tail {
+                let row = Int(head) - tailIndex
+                guard row >= 0, row < rows else { continue }          // enters top, exits bottom
+
+                let flicker = Int((time + hash01(col, row)) * 9)      // glyph swaps ~9×/sec, staggered
+                let pick = Int(hash01(col &* 13, row &* 7, flicker) * Double(glyphs.count))
+                let glyph = glyphs[pick % glyphs.count]
+
+                let point = CGPoint(x: CGFloat(col) * cell + cell / 2,
+                                    y: CGFloat(row) * cell + cell / 2)
+                context.draw(Text(glyph).font(font).foregroundStyle(color(tailIndex)),
+                             at: point, anchor: .center)
+            }
+        }
+    }
+
+    /// Head is a near-white green; the tail fades to a dim, translucent green.
+    private static func color(_ tailIndex: Int) -> Color {
+        if tailIndex == 0 { return Color(red: 0.80, green: 1.0, blue: 0.80) }
+        let fade = 1.0 - Double(tailIndex) / Double(tail)             // 1 at the head → 0 at the end
+        return Color(red: 0.05, green: 0.35 + 0.55 * fade, blue: 0.15)
+            .opacity(0.15 + 0.85 * fade)
+    }
+
+    /// Stable hash in `[0, 1)` from up to three integers (FNV-1a style) — the single source of
+    /// pseudo-randomness, which is what lets the whole animation be a pure function of time.
+    private static func hash01(_ a: Int, _ b: Int = 0, _ c: Int = 0) -> Double {
+        var h: UInt64 = 0xcbf2_9ce4_8422_2325
+        for value in [a, b, c] {
+            h = (h ^ UInt64(bitPattern: Int64(value))) &* 0x0000_0100_0000_01b3
+        }
+        h ^= h >> 29
+        return Double(h % 1_000_000) / 1_000_000.0
+    }
+}

@@ -37,7 +37,7 @@ Asia/Kolkata. Use `.1`, `.2`, etc. for additional builds that day. `CFBundleShor
 stays numeric `0.1.0`; the app’s separate channel is **Beta**. Ordinary Debug builds remain
 **Development preview**. Reusing an existing build directory or DMG output is rejected.
 
-The command runs core tests, hosted app tests, strict lint, normal Debug and universal Release
+The command runs core tests, hosted app tests, strict lint, normal Debug and Apple silicon Release
 builds, actual-bundle checks, DMG creation and a read-only mounted comparison. It writes:
 
 ```text
@@ -98,8 +98,8 @@ status; [Apple’s opening guidance](https://support.apple.com/en-us/102445) is 
 | Incremental and thumbnails | Bounded real new-item/repeat and nearby-thumbnail evidence exists | Final same-device new capture/reconnect and preview reuse across reconnect |
 | Device destinations | Per-iPhone mappings, access checks and original-folder ID recall implemented; one connected phone's relaunch/missing-folder flow passed | Switch two physical phones with separate folders; external-volume removal/remount |
 | Scale and responsiveness | Generated 10k/50k/100k metadata/history measurements recorded | Sustained app RSS, frame/main-thread timing and rapid physical-library scrolling |
-| Accessibility and OS support | Current-macOS light/dark, compact layout, native labels/actions inspected | Full VoiceOver/keyboard pass, system accessibility variants, macOS 14 runtime |
-| Distribution | Local universal beta DMG built, inspected and installed; sample release screenshots recorded | Developer ID signing, notarization, stapled ticket and clean-Mac launch |
+| Accessibility and OS support | Current-macOS light/dark, compact layout, native labels/actions inspected | Full VoiceOver/keyboard pass, system accessibility variants, minimum macOS 26 runtime |
+| Distribution | Local beta DMG built, inspected and installed; sample release screenshots recorded | Developer ID signing, notarization, stapled ticket and clean-Mac launch |
 
 Hardware testing resumed on 5 October 2026. Physical flat-folder import, zero-byte
 repeat, early Stop/retry and relaunch passed; see [the evidence](verification/HARDWARE-2026-10-05.md).
@@ -137,12 +137,12 @@ signature or downloads credentials.
 To create a **local preview** ZIP, use a new output path:
 
 ```sh
-bash scripts/package_local.sh build/VerifyRelease/Build/Products/Release/CloakRoll.app build/releases/CloakRoll-0.1.0-15-local-universal.zip
+bash scripts/package_local.sh build/VerifyRelease/Build/Products/Release/CloakRoll.app build/releases/CloakRoll-0.1.0-local-arm64.zip
 ```
 
 Packaging validates an isolated copy, checks the ZIP, reports SHA-256 and refuses
-to overwrite an existing artifact. The current Release executable contains both
-arm64 and x86_64; this does not establish Intel or macOS 14 runtime acceptance.
+to overwrite an existing artifact. New Release executables must contain arm64 only and require macOS 26.0. The checker
+validates both Mach-O load commands and Info.plist; historical universal builds below are superseded.
 Before distribution, re-run the app/hardware checks. After the actual Developer ID signing and Apple
 notarization workflow has been completed, the stricter gate is:
 

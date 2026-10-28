@@ -65,7 +65,7 @@ def validate(dmg, source):
                 "-mountpoint", mount, "-plist", dmg)
             mounted = True
             app = mount / "CloakRoll.app"
-            run("python3", HERE.parent / "check_release.py", app, "--require-universal", "--channel", "Beta")
+            run("python3", HERE.parent / "check_release.py", app, "--channel", "Beta")
             require(inventory(app) == inventory(source), "Packaged app differs from the verified source.")
             require((mount / "Applications").is_symlink() and os.readlink(mount / "Applications") == "/Applications",
                     "Applications link has the wrong target.")
