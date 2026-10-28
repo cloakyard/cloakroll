@@ -981,11 +981,15 @@ backup summary. Superseded app bundles are recoverable in Trash; user data was r
 
 The user requested a beta-readiness review, README alignment with CloakPDF/CloakDrop,
 an Air installer, dated build numbers and actual DMG validation. The existing feature scope is
-retained. MIT licensing was explicitly approved. Settings is being aligned after visual inspection
+retained. MIT licensing was explicitly approved. Settings is now aligned after visual inspection
 of installed CloakDrop General/About/Privacy, with native grouped forms and About/link hierarchy.
 The audit found missing bundled GRDB license text; it is now included and enforced by the bundle checker.
 
 The reproducible beta pipeline uses a clean source commit, pinned build-only tools, full software
 checks, universal Release, exclusive DMG publication and a mounted bundle/layout/asset comparison.
-Current work and actual results are recorded in [the beta audit](verification/BETA-2026-10-28.md).
+Build **20261028** passed all 616 tests, strict lint, Debug/universal Release builds and mounted
+DMG checks. The Air installer and packaged Settings were inspected natively. The verified beta is
+installed; the previous build is recoverable in Trash, and history/destination remain available.
+No new transfer was performed. Actual results and the artifact checksum are recorded in
+[the beta audit](verification/BETA-2026-10-28.md). No GitHub release or tag was created.
 Existing physical, accessibility, older-runtime and distribution gates remain open.

@@ -6,7 +6,8 @@ restore-to-iPhone in the backlog. Additional feature expansion is not needed to 
 
 ## Current beta — 28 October 2026
 
-Preparing **0.1.0 beta (20261028)** as a universal, locally ad-hoc signed DMG. See
+Prepared and installed **0.1.0 beta (20261028)** as a universal, locally ad-hoc signed DMG. All
+616 tests, strict lint, Debug/universal Release builds, bundle and mounted-DMG checks passed. See
 [the dated beta audit](verification/BETA-2026-10-28.md) and
 [release notes](releases/v0.1.0-beta.20261028.md) for the resulting artifact and checks.
 This is a local testing candidate; publication, notarization and clean-Mac acceptance are separate.
@@ -60,6 +61,7 @@ build/dmg-tools/bin/python scripts/dmg/validate_dmg.py /absolute/path/new-instal
 ```
 
 The Air layout matches CloakDrop’s 760×570-point composition and native 96-point icons.
+The Finder frame is 760×602 points to include its title bar without clipping the artwork.
 `background.swift` authors a 1520×1140 image at 144 dpi, with CloakRoll’s purple accent.
 Regenerate the committed background from `apps/macos`:
 
@@ -96,7 +98,7 @@ status; [Apple’s opening guidance](https://support.apple.com/en-us/102445) is 
 | Device destinations | Per-iPhone mappings, access checks and original-folder ID recall implemented; one connected phone's relaunch/missing-folder flow passed | Switch two physical phones with separate folders; external-volume removal/remount |
 | Scale and responsiveness | Generated 10k/50k/100k metadata/history measurements recorded | Sustained app RSS, frame/main-thread timing and rapid physical-library scrolling |
 | Accessibility and OS support | Current-macOS light/dark, compact layout, native labels/actions inspected | Full VoiceOver/keyboard pass, system accessibility variants, macOS 14 runtime |
-| Distribution | Local universal development preview | Developer ID signing, notarization, stapled ticket, clean-Mac launch and final release screenshots |
+| Distribution | Local universal beta DMG built, inspected and installed; sample release screenshots recorded | Developer ID signing, notarization, stapled ticket and clean-Mac launch |
 
 Hardware testing resumed on 5 October 2026. Physical flat-folder import, zero-byte
 repeat, early Stop/retry and relaunch passed; see [the evidence](verification/HARDWARE-2026-10-05.md).

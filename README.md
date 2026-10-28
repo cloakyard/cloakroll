@@ -144,6 +144,10 @@ validates the mounted DMG and writes checksums and a build manifest. It does not
 
 ## Testing
 
+The dated beta passed **393 core + 223 hosted app tests (616 total)**, strict lint and the
+Debug/universal Release builds. The mounted DMG and installed app were also checked; see
+[the beta audit](docs/verification/BETA-2026-10-28.md) for scope and remaining acceptance gates.
+
 ```sh
 cd apps/macos/Packages/CloakRollCore
 GIT_CONFIG_COUNT=0 swift test
