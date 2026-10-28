@@ -6,10 +6,11 @@ restore-to-iPhone in the backlog. Additional feature expansion is not needed to 
 
 ## Current beta — 28 October 2026
 
-Prepared and installed **0.1.0 beta (20261028)** as a universal, locally ad-hoc signed DMG. All
-616 tests, strict lint, Debug/universal Release builds, bundle and mounted-DMG checks passed. See
-[the dated beta audit](verification/BETA-2026-10-28.md) and
-[release notes](releases/v0.1.0-beta.20261028.md) for the resulting artifact and checks.
+Prepared and installed **0.1.0 beta (20261028.2)** as a universal, locally ad-hoc signed DMG. All
+625 tests, strict lint, Debug/universal Release builds, bundle and mounted-DMG checks passed.
+This includes missing-original continuation and durable incomplete-backup explanations. See
+[the refinement audit](verification/FAMILY-AIR-AND-HISTORY-2026-10-28.md) and
+[release notes](releases/v0.1.0-beta.20261028.2.md) for the resulting artifact and checks.
 This is a local testing candidate; publication, notarization and clean-Mac acceptance are separate.
 The current feature set needs no expansion before beta testing. Remaining hardware/OS gates below
 stay open and must be disclosed to testers.

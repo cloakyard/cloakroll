@@ -1082,3 +1082,8 @@ at desktop, tablet and phone sizes, plus KERR as a separate experiment; CloakIMG
 Headers, footers and content hierarchy align. Refined the website screenshot corners in dark
 mode and made verification/privacy copy precise. Website checks pass; deployment remains
 deferred. See [the audit](verification/FAMILY-AIR-AND-HISTORY-2026-10-28.md) for exact coverage.
+
+Beta **20261028.2** was built from the clean audited commit, passed all 625 tests and universal
+release/DMG checks, and was installed from the verified disk image. Native About and preserved
+Backup settings were checked. No physical acceptance was promoted. See
+[release notes](releases/v0.1.0-beta.20261028.2.md) for the exact source and checksum.

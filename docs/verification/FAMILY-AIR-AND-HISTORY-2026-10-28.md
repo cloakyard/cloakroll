@@ -74,3 +74,17 @@ Hardware validation is deliberately last: affected-Mac long backup, incremental/
 cable interruption, external-drive removal/full destination, sleep/wake and multiple physical
 iPhones. Full VoiceOver, sustained performance, older supported macOS runtime and distribution
 acceptance remain open. Cloudflare deployment stays ready for later as requested.
+
+## Packaged beta
+
+The clean `a6f4e06676eae056aeb0b977d7af201de298bbc6` source produced **0.1.0 Beta 20261028.2**.
+The packaging pipeline repeated all 625 tests, strict lint, Debug and universal Release builds,
+bundle checks and mounted-DMG comparison. All pass. The DMG contains 19 matching bundle entries,
+the expected Air artwork/guide/layout and the Applications link.
+
+Artifact size is 10,040,280 bytes; SHA-256 is
+`3c60c620879aa69a9d629b5cc63523dc3a37b715fc981eb1c12d0d6a638d215a`.
+Installed from the read-only DMG at `/Applications/CloakRoll.app`, verified its signature, then
+launched and inspected About (20261028.2) and Backup Settings (existing destination and One Folder).
+The prior 20261028.1 app bundle is in Trash; user backups/history/preferences were retained.
+No hardware transfer was run. The local build remains ad-hoc signed, unnotarized and unpublished.
