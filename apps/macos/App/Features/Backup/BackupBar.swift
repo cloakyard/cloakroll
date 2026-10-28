@@ -4,6 +4,7 @@ import SwiftUI
 struct BackupBar: View {
     let model: AppModel
     var horizontalInset: CGFloat = Design.contentInset
+    @State private var showingUnavailableOriginals = false
 
     var body: some View {
         HStack(spacing: 12) {
@@ -30,6 +31,9 @@ struct BackupBar: View {
         }
         .padding(.horizontal, horizontalInset)
         .padding(.vertical, 10)
+        .sheet(isPresented: $showingUnavailableOriginals) {
+            UnavailableOriginalsView(originals: model.backup.snapshot?.unavailableOriginals ?? [])
+        }
     }
 
     private var idleSummary: some View {
@@ -119,6 +123,9 @@ struct BackupBar: View {
 
     private func terminalActions(_ snapshot: BackupSnapshot) -> some View {
         HStack(spacing: 10) {
+            if !snapshot.unavailableOriginals.isEmpty {
+                Button("Unavailable Originals…") { showingUnavailableOriginals = true }
+            }
             Button("Show in Finder") { Task { await model.backup.revealDestination() } }
                 .disabled(model.backup.destination.selection == nil)
             if snapshot.phase != .completed {

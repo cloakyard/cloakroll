@@ -993,3 +993,24 @@ installed; the previous build is recoverable in Trash, and history/destination r
 No new transfer was performed. Actual results and the artifact checksum are recorded in
 [the beta audit](verification/BETA-2026-10-28.md). No GitHub release or tag was created.
 Existing physical, accessibility, older-runtime and distribution gates remain open.
+
+## Missing USB original during a large backup — 28 October 2026
+
+The user reported `MediaModels.MediaSourceError error 2` on another Mac while the iPhone
+remained connected. The enum bridges that value to `missingResource`: the queued runtime
+resource is no longer in the current camera registry. No log/database from that Mac is
+available, so the reason for that catalog change is not claimed or reproduced on hardware.
+
+Fixed the reproducible failure path: a missing original no longer aborts unrelated originals
+or surviving Live Photo companions. The terminal result remains incomplete, lists unavailable
+originals, and never verifies or counts the missing component as complete. Session/access,
+verification, storage and persistence errors still stop the run. Source errors have readable
+recovery guidance. Existing saved originals retain their incremental evidence.
+
+Four engine regression tests (including parameterized access/session failures) and one hosted
+persistent-history/reconnect test pass; strict lint passes. The tests cover continuation,
+all-missing results, cancellation, partial Live Photos, incomplete persisted status and a retry
+that copies only the missing component. Full checks follow dependency updates; actual repeat
+on the affected Mac remains required. Next requested work: Air landing page for
+`roll.cloakyard.com`, responsive/native visual comparison, dependency updates and clearer
+combined photo/video folder settings.

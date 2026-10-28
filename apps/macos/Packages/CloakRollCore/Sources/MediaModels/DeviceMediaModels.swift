@@ -95,3 +95,15 @@ public protocol ThumbnailProviding: AnyObject {
 public enum MediaSourceError: Error, Equatable, Sendable {
     case unavailable, staleSession, missingResource, thumbnailUnavailable, thumbnailQueueFull
 }
+
+extension MediaSourceError: LocalizedError {
+    public var errorDescription: String? {
+        switch self {
+        case .unavailable: "The iPhone is unavailable. Unlock it and check the USB connection, then try again."
+        case .staleSession: "The iPhone connection changed. Wait for its library to reload, then try again."
+        case .missingResource: "This original is no longer available in the iPhone’s current USB library. Reconnect and try again."
+        case .thumbnailUnavailable: "A preview is not available for this item."
+        case .thumbnailQueueFull: "Previews are still loading. Try again shortly."
+        }
+    }
+}

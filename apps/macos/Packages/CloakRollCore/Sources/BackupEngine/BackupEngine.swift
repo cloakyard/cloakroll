@@ -103,20 +103,37 @@ public actor BackupEngine {
             }
             guard let store else { throw BackupEngineError.invalidSelection }
             for asset in assets {
+                var complete = true
                 for resource in asset.resources {
                     try Task.checkCancellation()
-                    try await transfer(
-                        resource, asset: asset, sessionID: sessionID, store: store,
-                        onStaged: onStaged, onPublication: onPublication, onVerified: onVerified, download: download
-                    )
+                    do {
+                        try await transfer(
+                            resource, asset: asset, sessionID: sessionID, store: store,
+                            onStaged: onStaged, onPublication: onPublication, onVerified: onVerified, download: download
+                        )
+                    } catch MediaSourceError.missingResource {
+                        // A live catalog can remove one queued original while the phone remains
+                        // connected. Continue unrelated originals, including surviving companions.
+                        // Session/access, disk, verification and journal errors still stop the run.
+                        try Task.checkCancellation()
+                        complete = false
+                        state.unavailableOriginals.append(.init(id: resource.id, filename: resource.filename))
+                        state.currentResourceBytes = 0
+                        publish()
+                    }
                 }
-                // Every original component has already been finalized and recorded at this point.
                 try Task.checkCancellation()
-                state.completedAssetIDs.insert(asset.id)
+                if complete { state.completedAssetIDs.insert(asset.id) }
                 state.completedAssets = state.completedAssetIDs.count
                 publish()
             }
-            state.phase = .completed
+            state.phase = state.unavailableOriginals.isEmpty ? .completed : .failed
+            if !state.unavailableOriginals.isEmpty {
+                state.message = """
+                Some originals are no longer available over USB. Saved originals are kept.
+                Reconnect your iPhone and try again.
+                """
+            }
             state.currentFilename = nil
             state.currentResourceBytes = 0
             state.currentResourceExpectedBytes = 0

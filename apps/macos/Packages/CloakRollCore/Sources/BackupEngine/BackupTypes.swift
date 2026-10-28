@@ -45,6 +45,17 @@ public struct BackupDownloadRequest: Sendable, Equatable {
     }
 }
 
+/// A missing source is never treated as verified. Keep identity and display name separately.
+public struct UnavailableBackupOriginal: Sendable, Equatable, Identifiable {
+    public let id: String
+    public let filename: String
+
+    public init(id: String, filename: String) {
+        self.id = id
+        self.filename = filename
+    }
+}
+
 /// A replaceable, complete progress value. Transferred bytes are not verified bytes.
 public struct BackupSnapshot: Sendable, Equatable {
     public var runID: UUID?
@@ -61,6 +72,7 @@ public struct BackupSnapshot: Sendable, Equatable {
     public var currentResourceBytes: Int64
     public var currentResourceExpectedBytes: Int64
     public var completedAssetIDs: Set<String>
+    public var unavailableOriginals: [UnavailableBackupOriginal]
     public var message: String?
 
     public init(
@@ -68,7 +80,7 @@ public struct BackupSnapshot: Sendable, Equatable {
         expectedBytes: Int64 = 0, completedAssets: Int = 0, verifiedResources: Int = 0,
         verifiedBytes: Int64 = 0, transferredBytes: Int64 = 0, currentFilename: String? = nil,
         currentResourceBytes: Int64 = 0, currentResourceExpectedBytes: Int64 = 0,
-        completedAssetIDs: Set<String> = [], message: String? = nil
+        completedAssetIDs: Set<String> = [], unavailableOriginals: [UnavailableBackupOriginal] = [], message: String? = nil
     ) {
         self.runID = runID
         self.phase = phase
@@ -83,6 +95,7 @@ public struct BackupSnapshot: Sendable, Equatable {
         self.currentResourceBytes = currentResourceBytes
         self.currentResourceExpectedBytes = currentResourceExpectedBytes
         self.completedAssetIDs = completedAssetIDs
+        self.unavailableOriginals = unavailableOriginals
         self.message = message
     }
 }
