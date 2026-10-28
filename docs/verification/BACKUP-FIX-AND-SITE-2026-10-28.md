@@ -76,3 +76,35 @@ public deployment has been changed. A Cloudflare login with access to the Cloaky
 is required for `npm run deploy`. No GitHub app release/tag has been published. Native beta
 remains ad-hoc signed and unnotarized. Earlier hardware/accessibility/older-runtime gates
 remain open; this work does not close them.
+
+## Final beta and installation
+
+Beta **0.1.0 (20261028.1)** was prepared from clean commit
+`4a7dcc45177ae6e4c9ede2b13f3e60acf6209a10`. Its pipeline independently passed all 622 tests,
+strict lint, Debug and universal arm64/x86_64 Release, bundle signature/entitlements/privacy
+checks, mounted DMG inventory (19 matching entries), artwork/layout/guide/Applications checks.
+Artifact: `apps/macos/build/Beta-0.1.0-20261028.1/CloakRoll-v0.1.0-beta.20261028.1.dmg`,
+10,041,875 bytes; SHA-256:
+
+```text
+5d8fd5c1d128721dd3fda293c76d95e4fe0729e898581c76fee7b90a4174e58f
+```
+
+The normal Finder open flow displayed the full Air installer, including its lower guide and
+footer, at the intended size. The packaged app was installed in `/Applications/CloakRoll.app`;
+strict codesign verification passed. About visibly reports 20261028.1 Beta. Backup Settings
+visibly shows One Folder and the new combined-media explanation, with the prior destination
+and stored choice retained. The replaced bundle is recoverable at
+`~/.Trash/CloakRoll-beta-20261028.app`. No backup or history data was removed. No iPhone was
+connected during this final installation check and no physical transfer was performed.
+
+Production website was served through Wrangler locally: home/privacy 200, unknown path 404,
+and response security headers present. The 404 return link, phone privacy contents and final
+light/dark views passed inspection. Local screenshots are in `apps/site/build/verification/`.
+Temporary media emulation, text scaling and script disabling were cleared. Owned preview
+servers were stopped and temporary DMG mounts ejected after validation.
+
+The user explicitly chose **Keep deployment ready for later**. Cloudflare publication is
+therefore deferred by request, not reported as a completed deployment. GitHub releases still
+have no public asset; the new DMG is a local beta artifact. No source push, tag or release was
+performed in this work.

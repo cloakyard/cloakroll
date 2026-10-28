@@ -136,7 +136,7 @@ MIT notice and privacy manifest ship in the app. The installer tools are build-o
 To prepare a dated beta and DMG, follow the setup in [Release](docs/RELEASE.md), then run:
 
 ```sh
-scripts/prepare_beta.sh --build 20261028
+scripts/prepare_beta.sh --build 20261028.1
 ```
 
 This checks a clean source commit, runs tests/lint/builds, packages a universal Release app,
@@ -144,9 +144,9 @@ validates the mounted DMG and writes checksums and a build manifest. It does not
 
 ## Testing
 
-The dated beta passed **393 core + 223 hosted app tests (616 total)**, strict lint and the
+The dated beta passed **398 core + 224 hosted app tests (622 total)**, strict lint and the
 Debug/universal Release builds. The mounted DMG and installed app were also checked; see
-[the beta audit](docs/verification/BETA-2026-10-28.md) for scope and remaining acceptance gates.
+[the fix and beta audit](docs/verification/BACKUP-FIX-AND-SITE-2026-10-28.md) for scope and remaining acceptance gates.
 
 ```sh
 cd apps/macos/Packages/CloakRollCore
@@ -158,6 +158,12 @@ Run hosted app tests, the normal Debug build and strict lint from `apps/macos` a
 companion files, collisions, interrupted publication, recovery, folder access and UI state.
 Physical iPhone acceptance is recorded separately in [verification](docs/verification/).
 
+## Website
+
+The Air landing page for `roll.cloakyard.com` lives in [`apps/site`](apps/site/README.md).
+It uses the same static Astro + Cloudflare deployment pattern as CloakDrop.
+Run `npm ci && npm run verify` there to check and build it.
+
 ## Repository layout
 
 ```text
@@ -168,6 +174,7 @@ cloakroll/
 │   ├── Tests/                    # Hosted app tests
 │   ├── scripts/                  # Artwork, validation, scale probes and beta DMGs
 │   └── project.yml               # XcodeGen source
+├── apps/site/                    # Air landing page, static Astro + Cloudflare
 ├── assets/                       # Icon, Air installer artwork and synthetic screenshots
 └── docs/                         # Guides, release notes and actual verification evidence
 ```
@@ -182,9 +189,3 @@ Read [CONTRIBUTING.md](CONTRIBUTING.md) and report reproducible issues through
 
 CloakRoll source is released under the [MIT License](LICENSE). Third-party components retain
 their own licenses. Built by Sumit Sahoo as part of [Cloakyard](https://github.com/cloakyard).
-
-## Website
-
-The Air landing page for `roll.cloakyard.com` lives in [`apps/site`](apps/site/README.md).
-It uses the same static Astro + Cloudflare deployment pattern as CloakDrop.
-Run `npm ci && npm run verify` there to check and build it.

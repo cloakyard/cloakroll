@@ -1029,3 +1029,10 @@ tests and strict lint pass. Website responsive and interaction checks pass, with
 artwork clipping corrected during visual review. Cloudflare needs account login before the
 prepared custom-domain deployment can run. See
 [the combined audit](verification/BACKUP-FIX-AND-SITE-2026-10-28.md).
+
+Fixed beta **20261028.1** is built, DMG-validated and installed. All 622 tests and universal
+release checks pass. Finder's normal DMG open and installed About/Backup Settings were inspected.
+Saved history, destination and media were retained. The previous bundle remains recoverable in
+Trash. The user deferred Cloudflare deployment; the Air site and custom-domain configuration
+are ready in the repository. Repeat the failed large backup on the affected Mac with this beta;
+its original catalog-change cause and other physical release gates remain unverified.

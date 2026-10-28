@@ -21,3 +21,6 @@
 The [verification directory](verification/) separates automated checks, native UI inspection,
 generated scale measurements and physical device evidence. Dated records describe what was
 actually observed on that build; they do not imply later hardware or OS acceptance.
+
+- [Backup fix, mixed-media folders, Air site and beta 20261028.1](verification/BACKUP-FIX-AND-SITE-2026-10-28.md)
+- [Website development and deferred Cloudflare deployment](../apps/site/README.md)
