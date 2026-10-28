@@ -11,6 +11,32 @@ A passing mock test never substitutes for a real iPhone acceptance check. Follow
 may proceed while an explicitly recorded hardware check is pending. A phase is not accepted or
 called complete until its actual evidence is recorded. No source media is modified or deleted.
 
+## Current closeout checklist — 28 October 2026
+
+This is the current implementation queue; the phase sections below retain historical gates
+and evidence. Unchecked acceptance gates are not necessarily unimplemented features.
+
+- [x] USB library browsing, filters, selection, Quick Look and photo metadata.
+- [x] Incremental original backups, Live Photo companions, interruption-safe publication and retry.
+- [x] Separate iPhone identities, remembered destination mappings and shared photo/video folders.
+- [x] Persistent paged history, destination recovery records, folder scanning and saved-file checks.
+- [x] Native settings, contextual Finder actions, progress, floating date and backup controls.
+- [x] Readable missing-original continuation; persist the terminal explanation/count in History.
+- [x] Air website and dated, reproducible beta/DMG tooling.
+- [ ] Complete full VoiceOver/keyboard acceptance and remaining system accessibility variants.
+- [ ] Finish sustained performance profiling against the phase targets; generated fixtures alone
+      do not establish real USB scrolling/transfer performance.
+- [ ] Finalize release distribution: Developer ID/notarization and clean-Mac/older-runtime acceptance.
+- [ ] Publish website and release when requested; Cloudflare deployment is explicitly deferred.
+
+**Hardware last:** repeat the affected large backup, incremental/new-capture/reconnect, cable
+removal during transfer, external-drive removal/full volume, sleep/wake and separate physical
+iPhones. Record actual evidence before accepting the relevant phases. No hardware check is
+claimed by the software tests below.
+
+**Conditional backlog:** restore to a new iPhone remains unimplemented until a supported
+public workflow satisfies the no-extra-iPhone-app requirement. See [research](RESTORE-TO-IPHONE.md).
+
 ## Phase 0 discovery
 
 Reference files were inspected under `../cloakdrop`:
@@ -1036,3 +1062,17 @@ Saved history, destination and media were retained. The previous bundle remains 
 Trash. The user deferred Cloudflare deployment; the Air site and custom-domain configuration
 are ready in the repository. Repeat the failed large backup on the affected Mac with this beta;
 its original catalog-change cause and other physical release gates remain unverified.
+
+## Durable incomplete-backup details — 28 October 2026
+
+History now retains a bounded terminal failure explanation and distinct unavailable-original
+count after dismissal/relaunch. Additive schema v7 preserves previous sessions and their verified
+records; old sessions have no invented explanation. These details never establish completion or
+incremental reuse. Native disclosure details show the historical count and selectable explanation.
+
+All **401 core + 224 hosted app tests (625 total)** pass, with strict lint and the Debug build.
+New coverage checks a populated v6 upgrade, reopening a partial Live Photo failure, duplicate
+missing-resource IDs, bounded messages, and cancellation excluding transient progress. The hosted
+retry test confirms the missing component alone is copied after reconnection. The isolated History
+preview was visually inspected in light/dark and its accessibility disclosure exposes the details.
+This is software evidence only; the full VoiceOver and physical acceptance gates stay open.

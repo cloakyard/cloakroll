@@ -18,8 +18,9 @@ That browser and the visited website have their own privacy behavior.
 - Original photo, video and companion files you ask to back up. They are copied to
   your chosen destination without conversion or deletion of the iPhone originals.
 - Local backup history containing source metadata, device and destination references,
-  relative paths, verification digests and session outcomes. This supports incremental
-  backup, detecting missing/changed saved files and interruption recovery.
+  relative paths, verification digests and session outcomes. Incomplete sessions also keep
+  a bounded failure explanation and the number of unavailable originals. This supports
+  incremental backup, detecting missing/changed saved files and interruption recovery.
 - Portable recovery records in `.cloakroll-recovery` inside the selected backup folder.
   These include source/device identity, original companion membership, relative paths,
   sizes and SHA-256. They let you rebuild history after losing app data. They contain

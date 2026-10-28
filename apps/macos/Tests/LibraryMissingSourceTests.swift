@@ -22,11 +22,16 @@ struct LibraryMissingSourceTests {
         #expect(fixture.persistence.recentSessions.first?.status == .failed)
         #expect(fixture.persistence.recentSessions.first?.verifiedResources == 1)
         #expect(fixture.persistence.recentSessions.first?.completedAssets == 0)
+        #expect(fixture.persistence.recentSessions.first?.unavailableOriginalsCount == 1)
+        #expect(fixture.persistence.recentSessions.first?.failureMessage == fixture.controller.snapshot?.message)
         #expect(try await fixture.candidates(old).map(\.resourceID) == ["old-motion"])
         #expect(fixture.controller.projection(assets: [old.asset], sessionID: old.source.sessionID).statuses.isEmpty)
 
         let current = PersistentLibraryCatalog(prefix: "new", companion: true)
         let reopened = LibraryBackupPersistence(databaseURL: fixture.databaseURL)
+        try await reopened.refreshSessions()
+        #expect(reopened.recentSessions.first?.unavailableOriginalsCount == 1)
+        #expect(reopened.recentSessions.first?.failureMessage == fixture.controller.snapshot?.message)
         let controller = LibraryBackupController(destination: fixture.controller.destination, persistence: reopened)
         try await fixture.accept(current, controller: controller)
         controller.start(assets: [current.asset], sessionID: current.source.sessionID) { request, _ in

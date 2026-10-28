@@ -44,11 +44,15 @@ public struct StoredBackupSession: Sendable, Equatable, Identifiable {
     public let verifiedResources: Int
     public let verifiedBytes: Int64
     public let transferredBytes: Int64
+    /// Historical explanation only; never evidence that an original was saved.
+    public let failureMessage: String?
+    public let unavailableOriginalsCount: Int
 
     public init(
         id: UUID, deviceName: String, destinationID: UUID, status: StoredBackupSessionStatus,
         startedAt: Date, finishedAt: Date?, totalAssets: Int, totalResources: Int,
-        completedAssets: Int, verifiedResources: Int, verifiedBytes: Int64, transferredBytes: Int64
+        completedAssets: Int, verifiedResources: Int, verifiedBytes: Int64, transferredBytes: Int64,
+        failureMessage: String? = nil, unavailableOriginalsCount: Int = 0
     ) {
         self.id = id
         self.deviceName = deviceName
@@ -62,6 +66,8 @@ public struct StoredBackupSession: Sendable, Equatable, Identifiable {
         self.verifiedResources = verifiedResources
         self.verifiedBytes = verifiedBytes
         self.transferredBytes = transferredBytes
+        self.failureMessage = failureMessage
+        self.unavailableOriginalsCount = unavailableOriginalsCount
     }
 }
 

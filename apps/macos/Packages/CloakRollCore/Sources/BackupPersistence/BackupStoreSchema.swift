@@ -40,6 +40,13 @@ enum BackupStoreSchema {
                 DROP INDEX session_recent;
                 """)
         }
+        migrator.registerMigration("v7_session_failure_details") { db in
+            try db.execute(sql: """
+                ALTER TABLE backup_session ADD COLUMN failure_message TEXT;
+                ALTER TABLE backup_session ADD COLUMN unavailable_originals INTEGER NOT NULL DEFAULT 0
+                    CHECK(unavailable_originals >= 0);
+                """)
+        }
         try migrator.migrate(queue)
         try queue.write { db in
             try db.execute(

@@ -128,9 +128,17 @@ enum BackupStoreWriting {
                   result.verifiedBytes == verifiedBytes else { throw BackupStoreError.invalidCompletion }
         }
         let expectedBytes: Int64 = session["expected_bytes"]
-        try db.execute(sql: "UPDATE backup_session SET status = ?, finished_at = ?, transferred_bytes = ? WHERE id = ?",
+        // Keep history pages bounded and retain only the terminal explanation, not filenames
+        // or transient progress. Older sessions deliberately have no invented failure reason.
+        let message = status == .failed ? result.message?.trimmingCharacters(in: .whitespacesAndNewlines) : nil
+        let failureMessage = message.flatMap { $0.isEmpty ? nil : String($0.prefix(2_048)) }
+        let unavailableCount = status == .completed ? 0 : min(totalResources, Set(result.unavailableOriginals.map(\.id)).count)
+        try db.execute(sql: """
+            UPDATE backup_session SET status = ?, finished_at = ?, transferred_bytes = ?,
+                failure_message = ?, unavailable_originals = ? WHERE id = ?
+            """,
                        arguments: [status.rawValue, Date().timeIntervalSince1970,
-                                   min(expectedBytes, max(0, result.transferredBytes)), id.uuidString])
+                                   min(expectedBytes, max(0, result.transferredBytes)), failureMessage, unavailableCount, id.uuidString])
     }
 
     private static func terminalStatus(_ phase: BackupPhase) -> StoredBackupSessionStatus? {
