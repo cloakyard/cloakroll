@@ -1,0 +1,10 @@
+{
+  "version": "1.2.4",
+  "source": "cloakyard/design/air",
+  "files": {
+    "src/styles/air.css": "cd55b04d11e2d3f09b0c5bfe523b4042c879ff7062c8a46a58acc4712c32f4e6",
+    "design/artwork.mjs": "c476562d7a094f9592b874e078787e147afbed696c4cba38276fab4be0faba82",
+    "design/artwork.d.mts": "a5638e0399776647ac1ed883a2026fa94e6515d47cd6054eb63ef27184cbf30f",
+    "design/contract.md": "b31d313d3fc60f164602c9e6af06793ace0e039fa501d5f4b5ef73aa8294c38f"
+  }
+}

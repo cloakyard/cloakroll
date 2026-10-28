@@ -1,0 +1,74 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import Icon from '../components/Icon.astro';
+import PhotoRoll from '../components/PhotoRoll.astro';
+import { site } from '../data/site';
+const releases = `${site.repo}/releases`;
+---
+<BaseLayout>
+  <Header />
+  <main id="main" tabindex="-1">
+    <section class="hero frame" aria-labelledby="hero-title">
+      <p class="eyebrow">An iPhone photo backup app, at home on your Mac.</p>
+      <h1 id="hero-title">Your memories.<span>In your hands.</span></h1>
+      <p class="hero-lead">Bring your original photos and videos from iPhone to Mac.<br class="wide-break" /> A cable, a folder, and a little peace of mind.</p>
+      <PhotoRoll />
+      <div class="hero-actions">
+        <a class="air-button air-button--primary" href="#download"><Icon name="download" size={18} />Download CloakRoll</a>
+        <a class="air-button air-button--quiet" href="#product">Explore features <Icon name="arrow" size={16} /></a>
+      </div>
+      <p class="availability">macOS 14 or later · Apple silicon &amp; Intel<span>Free · Open source · Beta</span></p>
+    </section>
+    <section id="product" class="section frame" tabindex="-1" aria-labelledby="product-title">
+      <div class="section-intro">
+        <p class="eyebrow">A home for your originals</p>
+        <h2 id="product-title">See what matters.<br />Keep every detail.</h2>
+        <p>Browse your iPhone’s library, choose a few favourites or back up everything it exposes over USB. Photos, videos, RAW files and Live Photo companions stay in their original formats.</p>
+      </div>
+      <figure class="product-preview">
+        <picture>
+          <source srcset="/images/library-dark.png" media="(prefers-color-scheme: dark)" />
+          <img src="/images/library-light.png" width="2200" height="1480" loading="lazy" decoding="async" alt="CloakRoll’s native Mac window with a connected iPhone, photo filters, a landscape photo grid and the backup action." />
+        </picture>
+        <figcaption>CloakRoll on macOS. Sample library shown; your photos stay on your devices.</figcaption>
+      </figure>
+      <div class="features">
+        <article><p class="eyebrow">01 / Original by default</p><h3>All the pieces, together.</h3><p>Live Photos retain their still image and motion file. Back up the original bytes without converting files or deleting anything from your iPhone.</p></article>
+        <article><p class="eyebrow">02 / Ready for next time</p><h3>Only what is missing.</h3><p>Saved originals are checked before reuse. Return to a backup, reconnect after an interruption, and continue with the files still needed.</p></article>
+        <article><p class="eyebrow">03 / A folder of your own</p><h3>Organised your way.</h3><p>Keep photos and videos together in one folder per iPhone, or group them by year and month. Each iPhone remembers its own destination.</p></article>
+      </div>
+    </section>
+    <section id="provenance" class="section frame" tabindex="-1" aria-labelledby="craft-title">
+      <div class="craft-grid">
+        <div class="section-intro"><p class="eyebrow">Made with care</p><h2 id="craft-title">A backup you can<br />look inside.</h2><p>Ordinary files in Finder. Clear progress on your Mac. Verification before an original is marked as backed up.</p></div>
+        <div class="principles">
+          <article><h3>Checked, then counted.</h3><p>Size and SHA-256 verification help confirm that saved originals match their source. An unavailable original leaves the backup incomplete while other available files can continue.</p></article>
+          <article><h3>History you can rebuild.</h3><p>Recovery records travel with your backup folder. If app data is lost, scan the folder to rebuild verified history. Older folders without records can be checked once against the connected iPhone.</p></article>
+          <article><h3>Made for macOS.</h3><p>Native controls, keyboard selection, Quick Look and Liquid Glass on supported systems. No companion app to install on your iPhone.</p></article>
+        </div>
+      </div>
+    </section>
+    <section id="privacy" class="section frame" tabindex="-1" aria-labelledby="privacy-title">
+      <div class="craft-grid">
+        <div class="section-intro"><p class="eyebrow">Personal stays personal</p><h2 id="privacy-title">Your cable.<br />Your Mac. Your folder.</h2></div>
+        <div class="privacy-copy"><p>CloakRoll works locally over USB. No accounts, analytics or app-operated cloud service. Your photos and videos aren’t uploaded to Cloakyard.</p><p>You choose where the originals go. If that folder is managed by a cloud-sync service, its own syncing rules still apply.</p><a class="text-link" href="/privacy/">Read the privacy policy <Icon name="arrow" size={16} /></a></div>
+      </div>
+    </section>
+    <section id="download" class="section frame" tabindex="-1" aria-labelledby="download-title">
+      <div class="download-grid">
+        <div class="section-intro"><p class="eyebrow">Yours to keep</p><h2 id="download-title">Make room for<br />what comes next.</h2><p>macOS 14 or later · Apple silicon &amp; Intel<br />Free · Open source</p>
+          <a class="air-button air-button--primary" href={releases}><Icon name="download" size={18} />View beta releases</a>
+          <p class="detail release-note">The first public beta is being prepared. Published builds and release notes will appear on GitHub.</p>
+        </div>
+        <div class="install" aria-labelledby="install-title"><h3>From iPhone to folder.</h3><ol>
+          <li>Download the <strong>.dmg</strong> from <a href={releases}>GitHub Releases</a> when available. Open it and drag <strong>CloakRoll</strong> to <strong>Applications</strong>.</li>
+          <li>Connect your iPhone with a USB cable. Unlock it and accept <strong>Trust</strong> if prompted.</li>
+          <li>Choose your backup folder, select your photos and videos, and start your backup.</li>
+        </ol><p class="detail">Beta builds are locally signed and not notarized. Review the release notes and <a href="https://support.apple.com/en-us/102445">Apple’s opening guide</a>. CloakRoll backs up the media exposed over USB; it cannot guarantee complete coverage of originals stored only in iCloud.</p><p class="detail"><a href={`${site.repo}/issues`}>Share beta feedback</a></p></div>
+      </div>
+    </section>
+  </main>
+  <Footer />
+</BaseLayout>

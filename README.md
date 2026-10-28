@@ -182,3 +182,9 @@ Read [CONTRIBUTING.md](CONTRIBUTING.md) and report reproducible issues through
 
 CloakRoll source is released under the [MIT License](LICENSE). Third-party components retain
 their own licenses. Built by Sumit Sahoo as part of [Cloakyard](https://github.com/cloakyard).
+
+## Website
+
+The Air landing page for `roll.cloakyard.com` lives in [`apps/site`](apps/site/README.md).
+It uses the same static Astro + Cloudflare deployment pattern as CloakDrop.
+Run `npm ci && npm run verify` there to check and build it.

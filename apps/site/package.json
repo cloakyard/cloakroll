@@ -1,0 +1,40 @@
+{
+  "name": "cloakroll-site",
+  "version": "1.0.0",
+  "private": true,
+  "description": "CloakRoll \u2014 roll.cloakyard.com",
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check",
+    "verify": "npm run check && npm run build && node scripts/verify-site.mjs",
+    "deploy": "npm run verify && wrangler deploy",
+    "predev": "node scripts/sync-assets.mjs",
+    "prebuild": "node scripts/sync-assets.mjs"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "3.7.4",
+    "astro": "7.4.3"
+  },
+  "devDependencies": {
+    "@astrojs/check": "0.9.12",
+    "typescript": "6.0.3",
+    "wrangler": "4.154.0"
+  },
+  "engines": {
+    "node": "^22.22.2 || ^24.15.0 || >=26.0.0"
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true,
+    "fsevents@2.3.3": true,
+    "workerd@1.20261023.1": true
+  },
+  "packageManager": "npm@11.19.1",
+  "overrides": {
+    "miniflare": {
+      "undici": "7.30.1"
+    }
+  }
+}

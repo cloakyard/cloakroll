@@ -102,10 +102,7 @@ struct SettingsView: View {
             } header: {
                 Text("Originals")
             } footer: {
-                Text("""
-                Each iPhone has its own folder. Photos and videos can be grouped by year and month or kept together.
-                This setting applies to new files; existing backups stay in place.
-                """)
+                Text(model.backupOrganization.explanation + " This applies to new files; existing backups stay in place.")
             }
         }
         .formStyle(.grouped)

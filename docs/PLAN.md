@@ -1014,3 +1014,18 @@ that copies only the missing component. Full checks follow dependency updates; a
 on the affected Mac remains required. Next requested work: Air landing page for
 `roll.cloakyard.com`, responsive/native visual comparison, dependency updates and clearer
 combined photo/video folder settings.
+
+## Air website and mixed-media destination clarity — 28 October 2026
+
+Added the requested repository-hosted Astro/Cloudflare site for `roll.cloakyard.com`, with
+pinned Air 1.2.4 design sources, a finite photo-filmstrip animation, real sample-library
+screenshots, privacy/404 pages and the hero-to-download flow. Public release availability is
+stated accurately. Native dependencies were already current; the new site's dependencies
+were checked and updated, keeping TypeScript compatible with Astro's checker.
+
+The existing One Folder setting now explicitly explains that photos/videos share the same
+per-iPhone folder. Incremental regression coverage confirms the behavior. Full 622 software
+tests and strict lint pass. Website responsive and interaction checks pass, with small-screen
+artwork clipping corrected during visual review. Cloudflare needs account login before the
+prepared custom-domain deployment can run. See
+[the combined audit](verification/BACKUP-FIX-AND-SITE-2026-10-28.md).

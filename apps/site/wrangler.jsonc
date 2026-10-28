@@ -1,0 +1,14 @@
+{
+  "name": "cloakroll",
+  "compatibility_date": "2026-10-28",
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "404-page"
+  },
+  "routes": [
+    {
+      "pattern": "roll.cloakyard.com",
+      "custom_domain": true
+    }
+  ]
+}
