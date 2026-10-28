@@ -1076,3 +1076,9 @@ missing-resource IDs, bounded messages, and cancellation excluding transient pro
 retry test confirms the missing component alone is copied after reconnection. The isolated History
 preview was visually inspected in light/dark and its accessibility disclosure exposes the details.
 This is software evidence only; the full VoiceOver and physical acceptance gates stay open.
+
+The family Air audit compared published Cloakyard/Drop/PDF/Resume and the local Resume Air build
+at desktop, tablet and phone sizes, plus KERR as a separate experiment; CloakIMG was excluded.
+Headers, footers and content hierarchy align. Refined the website screenshot corners in dark
+mode and made verification/privacy copy precise. Website checks pass; deployment remains
+deferred. See [the audit](verification/FAMILY-AIR-AND-HISTORY-2026-10-28.md) for exact coverage.

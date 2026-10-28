@@ -23,4 +23,5 @@ generated scale measurements and physical device evidence. Dated records describ
 actually observed on that build; they do not imply later hardware or OS acceptance.
 
 - [Backup fix, mixed-media folders, Air site and beta 20261028.1](verification/BACKUP-FIX-AND-SITE-2026-10-28.md)
+- [Family Air comparison and durable incomplete-backup details](verification/FAMILY-AIR-AND-HISTORY-2026-10-28.md)
 - [Website development and deferred Cloudflare deployment](../apps/site/README.md)

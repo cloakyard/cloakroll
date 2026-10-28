@@ -171,6 +171,8 @@ summary:focus-visible {
 .product-preview img {
   width: 100%;
   height: auto;
+  /* Match the captured window corners as the screenshot scales on smaller screens. */
+  border-radius: 2% / 3%;
 }
 figcaption {
   margin-top: var(--air-space-12);
