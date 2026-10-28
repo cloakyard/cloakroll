@@ -6,12 +6,12 @@ A native, open-source macOS app for backing up iPhone photos and videos over USB
 Browse your library, keep original files, and copy only what is missing into folders you control.
 Built with SwiftUI and a separately tested Swift engine. No account, analytics or media uploads.
 
-**[Beta notes](docs/releases/v0.1.0-beta.20261028.2.md)** · **[Releases](https://github.com/cloakyard/cloakroll/releases)** · **[Documentation](docs/README.md)** · **[Contributing](CONTRIBUTING.md)**
+**[Beta notes](docs/releases/v0.1.0-beta.20261028.3.md)** · **[Releases](https://github.com/cloakyard/cloakroll/releases)** · **[Documentation](docs/README.md)** · **[Contributing](CONTRIBUTING.md)**
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
   <img src="https://img.shields.io/badge/platform-macOS%2026%2B%20%C2%B7%20Apple%20silicon-lightgrey" alt="Requires macOS 26+, Apple silicon only">
-  <img src="https://img.shields.io/badge/beta-0.1.0%20%2820261028.2%29-714BC4" alt="Beta: 0.1.0 (20261028.2)">
+  <img src="https://img.shields.io/badge/beta-0.1.0%20%2820261028.3%29-714BC4" alt="Beta: 0.1.0 (20261028.3)">
   <img src="https://img.shields.io/badge/Swift-6-F05138?logo=swift&logoColor=white" alt="Swift 6">
   <img src="https://img.shields.io/badge/SwiftUI-Liquid%20Glass-8A2BE2" alt="SwiftUI · Liquid Glass">
 </p>
@@ -28,11 +28,11 @@ locally generated sample library; they contain no personal photos and do not sho
 
 ## Download and install
 
-The **0.1.0 beta, build 20261028.2**, is prepared locally for evaluation. It has not yet been
-published to GitHub Releases. The [beta notes](docs/releases/v0.1.0-beta.20261028.2.md) record the
+The **0.1.0 beta, build 20261028.3**, is prepared locally for evaluation. It has not yet been
+published to GitHub Releases. The [beta notes](docs/releases/v0.1.0-beta.20261028.3.md) record the
 artifact, checksum and validation; release binaries are kept out of source control.
 
-1. Open the supplied `CloakRoll-v0.1.0-beta.20261028.2.dmg`.
+1. Open the supplied `CloakRoll-v0.1.0-beta.20261028.3.dmg`.
 2. Drag **CloakRoll** to **Applications**, then open it and eject the installer.
 3. Connect and unlock your iPhone over USB, accepting Trust if prompted. Choose a backup folder.
 4. Back up new items, or select items and back up the selection.
@@ -144,9 +144,9 @@ validates the mounted DMG and writes checksums and a build manifest. It does not
 
 ## Testing
 
-The dated beta passed **401 core + 224 hosted app tests (625 total)**, strict lint and the
-Debug/universal Release builds. The mounted DMG and installed app were also checked; see
-[the refinement and beta audit](docs/verification/FAMILY-AIR-AND-HISTORY-2026-10-28.md) for scope and remaining acceptance gates.
+The dated beta passed **401 core + 227 hosted app tests (628 total)**, strict lint and the
+Debug/Apple silicon Release builds. The mounted DMG and installed app were also checked; see
+[the refinement and beta audit](docs/verification/SILICON-SETTINGS-DOCK-2026-10-28.md) for scope and remaining acceptance gates.
 
 ```sh
 cd apps/macos/Packages/CloakRollCore

@@ -2,7 +2,7 @@
 
 ## Using the app
 
-- [Beta notes](releases/v0.1.0-beta.20261028.2.md) — installation, scope and known limits.
+- [Beta notes](releases/v0.1.0-beta.20261028.3.md) — installation, scope and known limits.
 - [Privacy](PRIVACY.md) — local data, originals, recovery records and removal.
 - [Folder organization](verification/BACKUP-ORGANIZATION.md) and [per-iPhone folders](verification/DEVICE-DESTINATIONS.md).
 - [Rebuild history](verification/FOLDER-RECOVERY.md) and [check saved files](verification/SAVED-BACKUP-CHECK.md).

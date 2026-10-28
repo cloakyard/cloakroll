@@ -28,6 +28,7 @@ and evidence. Unchecked acceptance gates are not necessarily unimplemented featu
 - [x] Separate iPhone identities, remembered destination mappings and shared photo/video folders.
 - [x] Persistent paged history, destination recovery records, folder scanning and saved-file checks.
 - [x] Native settings, contextual Finder actions, progress, floating date and backup controls.
+- [x] Apple silicon/macOS 26 build gate, Dock progress and family About Matrix effect.
 - [x] Readable missing-original continuation; persist the terminal explanation/count in History.
 - [x] Air website and dated, reproducible beta/DMG tooling.
 - [ ] Complete full VoiceOver/keyboard acceptance and remaining system accessibility variants.
@@ -1094,3 +1095,14 @@ Beta **20261028.2** was built from the clean audited commit, passed all 625 test
 release/DMG checks, and was installed from the verified disk image. Native About and preserved
 Backup settings were checked. No physical acceptance was promoted. See
 [release notes](releases/v0.1.0-beta.20261028.2.md) for the exact source and checksum.
+
+## 28 October 2026 — Apple silicon, Settings and Dock closeout
+
+Implemented the user's Apple silicon/macOS 26+ direction in source, packaging, site and installer.
+Settings/About now follow CloakDrop's five-tap Matrix interaction and General reopening behavior.
+The Dock uses an app-owned, coalesced byte-progress ring. All 628 tests, strict lint, normal
+Debug/arm64 Release and actual bundle/DMG checks passed. Beta 20261028.3 was installed from the
+verified DMG; Finder's normal installer-open layout and installed About version were checked.
+See [audit](verification/SILICON-SETTINGS-DOCK-2026-10-28.md) and
+[artifact notes](releases/v0.1.0-beta.20261028.3.md). No hardware acceptance, notarization or
+website deployment was claimed; those gates remain explicit above.

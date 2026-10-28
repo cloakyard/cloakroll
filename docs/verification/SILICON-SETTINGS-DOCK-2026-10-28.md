@@ -41,7 +41,10 @@
 
 ## Remaining acceptance
 
-The final dated beta artifact is recorded in its release notes after packaging. Physical backup,
+Beta 20261028.3 passed the full reproducible pipeline and was installed from the verified DMG.
+Normal Finder opening shows the complete Air artwork, architecture requirement and install guide.
+Installed About reports 0.1.0 (20261028.3) · Beta. The previous app is recoverable in Trash;
+backup media and history were untouched. See [release notes](../releases/v0.1.0-beta.20261028.3.md). Physical backup,
 background Dock progress, unplug/retry, multiple iPhones, minimum macOS 26 runtime, full VoiceOver
 and system Reduce Motion acceptance remain separate. Hardware is explicitly last. Developer ID,
 notarization and website deployment are still deferred.
