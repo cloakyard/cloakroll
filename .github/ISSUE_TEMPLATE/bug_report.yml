@@ -1,0 +1,32 @@
+name: Bug report
+description: Report a reproducible CloakRoll beta issue.
+title: "[Bug] "
+body:
+  - type: markdown
+    attributes:
+      value: "Please exclude personal photos, device identifiers, private paths and backup databases. Settings → About shows the version and build."
+  - type: input
+    id: version
+    attributes:
+      label: CloakRoll version and build
+      placeholder: "0.1.0 (20261028) · Beta"
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: macOS, Mac architecture and iPhone/iOS version
+      description: Include whether the destination is on the Mac or a removable drive. No serial numbers.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps, expected result and actual result
+    validations:
+      required: true
+  - type: textarea
+    id: interruption
+    attributes:
+      label: Connection or interruption details
+      description: If relevant, describe lock, cable removal, sleep, Stop, Quit or destination changes.

@@ -1,7 +1,7 @@
 import SwiftUI
 
 enum SettingsTab: String {
-    case general, backup, about
+    case general, backup, privacy, about
 }
 
 struct SettingsView: View {
@@ -12,9 +12,10 @@ struct SettingsView: View {
         TabView(selection: $model.settingsTab) {
             general.tabItem { Label("General", systemImage: "gearshape") }.tag(SettingsTab.general)
             backup.tabItem { Label("Backup", systemImage: "externaldrive") }.tag(SettingsTab.backup)
-            about.tabItem { Label("About", systemImage: "info.circle") }.tag(SettingsTab.about)
+            PrivacySettingsView().tabItem { Label("Privacy", systemImage: "lock.shield") }.tag(SettingsTab.privacy)
+            AboutSettingsView().tabItem { Label("About", systemImage: "info.circle") }.tag(SettingsTab.about)
         }
-        .frame(width: 560, height: 430)
+        .frame(width: 640, height: 600)
     }
 
     private var general: some View {
@@ -26,22 +27,26 @@ struct SettingsView: View {
             } header: {
                 Text("Browsing")
             } footer: {
-                Text("""
-                ⌘-click to select individual items. ⇧-click to select a range.
-                Use arrow keys to move; hold ⇧ to extend the selection.
-                Right-click a date label to select or deselect its group.
-                Press Space or ⌘I to show info for the selected item.
-                In Media Info, use ⌘[ and ⌘] to browse previous and next items.
-                """)
+                Text("Choose how large photos and videos appear in the library.")
+            }
+            Section("Selection") {
+                SettingsShortcutRow("Select individual items", value: "⌘-click")
+                SettingsShortcutRow("Select a range", value: "⇧-click")
+                SettingsShortcutRow("Move between items", value: "Arrow keys")
+                SettingsShortcutRow("Extend the selection", value: "⇧ + Arrow keys")
+                SettingsShortcutRow("Deselect all", value: "Esc or ⇧⌘A")
             }
             Section {
-                Text("CloakRoll browses photos and videos available over USB. It does not change or delete media on your iPhone.")
-                    .foregroundStyle(.secondary)
+                SettingsShortcutRow("Show media info", value: "Space or ⌘I")
+                SettingsShortcutRow("Previous or next item in Info", value: "⌘[ or ⌘]")
             } header: {
-                Text("Privacy")
+                Text("Media Info")
+            } footer: {
+                Text("Right-click a date label to select or deselect its group. Shortcuts apply while browsing the library.")
             }
         }
         .formStyle(.grouped)
+        .scrollBounceBehavior(.basedOnSize)
     }
 
     private var backup: some View {
@@ -104,36 +109,27 @@ struct SettingsView: View {
             }
         }
         .formStyle(.grouped)
+        .scrollBounceBehavior(.basedOnSize)
         .task {
             guard !model.isSample, !model.backup.isBusy else { return }
             await model.backup.checkDestination()
         }
     }
+}
 
-    private var about: some View {
-        Form {
-            Section {
-                HStack(spacing: 16) {
-                    Image("AboutAppIcon").resizable().frame(width: 76, height: 76).accessibilityHidden(true)
-                    VStack(alignment: .leading, spacing: 5) {
-                        Text("CloakRoll").font(.title.weight(.semibold))
-                        Text("Your camera roll, safely on your Mac.").foregroundStyle(.secondary)
-                        Text("\(version) · Development preview").font(.caption).foregroundStyle(.secondary)
-                    }
-                }
-                .padding(.vertical, 10)
-            }
-            Section("Part of Cloakyard") {
-                Label("Local processing. No accounts. No analytics.", systemImage: "lock.shield")
-                Text("Designed for the things you want to keep.").foregroundStyle(.secondary)
-            }
-        }
-        .formStyle(.grouped)
+private struct SettingsShortcutRow: View {
+    let title: String
+    let value: String
+
+    init(_ title: String, value: String) {
+        self.title = title
+        self.value = value
     }
 
-    private var version: String {
-        let short = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0.1.0"
-        let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "1"
-        return "\(short) (\(build))"
+    var body: some View {
+        LabeledContent(title, value: value)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(title)
+            .accessibilityValue(value)
     }
 }

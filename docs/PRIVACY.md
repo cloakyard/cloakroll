@@ -1,10 +1,12 @@
 # CloakRoll privacy
 
-Updated 5 October 2026. Applies to the current macOS development preview.
+Updated 28 October 2026. Applies to the macOS 0.1.0 beta.
 
 CloakRoll works locally with an iPhone connected over USB and a backup folder you
 choose. It has no accounts, advertising, analytics, telemetry or app-operated cloud
-service. It does not upload your photos, videos or device information to Cloakyard.
+service. It does not upload your photos, videos or device information to Cloakyard. External Help,
+source, privacy and bug-report links open in your browser only when you choose them.
+That browser and the visited website have their own privacy behavior.
 
 ## What the app reads and saves
 

@@ -19,6 +19,9 @@ settings:
     LM_FORCE_LINK_GENERATION: YES
     MARKETING_VERSION: "0.1.0"
     CURRENT_PROJECT_VERSION: "15"
+    # Beta packaging overrides these explicitly; source/debug builds remain previews.
+    # Example: CURRENT_PROJECT_VERSION=20261028 CLOAKROLL_RELEASE_CHANNEL=Beta
+    CLOAKROLL_RELEASE_CHANNEL: "Development preview"
 packages:
   CloakRollCore:
     path: Packages/CloakRollCore
@@ -31,6 +34,12 @@ targets:
         excludes:
           - Resources/Info.plist
           - Resources/CloakRoll.entitlements
+          - Resources/ThirdPartyNotices
+      - path: App/Resources/ThirdPartyNotices
+        type: folder
+        buildPhase: resources
+      - path: ../../LICENSE
+        buildPhase: resources
       - path: ../../assets/icon/CloakRoll.icon
         type: file
         buildPhase: resources
@@ -52,6 +61,7 @@ targets:
         CFBundleDisplayName: CloakRoll
         CFBundleShortVersionString: "$(MARKETING_VERSION)"
         CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
+        CloakRollReleaseChannel: "$(CLOAKROLL_RELEASE_CHANNEL)"
         LSMinimumSystemVersion: "14.0"
         LSApplicationCategoryType: public.app-category.photography
         NSPhotoLibraryUsageDescription: "CloakRoll reads photos and videos from your connected iPhone for local browsing and backup. It does not modify or delete them."

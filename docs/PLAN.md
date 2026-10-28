@@ -155,7 +155,7 @@ three-Live-Photo backup and zero-transfer repeat, an 18-video import, independen
 of all 24 saved originals and observed OS sleep-activity release. Cable interruption is
 still pending user coordination; the first 4.98 GB batch completed in 11.12 seconds.
 
-Current local preview: **0.1.0 (13)**. All 393 core and 207 hosted app tests pass. The normal
+Last verified local preview before beta preparation: **0.1.0 (15)**. All 393 core and 223 hosted app tests passed. The normal
 Debug and Release builds, strict lint and actual Release-bundle audit pass. The Release
 binary contains arm64 and x86_64; compilation is not runtime acceptance on both platforms.
 The Release app no longer contains the injected debugging entitlement.
@@ -975,3 +975,17 @@ compact dark/standard light progress-fixture inspection. See
 No new backup/recovery transfer or broader hardware acceptance is claimed.
 Build 15 is installed and reloaded the real library, remembered destination and last
 backup summary. Superseded app bundles are recoverable in Trash; user data was retained.
+
+
+## Beta preparation — 28 October 2026
+
+The user requested a beta-readiness review, README alignment with CloakPDF/CloakDrop,
+an Air installer, dated build numbers and actual DMG validation. The existing feature scope is
+retained. MIT licensing was explicitly approved. Settings is being aligned after visual inspection
+of installed CloakDrop General/About/Privacy, with native grouped forms and About/link hierarchy.
+The audit found missing bundled GRDB license text; it is now included and enforced by the bundle checker.
+
+The reproducible beta pipeline uses a clean source commit, pinned build-only tools, full software
+checks, universal Release, exclusive DMG publication and a mounted bundle/layout/asset comparison.
+Current work and actual results are recorded in [the beta audit](verification/BETA-2026-10-28.md).
+Existing physical, accessibility, older-runtime and distribution gates remain open.

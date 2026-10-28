@@ -4,8 +4,7 @@
 
 The first build uses Xcode 27.0 and Swift 6.4 with Swift 6 language mode and macOS 14 deployment
 target. Install XcodeGen and SwiftLint. `apps/macos/project.yml` is authoritative; regenerate the
-ignored Xcode project after adding sources or changing configuration. No third-party dependency
-is required by the foundation. CloakDrop is a read-only architectural/design reference.
+ignored Xcode project after adding sources or changing configuration. GRDB 7.11.1 is the only third-party Swift dependency, pinned in the package lockfile. CloakDrop is a read-only architectural/design reference.
 
 ## Verification commands
 
@@ -169,3 +168,16 @@ options and the backup action bar belong to the library destination. Test offlin
 states, refresh races, long labels, expanded details and compact/standard light/dark layouts.
 [Phase 8 evidence](verification/PHASE-8.md) records the current checks and remaining accessibility,
 older-runtime, icon and hardware gates.
+
+
+## Beta packaging and Settings
+
+[Release](RELEASE.md) documents the isolated build-tool setup and `scripts/prepare_beta.sh`.
+It produces a dated universal beta DMG plus logs, checksums and a source-commit manifest.
+Use the arm64 destination on Apple silicon and `platform=macOS,arch=x86_64` for a local Intel
+Debug/test destination; compiling both architectures is not runtime acceptance on both.
+
+Settings follows the family’s native tabbed window, grouped forms and centered About header.
+General, Backup, Privacy and About remain app-side components. The selected tab is remembered.
+The source/bug/privacy links are explicit user actions; there are no background network requests.
+Bundled MIT and GRDB notices are readable offline from About → Open-Source Licenses.
