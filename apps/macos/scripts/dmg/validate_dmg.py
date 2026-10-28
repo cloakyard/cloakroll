@@ -7,6 +7,7 @@ from pathlib import Path
 import plistlib
 import stat
 import subprocess
+import sys
 import tempfile
 
 from ds_store import DSStore
@@ -16,7 +17,12 @@ ROOT = HERE.parents[3]
 
 
 def run(*args):
-    return subprocess.run([str(arg) for arg in args], check=True, capture_output=True).stdout
+    result = subprocess.run([str(arg) for arg in args], capture_output=True)
+    if result.returncode:
+        print(result.stdout.decode(errors="replace"), file=sys.stderr)
+        print(result.stderr.decode(errors="replace"), file=sys.stderr)
+        result.check_returncode()
+    return result.stdout
 
 
 def require(condition, message):
@@ -82,6 +88,8 @@ def validate(dmg, source):
                         "Finder background is not configured.")
                 window = store["."]["bwsp"]
                 require(not window["ShowToolbar"] and not window["ShowStatusBar"], "Unexpected Finder chrome.")
+                require(window["WindowBounds"] == "{{240, 110}, {760, 602}}",
+                        "Finder window must fit the artwork and title bar.")
             info = plistlib.loads((app / "Contents/Info.plist").read_bytes())
             print(f"DMG verified: {info['CFBundleShortVersionString']} ({info['CFBundleVersion']}), "
                   f"{len(inventory(app))} matching bundle entries; layout, artwork, guide and Applications link pass.")

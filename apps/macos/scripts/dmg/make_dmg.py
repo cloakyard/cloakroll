@@ -44,12 +44,15 @@ def main():
             "files": [str(staged), str(guide)], "symlinks": {"Applications": "/Applications"},
             "icon": str(staged / "Contents/Resources/CloakRoll.icns"),
             "background": str(ROOT / "assets/dmg/background.png"),
-            "window_rect": ((240, 110), (760, 570)),
+            # Finder's frame includes its 32pt title bar; preserve all 570pt of artwork.
+            "window_rect": ((240, 110), (760, 602)),
             "icon_locations": {"CloakRoll.app": (204, 282), "Applications": (556, 282),
                                "Install Guide.txt": (380, 464)},
             "icon_size": 96, "text_size": 12, "arrange_by": None,
             "show_icon_preview": False, "show_toolbar": False, "show_status_bar": False,
-            "show_sidebar": False, "hide_extensions": ["CloakRoll.app", "Install Guide.txt"],
+            # Leave app extensions to Finder's preference. Setting this flag adds forbidden
+            # FinderInfo to the signed bundle. Only the unsigned guide receives metadata.
+            "show_sidebar": False, "hide_extensions": ["Install Guide.txt"],
             "default_view": "icon-view", "include_icon_view_settings": True,
             "include_list_view_settings": False,
         }, lookForHiDPI=False)
