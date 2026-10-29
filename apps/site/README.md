@@ -1,7 +1,7 @@
 # CloakRoll website
 
 Static Astro landing page for **https://roll.cloakyard.com**, deployed as Cloudflare Worker
-`cloakroll`. It follows CloakDrop's repository/deployment pattern and Air 1.2.4.
+`cloakroll`. It follows CloakDrop's repository/deployment pattern and Air 1.2.5.
 
 ```sh
 npm ci
@@ -64,7 +64,7 @@ Do not link to a guessed asset URL or automatically publish an app release from 
 
 App icon and sample-library screenshots are copied from this repository by `predev`/`prebuild`.
 They contain no personal media. Light and dark screenshots follow the visitor's system theme.
-The privacy page reflects `docs/PRIVACY.md` and includes website hosting behavior; keep both
+The privacy page preserves `docs/PRIVACY.md` and includes website hosting behavior; keep both
 in sync when the app changes its data handling.
 
 The filmstrip is a local SVG/CSS composition. It plays once (maximum 2.66 seconds), then

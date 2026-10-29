@@ -1,0 +1,149 @@
+{
+  "schemaVersion": 1,
+  "contractVersion": "1.2.6",
+  "note": "Presence in this inventory is not audit or validation. Preserve evidence when updating.",
+  "surfaces": [
+    {
+      "path": "apps/site/src/components/Brand.astro",
+      "kind": "app-surface",
+      "sourceReviewed": false,
+      "airImplemented": false,
+      "validated": false,
+      "states": [],
+      "viewports": [],
+      "evidence": [],
+      "notes": ""
+    },
+    {
+      "path": "apps/site/src/components/Footer.astro",
+      "kind": "app-surface",
+      "sourceReviewed": true,
+      "airImplemented": true,
+      "validated": false,
+      "states": [],
+      "viewports": [],
+      "evidence": [
+        "evidence/privacy-2026-10-29/policies.json.gz",
+        "docs/air/family-2026-10-29.md"
+      ],
+      "notes": " Air 1.2.5 public privacy/navigation software audit passes; policy meaning/dates and editor work preserved. Full product/device gates remain separate. Air 1.2.6 support link and footer software conformance pass across home/privacy/recovery; full product/device acceptance remains separate."
+    },
+    {
+      "path": "apps/site/src/components/Header.astro",
+      "kind": "app-surface",
+      "sourceReviewed": true,
+      "airImplemented": true,
+      "validated": false,
+      "states": [],
+      "viewports": [],
+      "evidence": [
+        "evidence/privacy-2026-10-29/policies.json.gz"
+      ],
+      "notes": " Air 1.2.5 public privacy/navigation software audit passes; policy meaning/dates and editor work preserved. Full product/device gates remain separate."
+    },
+    {
+      "path": "apps/site/src/components/Icon.astro",
+      "kind": "app-surface",
+      "sourceReviewed": false,
+      "airImplemented": false,
+      "validated": false,
+      "states": [],
+      "viewports": [],
+      "evidence": [],
+      "notes": ""
+    },
+    {
+      "path": "apps/site/src/components/PhotoRoll.astro",
+      "kind": "app-surface",
+      "sourceReviewed": false,
+      "airImplemented": false,
+      "validated": false,
+      "states": [],
+      "viewports": [],
+      "evidence": [],
+      "notes": ""
+    },
+    {
+      "path": "apps/site/src/components/PhotoRollScene.astro",
+      "kind": "app-surface",
+      "sourceReviewed": false,
+      "airImplemented": false,
+      "validated": false,
+      "states": [],
+      "viewports": [],
+      "evidence": [],
+      "notes": ""
+    },
+    {
+      "path": "apps/site/src/layouts/BaseLayout.astro",
+      "kind": "app-surface",
+      "sourceReviewed": false,
+      "airImplemented": false,
+      "validated": false,
+      "states": [],
+      "viewports": [],
+      "evidence": [],
+      "notes": ""
+    },
+    {
+      "path": "apps/site/src/pages/404.astro",
+      "kind": "app-surface",
+      "sourceReviewed": false,
+      "airImplemented": false,
+      "validated": false,
+      "states": [],
+      "viewports": [],
+      "evidence": [],
+      "notes": ""
+    },
+    {
+      "path": "apps/site/src/pages/index.astro",
+      "kind": "app-surface",
+      "sourceReviewed": false,
+      "airImplemented": false,
+      "validated": false,
+      "states": [],
+      "viewports": [],
+      "evidence": [],
+      "notes": ""
+    },
+    {
+      "path": "apps/site/src/pages/privacy.astro",
+      "kind": "app-surface",
+      "sourceReviewed": true,
+      "airImplemented": true,
+      "validated": false,
+      "states": [],
+      "viewports": [],
+      "evidence": [
+        "evidence/privacy-2026-10-29/policies.json.gz"
+      ],
+      "notes": " Air 1.2.5 public privacy/navigation software audit passes; policy meaning/dates and editor work preserved. Full product/device gates remain separate."
+    },
+    {
+      "path": "apps/site/src/styles/air.css",
+      "kind": "app-surface",
+      "sourceReviewed": true,
+      "airImplemented": true,
+      "validated": false,
+      "states": [],
+      "viewports": [],
+      "evidence": [
+        "evidence/privacy-2026-10-29/policies.json.gz",
+        "docs/air/family-2026-10-29.md"
+      ],
+      "notes": " Air 1.2.5 public privacy/navigation software audit passes; policy meaning/dates and editor work preserved. Full product/device gates remain separate. Air 1.2.6 support link and footer software conformance pass across home/privacy/recovery; full product/device acceptance remains separate."
+    },
+    {
+      "path": "apps/site/src/styles/global.css",
+      "kind": "app-surface",
+      "sourceReviewed": false,
+      "airImplemented": false,
+      "validated": false,
+      "states": [],
+      "viewports": [],
+      "evidence": [],
+      "notes": ""
+    }
+  ]
+}
