@@ -6,12 +6,12 @@ restore-to-iPhone in the backlog. Additional feature expansion is not needed to 
 
 ## Current beta — 29 October 2026
 
-Prepared and installed **0.1.0 beta (20261029)** as an Apple silicon-only, locally ad-hoc signed
-DMG requiring macOS 26+. All 628 Swift tests, five release-tool tests, strict lint, Debug/Release
-builds, bundle and mounted-DMG checks passed. This build validates the corrected scale-probe target
-and release-source guard; app behavior retains the previous Dock, Settings and backup fixes. See
-[the current audit](verification/CLOSEOUT-2026-10-29.md) and
-[release notes](releases/v0.1.0-beta.20261029.md) for the artifact and checks.
+Prepared and installed **0.1.0 beta (20261029.1)** as an Apple silicon-only, locally ad-hoc signed
+DMG requiring macOS 26+. All 630 Swift tests, five release-tool tests, strict lint, Debug/Release
+builds, bundle and mounted-DMG checks passed. This build clarifies Live Photo originals in Info
+and adds pair-preservation/retry coverage. See
+[the current audit](verification/LIVE-PHOTOS-AND-BRANCHES-2026-10-29.md) and
+[release notes](releases/v0.1.0-beta.20261029.1.md) for the artifact and checks.
 This is a local testing candidate; publication, notarization and clean-Mac acceptance are separate.
 The current feature set needs no expansion before beta testing. Remaining hardware/OS gates below
 stay open and must be disclosed to testers.

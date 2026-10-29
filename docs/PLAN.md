@@ -1147,3 +1147,8 @@ Added the `dev` → `main` workflow, a read-only Website CI check and documented
 settings. Site validation and Wrangler dry-run passed locally. Native light/dark Info checks and
 targeted Live Photo tests passed; exact full-build/PR evidence is recorded in
 [the audit](verification/LIVE-PHOTOS-AND-BRANCHES-2026-10-29.md). Hardware acceptance remains last.
+
+Beta **20261029.1** passed all 630 Swift tests, five release-tool tests, strict lint and the full
+Debug/Release/bundle/DMG pipeline. Installed the byte-matching packaged app; About, retained
+preferences and the normal Air installer layout passed. `main` now requires PRs and the Website
+check; `dev` remains the development branch. [Release notes](releases/v0.1.0-beta.20261029.1.md).

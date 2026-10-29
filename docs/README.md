@@ -2,7 +2,7 @@
 
 ## Using the app
 
-- [Beta notes](releases/v0.1.0-beta.20261029.md) — installation, scope and known limits.
+- [Beta notes](releases/v0.1.0-beta.20261029.1.md) — installation, scope and known limits.
 - [Privacy](PRIVACY.md) — local data, originals, recovery records and removal.
 - [Live Photos](LIVE-PHOTOS.md) — paired originals, incremental retry and preview limits.
 - [Folder organization](verification/BACKUP-ORGANIZATION.md) and [per-iPhone folders](verification/DEVICE-DESTINATIONS.md).
