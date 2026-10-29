@@ -1114,3 +1114,19 @@ verified DMG; Finder's normal installer-open layout and installed About version 
 See [audit](verification/SILICON-SETTINGS-DOCK-2026-10-28.md) and
 [artifact notes](releases/v0.1.0-beta.20261028.3.md). No hardware acceptance, notarization or
 website deployment was claimed; those gates remain explicit above.
+
+## 29 October 2026 — software acceptance and reproducible beta
+
+Fixed the scale probe's stale macOS target and added source-revision checks throughout beta
+preparation. Five release-tool tests and the built 10k probe now run in that pipeline. Generated
+10k/50k/100k measurements, keyboard focus/selection/search checks, actual system Reduce Motion
+and Reduce Transparency checks, and a short Instruments sample-scrolling trace are recorded in
+[the closeout audit](verification/CLOSEOUT-2026-10-29.md). All changed system preferences were
+restored. Full VoiceOver feedback could not be observed through the tool and remains pending.
+
+Beta **20261029** passed all 628 Swift tests, five release-tool tests, strict lint, Debug/Release,
+bundle and mounted-DMG checks. Inspected the Air installer, installed its byte-matching app,
+verified About and retained backup preferences, and ejected the image. Previous installed app
+is recoverable in Trash. [Release notes](releases/v0.1.0-beta.20261029.md) record the source and
+artifact hash. Hardware, sustained real-library profiling, minimum-OS/clean-Mac, notarization
+and deployment gates remain open; no new product feature is needed before those checks.
