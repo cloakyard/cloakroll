@@ -9,8 +9,10 @@ CloakDrop's header/footer, neutral controls, system typography, open composition
 menu and focus handling are reused under the family's MIT license. CloakDrop remains
 read-only. Product copy, previews, release status and privacy details describe CloakRoll.
 
-CloakRoll-specific extension: a bounded strip of five mountain-and-sun photographs unrolls
-into place. This is decorative identity artwork, not a simulated backup or progress meter.
+CloakRoll-specific extension: a bounded strip of five illustrated scenes unrolls into place:
+mountains, a sailboat at the coast, flowers, a city at dusk and a forest path. Different subjects,
+silhouettes and muted palettes suggest a varied camera roll within one illustration style.
+This is decorative identity artwork, not a simulated backup or progress meter.
 Only the artwork uses muted product colors. Navigation and actions keep Air's semantic
 palette. Existing shared `--air-*` values are not overridden. The illustration is code-native
 SVG with a still HTML/CSS base; no raster generation, remote asset, looping animation or

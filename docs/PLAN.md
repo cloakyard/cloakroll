@@ -13,7 +13,9 @@ called complete until its actual evidence is recorded. No source media is modifi
 
 From 29 October, `dev` is the active development branch and `main` receives validated changes
 through PRs. Retain both branches, merge without rewriting shared history, and fast-forward
-`dev` after promotion. The Cloudflare Worker uses `main`; deployment remains deferred to the user.
+`dev` after promotion. The user deployed the Cloudflare Worker from `main` on 29 October.
+Further promotion to `main` can trigger production deployment; leave website changes in a PR
+for the user's release decision unless they request publication.
 
 ## Current platform decision — 28 October 2026
 
@@ -42,7 +44,8 @@ and evidence. Unchecked acceptance gates are not necessarily unimplemented featu
 - [ ] Finish sustained performance profiling against the phase targets; generated fixtures alone
       do not establish real USB scrolling/transfer performance.
 - [ ] Finalize release distribution: Developer ID/notarization and clean-Mac/older-runtime acceptance.
-- [ ] Publish website and release when requested; Cloudflare deployment is explicitly deferred.
+- [x] Website deployed by the user at `roll.cloakyard.com`; observed live on 29 October.
+- [ ] Publish the app release when requested; signing and acceptance gates remain open.
 
 The [29 October closeout audit](verification/CLOSEOUT-2026-10-29.md) records actual keyboard,
 system preference and performance evidence. The short sample trace is not sustained real-library
@@ -1152,3 +1155,12 @@ Beta **20261029.1** passed all 630 Swift tests, five release-tool tests, strict 
 Debug/Release/bundle/DMG pipeline. Installed the byte-matching packaged app; About, retained
 preferences and the normal Air installer layout passed. `main` now requires PRs and the Website
 check; `dev` remains the development branch. [Release notes](releases/v0.1.0-beta.20261029.1.md).
+
+## 29 October 2026 — varied landing artwork
+
+Replaced four repeated mountain silhouettes with a coast/sailboat, flowers, a city at dusk and
+a forest path. Retained the original mountain frame, filmstrip layout and finite Air animation.
+All artwork is local inline SVG. Site verification and Worker dry-run passed; desktop, tablet,
+phone, dark/reduced-motion and the responsive width matrix were checked. See
+[verification](verification/FILMSTRIP-VARIETY-2026-10-29.md). Prepared on `dev` for PR review;
+no direct Worker deployment or native app change.
