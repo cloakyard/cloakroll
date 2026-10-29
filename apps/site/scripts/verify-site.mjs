@@ -1,12 +1,9 @@
 import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
-import { createHash } from 'node:crypto';
+import { execFileSync } from 'node:child_process';
 import { resolve } from 'node:path';
 const read = path => readFileSync(path, 'utf8');
-const air = JSON.parse(read('design/air-manifest.json'));
-for (const [file, digest] of Object.entries(air.files)) {
-  assert.equal(createHash('sha256').update(readFileSync(file)).digest('hex'), digest, `Air source changed: ${file}`);
-}
+execFileSync(process.execPath, ['../../scripts/check-air-design.mjs'], { stdio: 'inherit' });
 const pages = ['index.html', 'privacy/index.html', '404.html'];
 for (const page of pages) {
   const html = read(`dist/${page}`);

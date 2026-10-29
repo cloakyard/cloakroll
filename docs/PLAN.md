@@ -17,6 +17,14 @@ through PRs. Retain both branches, merge without rewriting shared history, and f
 Further promotion to `main` can trigger production deployment; leave website changes in a PR
 for the user's release decision unless they request publication.
 
+## Website privacy alignment — 29 October 2026
+
+The bounded Air 1.2.5 privacy/navigation update is verified locally with the family.
+The website now uses canonical synchronization and a visible home return link;
+policy meaning and the existing revision are preserved. No native or hardware gate
+is closed by this work, and this privacy pass does not deploy. See
+[the audit](air/privacy-2026-10-29.md).
+
 ## Current platform decision — 28 October 2026
 
 Per the user’s latest direction, CloakRoll now targets **Apple silicon only, macOS 26+**.

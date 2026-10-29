@@ -26,3 +26,12 @@ Use native controls and semantic `AppAccent`, system surfaces and small componen
 services, analytics, photo conversions, iPhone deletion or private APIs. Never mark an incomplete
 transfer verified. Never match by filename alone or overwrite unrelated destination files.
 Consult `docs/APPLE_APIS.md` before making ImageCaptureCore assumptions.
+
+## Website design
+
+Read `DESIGN.md` (also in `apps/site/DESIGN.md`) before visible website changes.
+The full Air contract and pinned local bundle are synchronized from Cloakyard.
+Run `npm run verify` and `npm run check:worker` in `apps/site`, and
+`node scripts/check-air-portability.mjs` at the root. Keep responsive light/dark,
+keyboard/touch and text-reflow evidence in `docs/air/`. These website checks do not
+certify native or hardware acceptance. Preserve actual policy meaning and dates.
