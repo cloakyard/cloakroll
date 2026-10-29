@@ -6,12 +6,12 @@ A native, open-source macOS app for backing up iPhone photos and videos over USB
 Browse your library, keep original files, and copy only what is missing into folders you control.
 Built with SwiftUI and a separately tested Swift engine. No account, analytics or media uploads.
 
-**[Beta notes](docs/releases/v0.1.0-beta.20261029.1.md)** · **[Releases](https://github.com/cloakyard/cloakroll/releases)** · **[Documentation](docs/README.md)** · **[Contributing](CONTRIBUTING.md)**
+**[Beta notes](docs/releases/v0.1.0-beta.20261029.2.md)** · **[Releases](https://github.com/cloakyard/cloakroll/releases)** · **[Documentation](docs/README.md)** · **[Contributing](CONTRIBUTING.md)**
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
   <img src="https://img.shields.io/badge/platform-macOS%2026%2B%20%C2%B7%20Apple%20silicon-lightgrey" alt="Requires macOS 26+, Apple silicon only">
-  <img src="https://img.shields.io/badge/beta-0.1.0%20%2820261029.1%29-714BC4" alt="Beta: 0.1.0 (20261029.1)">
+  <img src="https://img.shields.io/badge/beta-0.1.0%20%2820261029.2%29-714BC4" alt="Beta: 0.1.0 (20261029.2)">
   <img src="https://img.shields.io/badge/Swift-6-F05138?logo=swift&logoColor=white" alt="Swift 6">
   <img src="https://img.shields.io/badge/SwiftUI-Liquid%20Glass-8A2BE2" alt="SwiftUI · Liquid Glass">
 </p>
@@ -28,11 +28,12 @@ locally generated sample library; they contain no personal photos and do not sho
 
 ## Download and install
 
-The **0.1.0 beta, build 20261029.1**, is prepared locally for evaluation. It has not yet been
-published to GitHub Releases. The [beta notes](docs/releases/v0.1.0-beta.20261029.1.md) record the
-artifact, checksum and validation; release binaries are kept out of source control.
+The first public **0.1.0 beta, build 20261029.2**, is available on
+[GitHub Releases](https://github.com/cloakyard/cloakroll/releases/tag/v0.1.0-beta.20261029.2),
+with a DMG and SHA-256 checksum. The [beta notes](docs/releases/v0.1.0-beta.20261029.2.md)
+record the features, verification and known limits; release binaries stay out of source control.
 
-1. Open the supplied `CloakRoll-v0.1.0-beta.20261029.1.dmg`.
+1. Download and open [CloakRoll-v0.1.0-beta.20261029.2.dmg](https://github.com/cloakyard/cloakroll/releases/download/v0.1.0-beta.20261029.2/CloakRoll-v0.1.0-beta.20261029.2.dmg).
 2. Drag **CloakRoll** to **Applications**, then open it and eject the installer.
 3. Connect and unlock your iPhone over USB, accepting Trust if prompted. Choose a backup folder.
 4. Back up new items, or select items and back up the selection.
@@ -48,7 +49,7 @@ Keep another independent copy of irreplaceable originals while evaluating the be
 
 The first beta brings the implemented USB-backup workflow into a dated Apple silicon build,
 with family-aligned Settings, bundled license notices and an Air drag-to-Applications installer.
-See the [beta readiness audit](docs/verification/BETA-2026-10-28.md) for exact checks and limits.
+See the [first public beta audit](docs/verification/FIRST-PUBLIC-BETA-2026-10-29.md) for exact checks and limits.
 
 ## What it does
 
@@ -136,7 +137,7 @@ MIT notice and privacy manifest ship in the app. The installer tools are build-o
 To prepare a dated beta and DMG, follow the setup in [Release](docs/RELEASE.md), then run:
 
 ```sh
-scripts/prepare_beta.sh --build 20261029.1
+scripts/prepare_beta.sh --build 20261029.3
 ```
 
 This checks the same clean source revision between stages, runs tests/lint/builds and a 10k
@@ -145,10 +146,10 @@ checksums and a build manifest. It does not publish a release.
 
 ## Testing
 
-The dated beta passed **401 core + 227 hosted app tests (628 Swift tests)**, five release-tool
-tests, strict lint and the Debug/Apple silicon Release builds. The mounted DMG and installed
-app were also checked; see
-[the software closeout audit](docs/verification/CLOSEOUT-2026-10-29.md) for scope and remaining acceptance gates.
+The public beta passed **403 core + 227 hosted app tests (630 Swift tests)**, five release-tool
+tests, strict lint and fresh Debug/Apple silicon Release builds. The mounted DMG, packaged-app
+launch and uploaded assets were also checked; see
+[the release audit](docs/verification/FIRST-PUBLIC-BETA-2026-10-29.md) for scope and remaining acceptance gates.
 
 ```sh
 cd apps/macos/Packages/CloakRollCore

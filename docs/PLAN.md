@@ -53,7 +53,7 @@ and evidence. Unchecked acceptance gates are not necessarily unimplemented featu
       do not establish real USB scrolling/transfer performance.
 - [ ] Finalize release distribution: Developer ID/notarization and clean-Mac/older-runtime acceptance.
 - [x] Website deployed by the user at `roll.cloakyard.com`; observed live on 29 October.
-- [ ] Publish the app release when requested; signing and acceptance gates remain open.
+- [x] Publish the requested first GitHub prerelease with its verified DMG; signing and acceptance gates remain open.
 
 The [29 October closeout audit](verification/CLOSEOUT-2026-10-29.md) records actual keyboard,
 system preference and performance evidence. The short sample trace is not sustained real-library
@@ -1186,3 +1186,22 @@ sample asset, recaptured light/dark native screenshots, and verified desktop/tab
 layouts. Debug build, strict lint, website validation and Worker dry-run passed. Publication
 proceeds through PR #2 after CI with the Cloudflare build root corrected to `apps/site`;
 the PR records the deployment outcome. Native beta packaging and hardware gates are unchanged.
+
+## 29 October 2026 — first public beta
+
+At the user's request, published **v0.1.0-beta.20261029.2** using CloakDrop's beta release
+format and dated build convention. Built from clean, already-promoted source
+`8027c8f751df186d30560d6bb963ef7839c1df45`; the GitHub tag points to that exact commit.
+All 403 core and 227 hosted app tests, five release-tool tests, strict lint, the 10k metadata
+probe, fresh Debug/arm64 Release builds, signed-bundle and mounted-DMG checks passed.
+The normal Finder installer layout and launch directly from its packaged app were inspected;
+About displays **0.1.0 (20261029.2) · Beta**. All 19 bundle entries match the verified app.
+
+The public prerelease includes the 6,620,320-byte DMG and `SHA256SUMS.txt`. Downloaded both
+uploaded assets and compared them byte for byte; GitHub's DMG digest matches the local hash.
+Site verification, Worker dry-run and Air portability checks also passed. This stage did not
+deploy the website, install a replacement app or run a physical backup. The installer was
+ejected and the previously installed app reopened. Details are recorded in
+[the publication audit](verification/FIRST-PUBLIC-BETA-2026-10-29.md) and
+[release notes](releases/v0.1.0-beta.20261029.2.md). Developer ID/notarization, clean-Mac/minimum-OS,
+full accessibility, sustained performance and physical acceptance gates remain open.

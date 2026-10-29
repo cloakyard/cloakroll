@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "contractVersion": "1.2.6",
+  "contractVersion": "1.2.7",
   "note": "Presence in this inventory is not audit or validation. Preserve evidence when updating.",
   "surfaces": [
     {
@@ -60,7 +60,9 @@
       "validated": false,
       "states": [],
       "viewports": [],
-      "evidence": [],
+      "evidence": [
+        "docs/air/safari-startup-2026-10-29.md"
+      ],
       "notes": ""
     },
     {
