@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "contractVersion": "1.2.5",
+  "contractVersion": "1.2.6",
   "note": "Presence in this inventory is not audit or validation. Preserve evidence when updating.",
   "surfaces": [
     {
@@ -23,9 +23,10 @@
       "states": [],
       "viewports": [],
       "evidence": [
-        "evidence/privacy-2026-10-29/policies.json.gz"
+        "evidence/privacy-2026-10-29/policies.json.gz",
+        "docs/air/family-2026-10-29.md"
       ],
-      "notes": " Air 1.2.5 public privacy/navigation software audit passes; policy meaning/dates and editor work preserved. Full product/device gates remain separate."
+      "notes": " Air 1.2.5 public privacy/navigation software audit passes; policy meaning/dates and editor work preserved. Full product/device gates remain separate. Air 1.2.6 support link and footer software conformance pass across home/privacy/recovery; full product/device acceptance remains separate."
     },
     {
       "path": "apps/site/src/components/Header.astro",
@@ -128,9 +129,10 @@
       "states": [],
       "viewports": [],
       "evidence": [
-        "evidence/privacy-2026-10-29/policies.json.gz"
+        "evidence/privacy-2026-10-29/policies.json.gz",
+        "docs/air/family-2026-10-29.md"
       ],
-      "notes": " Air 1.2.5 public privacy/navigation software audit passes; policy meaning/dates and editor work preserved. Full product/device gates remain separate."
+      "notes": " Air 1.2.5 public privacy/navigation software audit passes; policy meaning/dates and editor work preserved. Full product/device gates remain separate. Air 1.2.6 support link and footer software conformance pass across home/privacy/recovery; full product/device acceptance remains separate."
     },
     {
       "path": "apps/site/src/styles/global.css",
