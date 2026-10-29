@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "contractVersion": "1.3.0",
+  "contractVersion": "1.3.1",
   "note": "Presence in this inventory is not audit or validation. Preserve evidence when updating.",
   "surfaces": [
     {
@@ -62,14 +62,15 @@
         "explicit click/tap replay after completion",
         "busy press ignored without queue",
         "keyboard replay and inset focus",
-        "static fallback without replay"
+        "static fallback without replay",
+        "delayed stylesheet readiness"
       ],
       "viewports": [],
       "evidence": [
         "docs/air/safari-startup-2026-10-29.md",
         "docs/air/artwork-replay-2026-10-29.md"
       ],
-      "notes": " Air 1.3.0 replay passes Chrome/WebKit software checks; physical/assistive acceptance remains separate."
+      "notes": " Air 1.3.0 replay passes Chrome/WebKit software checks; physical/assistive acceptance remains separate. Air 1.3.1 waits for CSS before token reads; two-second delayed styles pass in Chrome/WebKit."
     },
     {
       "path": "apps/site/src/components/PhotoRollScene.astro",
