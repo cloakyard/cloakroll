@@ -6,13 +6,15 @@ restore-to-iPhone in the backlog. Additional feature expansion is not needed to 
 
 ## Current beta — 29 October 2026
 
-Prepared and installed **0.1.0 beta (20261029.1)** as an Apple silicon-only, locally ad-hoc signed
-DMG requiring macOS 26+. All 630 Swift tests, five release-tool tests, strict lint, Debug/Release
-builds, bundle and mounted-DMG checks passed. This build clarifies Live Photo originals in Info
-and adds pair-preservation/retry coverage. See
-[the current audit](verification/LIVE-PHOTOS-AND-BRANCHES-2026-10-29.md) and
-[release notes](releases/v0.1.0-beta.20261029.1.md) for the artifact and checks.
-This is a local testing candidate; publication, notarization and clean-Mac acceptance are separate.
+Published the first public **0.1.0 beta (20261029.2)** on
+[GitHub Releases](https://github.com/cloakyard/cloakroll/releases/tag/v0.1.0-beta.20261029.2)
+with its DMG and SHA-256 checksum. It is Apple silicon-only, locally ad-hoc signed and requires
+macOS 26+. All 630 Swift tests, five release-tool tests, strict lint, fresh Debug/Release builds,
+bundle and mounted-DMG checks passed. Finder layout, launch directly from the final DMG and
+About build were checked; both uploaded assets were downloaded and compared byte for byte.
+See [the publication audit](verification/FIRST-PUBLIC-BETA-2026-10-29.md) and
+[release notes](releases/v0.1.0-beta.20261029.2.md) for the artifact and checks.
+Publication does not establish Developer ID signing, notarization or clean-Mac acceptance.
 The current feature set needs no expansion before beta testing. Remaining hardware/OS gates below
 stay open and must be disclosed to testers.
 
