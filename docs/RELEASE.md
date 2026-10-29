@@ -38,8 +38,11 @@ Asia/Kolkata. Use `.1`, `.2`, etc. for additional builds that day. `CFBundleShor
 stays numeric `0.1.0`; the app’s separate channel is **Beta**. Ordinary Debug builds remain
 **Development preview**. Reusing an existing build directory or DMG output is rejected.
 
-The command runs core tests, hosted app tests, strict lint, normal Debug and Apple silicon Release
-builds, actual-bundle checks, DMG creation and a read-only mounted comparison. It writes:
+The command captures the starting clean Git revision and rejects a changed revision or dirty
+source tree before and after each stage. Do not edit or commit source while it runs. It runs
+release-tool regression tests, core tests, a Release scale-probe build and 10k metadata smoke test,
+hosted app tests, strict lint, normal Debug and Apple silicon Release builds, actual-bundle checks,
+DMG creation and a read-only mounted comparison. It writes:
 
 ```text
 build/Beta-0.1.0-20261028/
@@ -98,8 +101,8 @@ status; [Apple’s opening guidance](https://support.apple.com/en-us/102445) is 
 | Physical reliability | Bounded import, repeat, Stop and deferred Quit have recorded evidence | Cable removal during a large transfer; reconnect/retry; external-volume removal, full disk and restoration |
 | Incremental and thumbnails | Bounded real new-item/repeat and nearby-thumbnail evidence exists | Final same-device new capture/reconnect and preview reuse across reconnect |
 | Device destinations | Per-iPhone mappings, access checks and original-folder ID recall implemented; one connected phone's relaunch/missing-folder flow passed | Switch two physical phones with separate folders; external-volume removal/remount |
-| Scale and responsiveness | Generated 10k/50k/100k metadata/history measurements recorded | Sustained app RSS, frame/main-thread timing and rapid physical-library scrolling |
-| Accessibility and OS support | Current-macOS light/dark, compact layout, native labels/actions inspected | Full VoiceOver/keyboard pass, system accessibility variants, minimum macOS 26 runtime |
+| Scale and responsiveness | 29 October 10k/50k/100k metadata probes and a 30.7-second 100k-sample CPU/RSS trace recorded; no potential hangs at 250 ms in that trace | Sustained app RSS, frame/main-thread timing and rapid physical-library scrolling |
+| Accessibility and OS support | Keyboard selection/search/Info focus, system Reduce Motion/Reduce Transparency, light/dark and compact layout checked | Full VoiceOver spoken-feedback acceptance, remaining system variants, minimum macOS 26 runtime |
 | Distribution | Local beta DMG built, inspected and installed; sample release screenshots recorded | Developer ID signing, notarization, stapled ticket and clean-Mac launch |
 
 Hardware testing resumed on 5 October 2026. Physical flat-folder import, zero-byte

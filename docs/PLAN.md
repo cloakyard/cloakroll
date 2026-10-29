@@ -18,7 +18,7 @@ This supersedes the macOS 14/Intel baseline recorded in earlier phase evidence. 
 beta build, bundle checks, website and installer must agree. Historical verification remains
 unchanged; minimum macOS 26 runtime acceptance is still required.
 
-## Current closeout checklist — 28 October 2026
+## Current closeout checklist — 29 October 2026
 
 This is the current implementation queue; the phase sections below retain historical gates
 and evidence. Unchecked acceptance gates are not necessarily unimplemented features.
@@ -31,11 +31,19 @@ and evidence. Unchecked acceptance gates are not necessarily unimplemented featu
 - [x] Apple silicon/macOS 26 build gate, Dock progress and family About Matrix effect.
 - [x] Readable missing-original continuation; persist the terminal explanation/count in History.
 - [x] Air website and dated, reproducible beta/DMG tooling.
-- [ ] Complete full VoiceOver/keyboard acceptance and remaining system accessibility variants.
+- [x] Keyboard selection/search/Info focus checks and system Reduce Motion/Reduce Transparency checks.
+- [x] Re-run 10k/50k/100k metadata probes and a bounded 100k-sample Instruments scrolling trace.
+- [x] Gate beta preparation on the same clean source revision throughout all stages; build and smoke-test the scale probe.
+- [ ] Complete full VoiceOver spoken-feedback acceptance and remaining system accessibility variants.
 - [ ] Finish sustained performance profiling against the phase targets; generated fixtures alone
       do not establish real USB scrolling/transfer performance.
 - [ ] Finalize release distribution: Developer ID/notarization and clean-Mac/older-runtime acceptance.
 - [ ] Publish website and release when requested; Cloudflare deployment is explicitly deferred.
+
+The [29 October closeout audit](verification/CLOSEOUT-2026-10-29.md) records actual keyboard,
+system preference and performance evidence. The short sample trace is not sustained real-library
+acceptance. VoiceOver was enabled with permission and restored, but its spoken/caption output
+could not be observed through the tool; that gate remains open.
 
 **Hardware last:** repeat the affected large backup, incremental/new-capture/reconnect, cable
 removal during transfer, external-drive removal/full volume, sleep/wake and separate physical

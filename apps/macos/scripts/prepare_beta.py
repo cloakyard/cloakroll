@@ -11,6 +11,7 @@ import re
 import subprocess
 import sys
 from zoneinfo import ZoneInfo
+from release_source import capture_source, verify_source
 
 HERE = Path(__file__).resolve().parent
 MACOS = HERE.parent
@@ -31,8 +32,10 @@ def main():
     if not re.fullmatch(r"\d{8}(?:\.[1-9]\d*)?", args.build):
         parser.error("Build must be YYYYMMDD or YYYYMMDD.N.")
     datetime.strptime(args.build.split(".")[0], "%Y%m%d")
-    if output("git", "status", "--porcelain"):
-        parser.error("Commit source changes before preparing a beta so provenance is reproducible.")
+    try:
+        source_commit = capture_source(ROOT)
+    except ValueError as error:
+        parser.error(str(error))
     version = "0.1.0"
     release = MACOS / "build" / f"Beta-{version}-{args.build}"
     release.mkdir(parents=True, exist_ok=False)
@@ -41,12 +44,18 @@ def main():
     environment = dict(os.environ, GIT_CONFIG_COUNT="0")
 
     def run(label, command, cwd=MACOS):
+        verify_source(ROOT, source_commit)
         print(f"{label}… ({logs / (label + '.log')})", flush=True)
         with (logs / (label + ".log")).open("w") as log:
             subprocess.run([str(part) for part in command], cwd=cwd, env=environment,
                            stdout=log, stderr=subprocess.STDOUT, check=True)
+        verify_source(ROOT, source_commit)
 
+    run("release-tool-tests", [sys.executable, "-m", "unittest", "discover", "-s", HERE / "tests"])
     run("core-tests", ["swift", "test"], MACOS / "Packages/CloakRollCore")
+    probe = HERE / "PerformanceProbe"
+    run("performance-probe-build", ["swift", "build", "-c", "release"], probe)
+    run("performance-probe-smoke", [probe / ".build/release/ScaleProbe", "10000"], probe)
     run("generate", ["xcodegen", "generate"])
     run("lint", ["swiftlint", "--strict"])
     base = ["xcodebuild", "-project", "CloakRoll.xcodeproj", "-scheme", "CloakRoll"]
@@ -76,17 +85,20 @@ def main():
             return hashlib.file_digest(stream, "sha256").hexdigest()
     manifest = {
         "product": "CloakRoll", "version": info["CFBundleShortVersionString"], "build": info["CFBundleVersion"],
-        "channel": info["CloakRollReleaseChannel"], "sourceCommit": output("git", "rev-parse", "HEAD"),
+        "channel": info["CloakRollReleaseChannel"], "sourceCommit": source_commit,
         "createdAt": datetime.now(ZoneInfo("UTC")).isoformat(), "published": False,
         "architectures": output("lipo", "-archs", str(app / "Contents/MacOS/CloakRoll")).split(),
         "minimumMacOS": info["LSMinimumSystemVersion"],
         "hostMacOS": output("sw_vers", "-productVersion"), "xcode": output("xcodebuild", "-version"),
         "signing": "ad-hoc" if "Signature=adhoc" in signature else "See bundle-check log",
         "notarized": False, "automatedTests": counts,
+        "performanceProbe": {"logicalItems": 10000, "scope": "Generated metadata only; no USB or UI measurement.",
+                             "log": "logs/performance-probe-smoke.log"},
         "artifact": {"name": dmg.name, "bytes": dmg.stat().st_size, "sha256": sha(dmg)},
         "backgroundSHA256": sha(ROOT / "assets/dmg/background.png"),
         "nativeAndHardwareValidation": "See dated release audit; not performed by this script.",
     }
+    verify_source(ROOT, source_commit)
     (release / "build-manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
     (release / "app-inventory.json").write_text(json.dumps(inventory(app), indent=2) + "\n")
     (release / "SHA256SUMS.txt").write_text("".join(
