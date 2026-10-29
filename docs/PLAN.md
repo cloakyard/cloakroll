@@ -1164,3 +1164,11 @@ All artwork is local inline SVG. Site verification and Worker dry-run passed; de
 phone, dark/reduced-motion and the responsive width matrix were checked. See
 [verification](verification/FILMSTRIP-VARIETY-2026-10-29.md). Prepared on `dev` for PR review;
 no direct Worker deployment or native app change.
+
+Follow-up: added CloakDrop's circular web-mark treatment while preserving CloakRoll's native
+mountain/sun icon. Refreshed the sample-art generator with flowers, café, architecture, a cat
+and citrus, then captured the real native app in light/dark for the website and README. Normal
+Debug build, strict lint, site verification and Worker dry-run passed. Desktop/tablet/phone and
+narrow dark layouts were visually checked; see the same audit above. App-only appearance and
+browser overrides were restored. No hardware acceptance or new beta packaging was claimed;
+the changes remain in the existing `dev` → `main` PR for the user's deployment decision.

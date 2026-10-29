@@ -30,3 +30,42 @@ app code, header/footer, navigation and download behavior are unchanged.
 Local screenshots: `apps/site/build/verification/20261029-filmstrip-*.png` (ignored).
 Prepared on `dev` for a PR into `main`; the user's merge can trigger Workers Builds. No direct
 Cloudflare deployment, hardware backup or native beta rebuild was performed for this artwork change.
+
+## Follow-up: circular web mark and varied app captures
+
+The user also requested CloakDrop's rounded website logo treatment and more varied artwork in
+the actual app preview. Added a website-only circular SVG using the native mountain/sun paths
+inside CloakDrop's 64-unit, 30-radius enclosure. The header keeps the shared 36px mark size;
+the SVG is also the browser favicon. Native Icon Composer sources, About artwork and the
+separate PNG touch icon are unchanged. Compared the live CloakDrop header and its local SVG
+source; the family Air package, header/footer layout and navigation are unchanged.
+
+Updated the deterministic AppKit sample-art generator with flowers, a café still life, an arched
+courtyard, a resting cat and citrus, plus a sailboat in the coastal scene. The existing landscapes
+provide the remaining subjects. All twelve are original local illustrations; no personal media,
+remote image service or third-party artwork is used.
+
+Captured the rebuilt native Debug app using the Development menu's 1,200-item sample library,
+Standard Window and Light/Dark appearances. Both 2200×1480 captures show eight distinct subjects
+in the first two rows and retain the explicit sample-library disclosure. Saved real UI captures,
+encoded as PNG without compositing, to `assets/screenshots`; the site asset-sync process copies
+them into `public/images`. Updated README, page and social-image descriptions accordingly.
+Restored System appearance, closed Debug and reopened the installed beta.
+
+Additional verification:
+
+- Sample generator completed, normal arm64 Debug build succeeded, and strict SwiftLint reported
+  zero violations across 151 files. Only sample art changes in the native app; no transfer or
+  catalog behavior changed and no new beta was packaged or installed.
+- `npm run verify` passed with zero Astro diagnostics, and Worker dry-run passed with 15 static
+  files. Source screenshot copies match the built site assets.
+- Actual Chrome inspection of the rebuilt static site: desktop 1440×900, tablet 768×1024,
+  phone 390×844, and narrow dark/reduced-motion 320×568. The header logo stays 36px; no horizontal
+  overflow. Inspected the new product capture on desktop, tablet and phone, and confirmed dark
+  mode loads `library-dark.png` at its full 2200px source width. No console warnings/errors.
+- Browser media/viewport overrides were restored. Local visual evidence is in
+  `apps/site/build/verification/20261029-rounded-logo-*.png` and
+  `20261029-varied-product-*.png` (ignored).
+
+The follow-up remains on `dev` in PR #2. `main`, Cloudflare settings and the deployed site are
+unchanged; merging the PR is the user's production release step.

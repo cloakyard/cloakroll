@@ -19,7 +19,7 @@ Built with SwiftUI and a separately tested Swift engine. No account, analytics o
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="assets/screenshots/library-dark.png">
-    <img src="assets/screenshots/library-light.png" alt="CloakRoll’s native photo library with illustrated sample landscapes, date groups and compact backup controls." width="900">
+    <img src="assets/screenshots/library-light.png" alt="CloakRoll’s native photo library with varied illustrated sample media, date groups and compact backup controls." width="900">
   </picture>
 </p>
 

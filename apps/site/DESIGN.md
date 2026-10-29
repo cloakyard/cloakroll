@@ -18,6 +18,9 @@ palette. Existing shared `--air-*` values are not overridden. The illustration i
 SVG with a still HTML/CSS base; no raster generation, remote asset, looping animation or
 playback controls are needed. No changes are made to the canonical family package.
 
-The source app icon is used at 36px. The screenshot section shows the actual app with the
-repository's synthetic sample library. The hero CTA always leads to the download section,
+The website-only circular mark follows CloakDrop's 64-unit enclosure (30-unit radius), displayed
+at the shared 36px size. It reuses CloakRoll's native mountain/sun paths and palette; the native
+Icon Composer document is unchanged. The SVG is also the browser favicon, with the separate
+native PNG retained for touch-icon compatibility. The screenshot section shows the actual app
+with the repository's varied synthetic sample library. The hero CTA always leads to the download section,
 which describes the current beta state and links to the repository's release index.

@@ -92,6 +92,162 @@ func waterLines(_ hex: UInt32, from y: CGFloat, count: Int = 8) {
     }
 }
 
+func roundedRect(_ x: CGFloat, _ y: CGFloat, _ w: CGFloat, _ h: CGFloat, radius: CGFloat, hex: UInt32) {
+    color(hex).setFill()
+    NSBezierPath(roundedRect: NSRect(x: x, y: y, width: w, height: h),
+                 xRadius: radius, yRadius: radius).fill()
+}
+
+func flower(_ x: CGFloat, _ y: CGFloat, size: CGFloat, petals: UInt32, center: UInt32) {
+    for petal in 0..<8 {
+        let angle = CGFloat(petal) * .pi / 4
+        oval(x + cos(angle) * size * 0.28 - size * 0.22,
+             y + sin(angle) * size * 0.28 - size * 0.22, size * 0.44, size * 0.44, petals)
+    }
+    oval(x - size * 0.17, y - size * 0.17, size * 0.34, size * 0.34, center)
+}
+
+func flowers() {
+    sky(0xF1E6D8, 0xE6CDC1)
+    rect(0, 375, 640, 105, 0xD8BDAA)
+    oval(213, 411, 216, 29, 0xBEA499, alpha: 0.45)
+    curve((315, 340), [(281, 272, 252, 224, 260, 164)], fill: 0x648775, close: false, strokeWidth: 7)
+    curve((322, 338), [(340, 255, 355, 178, 346, 113)], fill: 0x648775, close: false, strokeWidth: 6)
+    curve((329, 337), [(363, 302, 389, 267, 404, 221)], fill: 0x648775, close: false, strokeWidth: 6)
+    oval(229, 246, 70, 26, 0x91AA89)
+    oval(340, 266, 73, 28, 0x7B997E)
+    oval(310, 209, 36, 67, 0xA7B69A)
+    flower(260, 168, size: 152, petals: 0xC88A91, center: 0xEFD19B)
+    flower(346, 115, size: 117, petals: 0xE4B46F, center: 0xF5E1B7)
+    flower(407, 220, size: 111, petals: 0xDCB5AD, center: 0xBC8C76)
+    roundedRect(250, 292, 141, 135, radius: 28, hex: 0x74958C)
+    rect(250, 282, 141, 40, 0x74958C)
+    oval(250, 270, 141, 25, 0xA5BCAC)
+    curve((273, 311), [(269, 350, 275, 389, 284, 402)], fill: 0x95B0A2, close: false, strokeWidth: 6)
+}
+
+func cafe() {
+    sky(0xEBD8C7, 0xDABAA8)
+    polygon([(91, 42), (509, 62), (550, 431), (117, 458)], 0xF0E4D4)
+    roundedRect(110, 309, 107, 122, radius: 8, hex: 0x7D9793)
+    rect(119, 309, 3, 122, 0x637F7C)
+    for line in 0..<3 { rect(138, 336 + CGFloat(line) * 12, 57, 2, 0xBEC8B5) }
+    oval(203, 138, 276, 245, 0xCBBBAD)
+    oval(184, 110, 276, 245, 0xB7C8C4)
+    oval(201, 124, 244, 215, 0xD2DCD3)
+    oval(396, 176, 81, 100, 0xFCF3E3)
+    oval(416, 194, 42, 64, 0xD2DCD3)
+    oval(222, 137, 198, 198, 0xFFF5E3)
+    oval(238, 153, 166, 166, 0x9B6F55)
+    oval(247, 161, 147, 146, 0xB28664)
+    let heart = NSBezierPath()
+    heart.move(to: NSPoint(x: 321, y: 276))
+    heart.curve(to: NSPoint(x: 321, y: 218), controlPoint1: NSPoint(x: 240, y: 208), controlPoint2: NSPoint(x: 296, y: 186))
+    heart.curve(to: NSPoint(x: 321, y: 276), controlPoint1: NSPoint(x: 350, y: 183), controlPoint2: NSPoint(x: 401, y: 221))
+    color(0xF6DEB6).setFill()
+    heart.fill()
+    let pastry = NSBezierPath()
+    pastry.move(to: NSPoint(x: 329, y: 400))
+    pastry.curve(to: NSPoint(x: 512, y: 396), controlPoint1: NSPoint(x: 348, y: 308), controlPoint2: NSPoint(x: 481, y: 303))
+    pastry.curve(to: NSPoint(x: 329, y: 400), controlPoint1: NSPoint(x: 445, y: 368), controlPoint2: NSPoint(x: 393, y: 369))
+    pastry.close()
+    color(0xCA9564).setFill()
+    pastry.fill()
+    for x in [378.0, 412.0, 446.0] {
+        curve((x, 340), [(x - 10, 351, x - 8, 364, x + 4, 378)], fill: 0xE7B77D, close: false, strokeWidth: 8)
+    }
+}
+
+func arch(_ x: CGFloat, _ bottom: CGFloat, width: CGFloat, top: CGFloat, fill: UInt32) {
+    let radius = width / 2
+    let path = NSBezierPath()
+    path.move(to: NSPoint(x: x, y: bottom))
+    path.line(to: NSPoint(x: x, y: top + radius))
+    path.curve(to: NSPoint(x: x + width, y: top + radius),
+               controlPoint1: NSPoint(x: x, y: top - radius / 3),
+               controlPoint2: NSPoint(x: x + width, y: top - radius / 3))
+    path.line(to: NSPoint(x: x + width, y: bottom))
+    path.close()
+    color(fill).setFill()
+    path.fill()
+}
+
+func courtyard() {
+    sky(0xE6C9AD, 0xD8AA91)
+    rect(0, 418, 640, 62, 0xBA9585)
+    rect(0, 449, 640, 2, 0xD4B49B)
+    arch(197, 419, width: 246, top: 87, fill: 0xF0D9B8)
+    arch(222, 419, width: 196, top: 113, fill: 0x547B7B)
+    rect(237, 242, 166, 3, 0x82A09A)
+    rect(318, 144, 3, 273, 0x82A09A)
+    for x in [247.0, 340.0] {
+        roundedRect(x, 263, 48, 116, radius: 4, hex: 0x426767)
+    }
+    oval(328, 297, 9, 9, 0xD8B378)
+    rect(112, 180, 62, 93, 0xF0D9B8)
+    rect(120, 188, 46, 77, 0x7F9491)
+    rect(141, 188, 3, 77, 0xE4C9A6)
+    for (x, y, size) in [(148.0, 333.0, 1.0), (484.0, 347.0, 0.84)] {
+        rect(x - 3, y - 44, 6, 97, 0x6A8266)
+        oval(x - 48 * size, y - 43 * size, 48 * size, 25 * size, 0x789779)
+        oval(x + 2, y - 64 * size, 43 * size, 25 * size, 0x91A17F)
+        oval(x - 19 * size, y - 94 * size, 29 * size, 51 * size, 0x607D65)
+        polygon([(x - 35, y + 9), (x + 35, y + 9), (x + 26, 423), (x - 26, 423)], 0xB77E65)
+        roundedRect(x - 39, y + 3, 78, 14, radius: 4, hex: 0xD09B7D)
+    }
+}
+
+func restingCat() {
+    sky(0xD4DFDA, 0xBBCED0)
+    rect(425, 0, 112, 149, 0xEDF0E4)
+    rect(479, 0, 5, 149, 0xB8C9C5)
+    rect(425, 72, 112, 5, 0xB8C9C5)
+    oval(74, 240, 500, 212, 0x809BA9)
+    oval(96, 228, 456, 182, 0x99AEB8)
+    oval(194, 189, 281, 172, 0xD7B497)
+    oval(266, 207, 174, 123, 0xE4C3A5)
+    curve((435, 263), [(493, 340, 401, 376, 332, 333)], fill: 0xB58D79, close: false, strokeWidth: 46)
+    oval(211, 300, 79, 41, 0xEED3B5)
+    polygon([(197, 204), (202, 133), (248, 174)], 0xC49A81)
+    polygon([(266, 172), (311, 140), (317, 216)], 0xC49A81)
+    polygon([(208, 179), (211, 151), (234, 176)], 0xDCB0A0)
+    polygon([(281, 177), (302, 157), (304, 189)], 0xDCB0A0)
+    oval(193, 168, 127, 122, 0xE7C6A7)
+    oval(216, 230, 82, 50, 0xF0D7B9)
+    curve((217, 218), [(224, 228, 236, 228, 242, 218)], fill: 0x77685F, close: false, strokeWidth: 3)
+    curve((272, 218), [(279, 228, 290, 228, 296, 218)], fill: 0x77685F, close: false, strokeWidth: 3)
+    polygon([(248, 241), (265, 241), (256, 249)], 0xA17972)
+    curve((256, 248), [(256, 256, 249, 259, 244, 256)], fill: 0xA17972, close: false, strokeWidth: 2)
+    for y in [239.0, 249.0] {
+        curve((222, y), [(205, y - 4, 189, y - 3, 177, y - 7)], fill: 0xA58D7A, close: false, strokeWidth: 2)
+        curve((288, y), [(306, y - 5, 321, y - 3, 335, y - 6)], fill: 0xA58D7A, close: false, strokeWidth: 2)
+    }
+}
+
+func citrus() {
+    sky(0xECE6D3, 0xDED4B8)
+    oval(159, 96, 336, 309, 0xC6BDA3)
+    oval(145, 82, 336, 309, 0x98B5A7)
+    oval(166, 103, 294, 266, 0xBDD0B8)
+    oval(235, 133, 137, 137, 0xDEA264)
+    oval(249, 143, 104, 101, 0xE8B775)
+    oval(291, 128, 34, 14, 0x608368)
+    oval(344, 239, 126, 89, 0xE4C567)
+    oval(356, 245, 100, 66, 0xF1D88D)
+    oval(390, 212, 65, 26, 0x648C72)
+    oval(194, 276, 143, 143, 0xD7955E)
+    oval(201, 283, 129, 129, 0xF4E4BE)
+    for segment in 0..<8 {
+        let a = CGFloat(segment) * .pi / 4 + 0.06
+        let b = a + .pi / 4 - 0.12
+        let mid = (a + b) / 2
+        polygon([(266 + cos(mid) * 8, 348 + sin(mid) * 8),
+                 (266 + cos(a) * 55, 348 + sin(a) * 55),
+                 (266 + cos(mid) * 58, 348 + sin(mid) * 58),
+                 (266 + cos(b) * 55, 348 + sin(b) * 55)], segment % 2 == 0 ? 0xE8B072 : 0xDE9C60)
+    }
+}
+
 func drawScene(_ index: Int) {
     switch index {
     case 0: // Quiet alpine dawn.
@@ -117,43 +273,15 @@ func drawScene(_ index: Int) {
         polygon([(-20, 243), (90, 189), (137, 207), (198, 197), (170, 252), (58, 267), (-20, 300)], 0x647F70)
         curve((222, 350), [(337, 394, 465, 411, 629, 390)], fill: 0xECEDDA, close: false, strokeWidth: 5)
         waterLines(0x9BCBC6, from: 281, count: 4)
-    case 2: // Forest in morning mist.
-        sky(0xBCCDC6, 0xEFE7C6)
-        oval(130, 95, 94, 94, 0xF6E5AF)
-        curve((-20, 299), [(172, 184, 290, 259, 410, 188), (522, 152, 590, 229, 660, 224)], fill: 0xA5B9AB)
-        curve((-20, 372), [(96, 319, 182, 349, 329, 263), (417, 211, 580, 296, 660, 268)], fill: 0x7D9D92)
-        for tree in 0..<14 {
-            pine(CGFloat(tree * 51 - 15), 388 + CGFloat(tree % 3) * 10,
-                 size: 93 + CGFloat(tree % 4) * 25, hex: 0x5B8178)
-        }
-        curve((-20, 408), [(189, 363, 290, 426, 458, 381), (575, 349, 628, 374, 660, 368)], fill: 0xA8BEB0)
-        for tree in [0, 1, 2, 10, 12, 13] {
-            pine(CGFloat(tree * 51), 495, size: 164 + CGFloat(tree % 3) * 24, hex: 0x315D57)
-        }
-    case 3: // Warm, unmarked dunes.
-        sky(0xDCAAAC, 0xF7D3B0)
-        oval(385, 72, 121, 121, 0xFFE3B6)
-        curve((-20, 300), [(155, 278, 298, 172, 444, 232), (535, 273, 597, 250, 660, 242)], fill: 0xD3A0A0)
-        curve((-20, 354), [(202, 356, 300, 205, 483, 274), (562, 306, 621, 322, 660, 314)], fill: 0xEFC19F)
-        curve((-20, 393), [(118, 307, 197, 322, 332, 373), (474, 425, 552, 371, 660, 360)], fill: 0xD5917C)
-        curve((-20, 450), [(119, 431, 230, 362, 405, 408), (517, 438, 607, 463, 660, 452)], fill: 0xA96870)
-        curve((107, 353), [(218, 329, 278, 358, 383, 390)], fill: 0xF1C4A1, close: false, strokeWidth: 3)
-    case 4: // Lavender and a tiny farmhouse.
-        sky(0xC3C4E2, 0xF0D5CB)
-        cloud(83, 93, scale: 1.2)
-        cloud(409, 133, scale: 0.75)
-        curve((-20, 274), [(158, 198, 303, 255, 435, 217), (536, 196, 599, 237, 660, 235)], fill: 0x969DBB)
-        curve((-20, 338), [(170, 269, 305, 298, 441, 273), (535, 252, 615, 275, 660, 269)], fill: 0x879576)
-        rect(414, 261, 61, 40, 0xEADAB8)
-        polygon([(405, 262), (444, 238), (484, 262)], 0x817273)
-        rect(437, 281, 10, 20, 0x646B67)
-        curve((-20, 342), [(194, 289, 396, 349, 660, 303)], fill: 0xBC9CC4)
-        for row in 0..<8 {
-            let x = CGFloat(row * 95 - 40)
-            polygon([(345 + CGFloat(row) * 6, 322), (357 + CGFloat(row) * 7, 322),
-                     (x + 53, 500), (x, 500)], row % 2 == 0 ? 0x8C72A6 : 0xA186B5)
-        }
-        pine(497, 304, size: 66, hex: 0x586A62)
+        polygon([(391, 264), (475, 264), (458, 282), (408, 282)], 0x436775)
+        polygon([(434, 157), (434, 255), (380, 255)], 0xF7EFDC)
+        polygon([(441, 186), (482, 255), (441, 255)], 0xD9E5D9)
+    case 2:
+        flowers()
+    case 3:
+        cafe()
+    case 4:
+        courtyard()
     case 5: // A small island at golden hour.
         sky(0xDEB2B8, 0xF6DDBB)
         oval(275, 61, 100, 100, 0xFFE8C0)
@@ -167,18 +295,8 @@ func drawScene(_ index: Int) {
         rect(0, 336, 640, 144, 0x6BA7AC)
         waterLines(0xA5C7BF, from: 352)
         curve((-20, 457), [(109, 414, 150, 446, 265, 475), (350, 502, 493, 436, 660, 445)], fill: 0x397F88)
-    case 6: // High alpine snow.
-        sky(0x86B5D2, 0xC9DDE1)
-        cloud(409, 75, scale: 1.3, hex: 0xEFF5F2)
-        polygon([(-20, 386), (145, 160), (278, 318), (401, 83), (660, 381), (660, 500), (-20, 500)], 0x6E91AB)
-        polygon([(297, 267), (401, 83), (513, 219), (449, 200), (403, 173), (379, 212), (359, 192)], 0xF0F0E9)
-        polygon([(55, 287), (145, 160), (241, 277), (164, 229), (138, 245), (121, 218)], 0xDCE8E6)
-        polygon([(401, 83), (418, 229), (536, 357), (660, 381)], 0x4D7593)
-        polygon([(401, 83), (418, 229), (449, 200)], 0xCADCDD)
-        curve((-20, 391), [(108, 369, 183, 391, 328, 348), (469, 306, 564, 386, 660, 336)], fill: 0xD1E2E1)
-        curve((-20, 470), [(109, 409, 178, 442, 270, 414), (406, 369, 478, 450, 660, 410)], fill: 0x9FBCC4)
-        pine(82, 475, size: 116, hex: 0x466879)
-        pine(128, 483, size: 78, hex: 0x466879)
+    case 6:
+        restingCat()
     case 7: // Evening river and an invented skyline.
         sky(0x777497, 0xE8B6A5)
         oval(431, 119, 91, 91, 0xF3CAA9)
@@ -213,21 +331,8 @@ func drawScene(_ index: Int) {
         polygon([(80, 286), (100, 228), (122, 228), (128, 310), (202, 338)], 0xB2898D)
         curve((-20, 370), [(148, 338, 242, 420, 429, 353), (548, 311, 584, 383, 660, 376)], fill: 0x674F69)
         curve((-20, 449), [(117, 388, 203, 407, 340, 455), (500, 507, 531, 397, 660, 411)], fill: 0x403F58)
-    case 9: // Autumn reflected in a lake.
-        sky(0xD7C8BF, 0xFAE2B9)
-        oval(135, 65, 84, 84, 0xF7E8BD)
-        curve((-20, 275), [(163, 155, 265, 277, 445, 213), (561, 169, 614, 229, 660, 236)], fill: 0xBD9995)
-        curve((-20, 317), [(109, 287, 205, 265, 372, 288), (506, 308, 547, 233, 660, 266)], fill: 0x9A767D)
-        rect(0, 313, 640, 167, 0xB9B3BB)
-        waterLines(0xDED0C9, from: 337)
-        curve((-20, 415), [(127, 355, 177, 424, 292, 425), (458, 418, 561, 433, 660, 387)], fill: 0x776E70)
-        for tree in 0..<6 {
-            let x = CGFloat(tree * 49 - 7)
-            let y = CGFloat(329 + tree % 3 * 23)
-            rect(x + 16, y + 33, 5, 68, 0x6D5F66)
-            oval(x - 14, y - 17, 68, 81, tree % 2 == 0 ? 0xCF8E68 : 0xB97267)
-            oval(x - 21, y + 14, 57, 50, tree % 2 == 0 ? 0xD8A06F : 0xC18069)
-        }
+    case 9:
+        citrus()
     case 10: // A green valley after rain.
         sky(0xB5D0C9, 0xEFE0B6)
         cloud(373, 77, scale: 1.35)
