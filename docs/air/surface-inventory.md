@@ -17,7 +17,7 @@ light/dark, reduced motion and keyboard/touch modes as specified in DESIGN.md.
 | `apps/site/src/components/Footer.astro`         | app-surface | Done         | Done               | Pending    |
 | `apps/site/src/components/Header.astro`         | app-surface | Done         | Done               | Pending    |
 | `apps/site/src/components/Icon.astro`           | app-surface | Pending      | Pending            | Pending    |
-| `apps/site/src/components/PhotoRoll.astro`      | app-surface | Pending      | Pending            | Pending    |
+| `apps/site/src/components/PhotoRoll.astro`      | app-surface | Done         | Done               | Pending    |
 | `apps/site/src/components/PhotoRollScene.astro` | app-surface | Pending      | Pending            | Pending    |
 | `apps/site/src/layouts/BaseLayout.astro`        | app-surface | Pending      | Pending            | Pending    |
 | `apps/site/src/pages/404.astro`                 | app-surface | Pending      | Pending            | Pending    |

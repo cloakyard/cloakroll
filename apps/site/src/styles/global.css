@@ -401,7 +401,7 @@ h3 {
 }
 
 /* CloakRoll's finite filmstrip illustration; shared Air tokens remain unchanged. */
-.roll-artwork { height: 250px; position: relative; overflow: clip; margin-top: 8px; pointer-events: none; }
+.roll-artwork { height: 250px; position: relative; overflow: clip; margin-top: 8px; }
 .roll-strip { display: flex; width: 538px; padding: 4px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(var(--roll-scale, 1)); }
 .roll-frame { width: 106px; flex: none; padding: 6px; background: var(--air-surface-soft); border-block: 1px solid var(--air-line); transform-origin: center; }
 .roll-frame:first-child { border-radius: 8px 0 0 8px; border-left: 1px solid var(--air-line); }
