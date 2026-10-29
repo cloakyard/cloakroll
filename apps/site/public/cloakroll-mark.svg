@@ -1,0 +1,23 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="cloakroll-mark-title" data-logo-spec="cloakyard-mark-v1">
+  <title id="cloakroll-mark-title">CloakRoll</title>
+  <defs>
+    <clipPath id="cloakroll-circle"><circle cx="32" cy="32" r="30"/></clipPath>
+    <linearGradient id="cloakroll-sky" x1="20" y1="2" x2="45" y2="62" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF9F2"/>
+      <stop offset="1" stop-color="#F3E3D3"/>
+    </linearGradient>
+  </defs>
+  <circle cx="32" cy="32" r="30" fill="url(#cloakroll-sky)"/>
+  <!-- Original native landscape paths, scaled into the website's circular enclosure. -->
+  <g clip-path="url(#cloakroll-circle)">
+    <g transform="translate(2 2) scale(.05859375)">
+      <g transform="matrix(1.6 0 0 1.6 -307.2 -281.6)">
+        <circle cx="661" cy="387" r="84" fill="#FFC27F"/>
+        <path d="M528 640C579 608 629 602 662 580L710 553Q725 543 738 553C771 575 820 600 852 613V856H520Z" fill="#B495EE"/>
+        <path d="M172 605L192 589C263 534 312 486 369 434Q383 421 397 434C455 472 504 550 565 588C621 623 686 641 734 689C767 727 800 754 852 780V856H172Z" fill="#8351DA"/>
+        <path d="M172 605L192 589C263 534 312 486 369 434Q383 421 392 430L410 490C416 510 396 524 387 541C371 568 398 614 426 655C480 734 553 785 617 816L697 856H172Z" fill="#542BA5"/>
+      </g>
+    </g>
+  </g>
+  <circle cx="32" cy="32" r="29.25" stroke="white" stroke-opacity=".28" stroke-width="1.5"/>
+</svg>

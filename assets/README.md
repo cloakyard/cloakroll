@@ -51,7 +51,7 @@ material rendering, not those older systems.
 
 ## Illustrated mock library
 
-The source for all twelve scenic illustrations is
+The source for all twelve sample illustrations is
 `apps/macos/scripts/generate_sample_art.swift`. It uses only AppKit paths, shapes and gradients;
 there are no downloads, photographs, third-party artwork, or random inputs.
 
@@ -60,8 +60,9 @@ swift apps/macos/scripts/generate_sample_art.swift
 ```
 
 The generator creates `Sample0` through `Sample11` image sets, each with a 640 × 480 PNG. They
-depict alpine dawn, coast, forest, dunes, lavender fields, island, snow, evening city, desert night,
-autumn lake, green valley and canyon. SwiftUI previews and the explicit mock catalog can reuse
+depict alpine dawn, a coastal sailboat, flowers, a café still life, an arched courtyard, an island,
+a resting puppy, an evening city, desert night, citrus, a green valley and a canyon.
+SwiftUI previews and the explicit mock catalog can reuse
 these image names without USB I/O or full-resolution originals. A sample illustration does not
 represent an actual asset's metadata, transfer size or backup state.
 
@@ -78,3 +79,7 @@ See [Release](../docs/RELEASE.md) for regeneration and mounted validation.
 `assets/screenshots/library-light.png` and `library-dark.png` show the current native app
 with its illustrated sample library. They contain no personal media and do not prove a physical
 backup. Refresh through the Debug Development menu and inspect both appearances.
+
+The website uses `apps/site/public/cloakroll-mark.svg`, a circular adaptation of the native
+mountain-and-sun paths matching CloakDrop’s web mark. It is used for the site brand and SVG
+favicon only; the native layered app icon and touch-icon PNG are unchanged.
