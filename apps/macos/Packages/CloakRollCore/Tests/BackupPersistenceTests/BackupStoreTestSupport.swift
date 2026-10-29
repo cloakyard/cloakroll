@@ -86,3 +86,12 @@ struct HistoryDirectory {
     func remove() { try? FileManager.default.removeItem(at: url) }
     func database() throws -> DatabaseQueue { try DatabaseQueue(path: databaseURL.path) }
 }
+
+// Recreate the actual v6 schema before exercising an older additive migration.
+func removeFailureDetailsMigration(_ db: Database) throws {
+    try db.execute(sql: """
+        ALTER TABLE backup_session DROP COLUMN failure_message;
+        ALTER TABLE backup_session DROP COLUMN unavailable_originals;
+        DELETE FROM grdb_migrations WHERE identifier = 'v7_session_failure_details';
+        """)
+}

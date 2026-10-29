@@ -20,10 +20,13 @@ struct BackupProgressPresentation {
     }
 
     var percentage: String? {
+        wholePercent.map { "\($0.formatted())%" }
+    }
+
+    var wholePercent: Int? {
         guard let fraction else { return nil }
         // Whole percentages round down. Floating-point precision must not turn remaining bytes into 100%.
-        let percent = processedBytes == snapshot.expectedBytes ? 100 : min(99, Int((fraction * 100).rounded(.down)))
-        return "\(percent.formatted())%"
+        return processedBytes == snapshot.expectedBytes ? 100 : min(99, Int((fraction * 100).rounded(.down)))
     }
 
     var title: String {

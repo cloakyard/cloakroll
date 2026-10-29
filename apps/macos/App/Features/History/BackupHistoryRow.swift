@@ -13,6 +13,11 @@ struct BackupHistoryRow: View {
                 Text(session.status.historyDescription)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
+                if let message = session.failureMessage {
+                    Text(message)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .textSelection(.enabled)
+                }
                 actions
             }
             .font(.callout)
@@ -56,6 +61,9 @@ struct BackupHistoryRow: View {
         Grid(alignment: .leading, horizontalSpacing: 24, verticalSpacing: 8) {
             detail("Items saved", value: "\(session.completedAssets.formatted()) of \(session.totalAssets.formatted())")
             detail("Original files verified", value: "\(session.verifiedResources.formatted()) of \(session.totalResources.formatted())")
+            if session.unavailableOriginalsCount > 0 {
+                detail("Unavailable during backup", value: session.unavailableOriginalsCount.formatted())
+            }
             detail("Verified size", value: Format.bytes(session.verifiedBytes))
             detail("Transferred", value: session.transferredBytes == 0 ? "0 bytes" : Format.bytes(session.transferredBytes))
             if let finishedAt = session.finishedAt {

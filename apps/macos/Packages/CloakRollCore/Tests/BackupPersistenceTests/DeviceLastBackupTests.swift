@@ -75,6 +75,7 @@ struct DeviceLastBackupTests {
             before = try #require(try await store.lastCompletedSession(deviceKey: phone.device.id))
         }
         try await directory.database().write { db in
+            try removeFailureDetailsMigration(db)
             try db.execute(sql: """
                 DROP INDEX session_history_page;
                 DROP INDEX session_device_history_page;

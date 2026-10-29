@@ -1,10 +1,12 @@
 # CloakRoll privacy
 
-Updated 5 October 2026. Applies to the current macOS development preview.
+Updated 28 October 2026. Applies to the macOS 0.1.0 beta.
 
 CloakRoll works locally with an iPhone connected over USB and a backup folder you
 choose. It has no accounts, advertising, analytics, telemetry or app-operated cloud
-service. It does not upload your photos, videos or device information to Cloakyard.
+service. It does not upload your photos, videos or device information to Cloakyard. External Help,
+source, privacy and bug-report links open in your browser only when you choose them.
+That browser and the visited website have their own privacy behavior.
 
 ## What the app reads and saves
 
@@ -16,8 +18,9 @@ service. It does not upload your photos, videos or device information to Cloakya
 - Original photo, video and companion files you ask to back up. They are copied to
   your chosen destination without conversion or deletion of the iPhone originals.
 - Local backup history containing source metadata, device and destination references,
-  relative paths, verification digests and session outcomes. This supports incremental
-  backup, detecting missing/changed saved files and interruption recovery.
+  relative paths, verification digests and session outcomes. Incomplete sessions also keep
+  a bounded failure explanation and the number of unavailable originals. This supports
+  incremental backup, detecting missing/changed saved files and interruption recovery.
 - Portable recovery records in `.cloakroll-recovery` inside the selected backup folder.
   These include source/device identity, original companion membership, relative paths,
   sizes and SHA-256. They let you rebuild history after losing app data. They contain

@@ -52,7 +52,12 @@ struct BackupHistoryExample: View {
                 let device = ConnectedDevice(id: sample.device.id, displayName: "Sample iPhone · Backup \(index)")
                 let id = try await store.beginSession(device: device, destinationID: destination, sourceSessionID: source.sessionID,
                                                      assets: sample.assets, identity: context.identity)
-                try await store.finishSession(id: id, result: BackupSnapshot(phase: .cancelled))
+                let unavailable = UnavailableBackupOriginal(id: sample.assets[0].resources[0].id, filename: "Sample.HEIC")
+                let result = index == 205 ? BackupSnapshot(
+                    phase: .failed, unavailableOriginals: [unavailable],
+                    message: "An original was no longer available from the iPhone. Reconnect it, refresh the library, and try again."
+                ) : BackupSnapshot(phase: .cancelled)
+                try await store.finishSession(id: id, result: result)
             }
             try await history.refreshSessions()
             try Task.checkCancellation()

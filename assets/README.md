@@ -64,3 +64,17 @@ depict alpine dawn, coast, forest, dunes, lavender fields, island, snow, evening
 autumn lake, green valley and canyon. SwiftUI previews and the explicit mock catalog can reuse
 these image names without USB I/O or full-resolution originals. A sample illustration does not
 represent an actual asset's metadata, transfer size or backup state.
+
+
+## Air installer and README captures
+
+The beta installer follows CloakDrop’s Air composition: light neutral page, native system
+fonts, open spacing, a restrained purple horizon, a single arrow and real Finder items.
+Editable source: `apps/macos/scripts/dmg/background.swift`. The committed export is
+`assets/dmg/background.png` (1520×1140, 144 dpi, displayed at 760×570 points).
+The artwork is authored in AppKit and uses the existing CloakRoll icon; no AI bitmap is needed.
+See [Release](../docs/RELEASE.md) for regeneration and mounted validation.
+
+`assets/screenshots/library-light.png` and `library-dark.png` show the current native app
+with its illustrated sample library. They contain no personal media and do not prove a physical
+backup. Refresh through the Debug Development menu and inspect both appearances.

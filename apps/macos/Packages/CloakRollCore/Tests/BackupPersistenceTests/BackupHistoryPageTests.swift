@@ -78,6 +78,7 @@ struct BackupHistoryPageTests {
         defer { fixture.directory.remove() }
         let queue = try fixture.directory.database()
         try await queue.write { db in
+            try removeFailureDetailsMigration(db)
             try db.execute(sql: """
                 DROP INDEX session_history_page;
                 DROP INDEX session_device_history_page;

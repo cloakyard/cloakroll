@@ -200,7 +200,8 @@ enum BackupStoreReading {
             startedAt: Date(timeIntervalSince1970: row["started_at"]), finishedAt: finished.map(Date.init(timeIntervalSince1970:)),
             totalAssets: row["total_assets"], totalResources: row["total_resources"], completedAssets: row["completed_assets"],
             verifiedResources: row["verified_resources"], verifiedBytes: row["verified_bytes"],
-            transferredBytes: row["transferred_bytes"]
+            transferredBytes: row["transferred_bytes"], failureMessage: row["failure_message"],
+            unavailableOriginalsCount: row["unavailable_originals"]
         )
     }
 }

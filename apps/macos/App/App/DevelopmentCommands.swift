@@ -33,6 +33,7 @@ struct DevelopmentCommands: Commands {
                     Button("Hide Sample Progress") { model.sampleProgress = false }
                 }
                 Button("Sample Backup History · 205 Sessions") { openWindow(id: "sample-backup-history") }
+                Button("Dock Progress Examples") { openWindow(id: "dock-progress-examples") }
                 Menu("Media Info Examples") {
                     Button("Long Filenames and Many Originals") {
                         Task { await MediaInfoExamples.show(.longFilenames, in: model) }

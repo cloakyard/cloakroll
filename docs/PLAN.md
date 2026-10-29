@@ -11,6 +11,52 @@ A passing mock test never substitutes for a real iPhone acceptance check. Follow
 may proceed while an explicitly recorded hardware check is pending. A phase is not accepted or
 called complete until its actual evidence is recorded. No source media is modified or deleted.
 
+From 29 October, `dev` is the active development branch and `main` receives validated changes
+through PRs. Retain both branches, merge without rewriting shared history, and fast-forward
+`dev` after promotion. The Cloudflare Worker uses `main`; deployment remains deferred to the user.
+
+## Current platform decision — 28 October 2026
+
+Per the user’s latest direction, CloakRoll now targets **Apple silicon only, macOS 26+**.
+This supersedes the macOS 14/Intel baseline recorded in earlier phase evidence. App, package,
+beta build, bundle checks, website and installer must agree. Historical verification remains
+unchanged; minimum macOS 26 runtime acceptance is still required.
+
+## Current closeout checklist — 29 October 2026
+
+This is the current implementation queue; the phase sections below retain historical gates
+and evidence. Unchecked acceptance gates are not necessarily unimplemented features.
+
+- [x] USB library browsing, filters, selection, Quick Look and photo metadata.
+- [x] Incremental original backups, Live Photo companions, interruption-safe publication and retry.
+- [x] Separate iPhone identities, remembered destination mappings and shared photo/video folders.
+- [x] Persistent paged history, destination recovery records, folder scanning and saved-file checks.
+- [x] Native settings, contextual Finder actions, progress, floating date and backup controls.
+- [x] Apple silicon/macOS 26 build gate, Dock progress and family About Matrix effect.
+- [x] Readable missing-original continuation; persist the terminal explanation/count in History.
+- [x] Air website and dated, reproducible beta/DMG tooling.
+- [x] Keyboard selection/search/Info focus checks and system Reduce Motion/Reduce Transparency checks.
+- [x] Re-run 10k/50k/100k metadata probes and a bounded 100k-sample Instruments scrolling trace.
+- [x] Gate beta preparation on the same clean source revision throughout all stages; build and smoke-test the scale probe.
+- [ ] Complete full VoiceOver spoken-feedback acceptance and remaining system accessibility variants.
+- [ ] Finish sustained performance profiling against the phase targets; generated fixtures alone
+      do not establish real USB scrolling/transfer performance.
+- [ ] Finalize release distribution: Developer ID/notarization and clean-Mac/older-runtime acceptance.
+- [ ] Publish website and release when requested; Cloudflare deployment is explicitly deferred.
+
+The [29 October closeout audit](verification/CLOSEOUT-2026-10-29.md) records actual keyboard,
+system preference and performance evidence. The short sample trace is not sustained real-library
+acceptance. VoiceOver was enabled with permission and restored, but its spoken/caption output
+could not be observed through the tool; that gate remains open.
+
+**Hardware last:** repeat the affected large backup, incremental/new-capture/reconnect, cable
+removal during transfer, external-drive removal/full volume, sleep/wake and separate physical
+iPhones. Record actual evidence before accepting the relevant phases. No hardware check is
+claimed by the software tests below.
+
+**Conditional backlog:** restore to a new iPhone remains unimplemented until a supported
+public workflow satisfies the no-extra-iPhone-app requirement. See [research](RESTORE-TO-IPHONE.md).
+
 ## Phase 0 discovery
 
 Reference files were inspected under `../cloakdrop`:
@@ -34,7 +80,7 @@ Reference files were inspected under `../cloakdrop`:
 Do not copy CloakDrop's networking, web browser, segmented downloads, menu-bar ambient systems,
 download actions, helper executables, or permanent inspector. The macOS 14 baseline provides
 Observation, SwiftUI split navigation and Settings. Following the user's Liquid Glass refinement
-request, use newer system UI APIs behind availability checks with native macOS 14 fallbacks.
+request, use newer system UI APIs behind availability checks with native macOS 14 fallbacks. This original baseline is superseded by the current platform decision above.
 Purple is semantic `AppAccent`, with separate light/dark asset values; source-list selection stays native.
 
 ## Planned architecture and directory structure
@@ -155,7 +201,7 @@ three-Live-Photo backup and zero-transfer repeat, an 18-video import, independen
 of all 24 saved originals and observed OS sleep-activity release. Cable interruption is
 still pending user coordination; the first 4.98 GB batch completed in 11.12 seconds.
 
-Current local preview: **0.1.0 (13)**. All 393 core and 207 hosted app tests pass. The normal
+Last verified local preview before beta preparation: **0.1.0 (15)**. All 393 core and 223 hosted app tests passed. The normal
 Debug and Release builds, strict lint and actual Release-bundle audit pass. The Release
 binary contains arm64 and x86_64; compilation is not runtime acceptance on both platforms.
 The Release app no longer contains the injected debugging entitlement.
@@ -975,3 +1021,134 @@ compact dark/standard light progress-fixture inspection. See
 No new backup/recovery transfer or broader hardware acceptance is claimed.
 Build 15 is installed and reloaded the real library, remembered destination and last
 backup summary. Superseded app bundles are recoverable in Trash; user data was retained.
+
+
+## Beta preparation — 28 October 2026
+
+The user requested a beta-readiness review, README alignment with CloakPDF/CloakDrop,
+an Air installer, dated build numbers and actual DMG validation. The existing feature scope is
+retained. MIT licensing was explicitly approved. Settings is now aligned after visual inspection
+of installed CloakDrop General/About/Privacy, with native grouped forms and About/link hierarchy.
+The audit found missing bundled GRDB license text; it is now included and enforced by the bundle checker.
+
+The reproducible beta pipeline uses a clean source commit, pinned build-only tools, full software
+checks, universal Release, exclusive DMG publication and a mounted bundle/layout/asset comparison.
+Build **20261028** passed all 616 tests, strict lint, Debug/universal Release builds and mounted
+DMG checks. The Air installer and packaged Settings were inspected natively. The verified beta is
+installed; the previous build is recoverable in Trash, and history/destination remain available.
+No new transfer was performed. Actual results and the artifact checksum are recorded in
+[the beta audit](verification/BETA-2026-10-28.md). No GitHub release or tag was created.
+Existing physical, accessibility, older-runtime and distribution gates remain open.
+
+## Missing USB original during a large backup — 28 October 2026
+
+The user reported `MediaModels.MediaSourceError error 2` on another Mac while the iPhone
+remained connected. The enum bridges that value to `missingResource`: the queued runtime
+resource is no longer in the current camera registry. No log/database from that Mac is
+available, so the reason for that catalog change is not claimed or reproduced on hardware.
+
+Fixed the reproducible failure path: a missing original no longer aborts unrelated originals
+or surviving Live Photo companions. The terminal result remains incomplete, lists unavailable
+originals, and never verifies or counts the missing component as complete. Session/access,
+verification, storage and persistence errors still stop the run. Source errors have readable
+recovery guidance. Existing saved originals retain their incremental evidence.
+
+Four engine regression tests (including parameterized access/session failures) and one hosted
+persistent-history/reconnect test pass; strict lint passes. The tests cover continuation,
+all-missing results, cancellation, partial Live Photos, incomplete persisted status and a retry
+that copies only the missing component. Full checks follow dependency updates; actual repeat
+on the affected Mac remains required. Next requested work: Air landing page for
+`roll.cloakyard.com`, responsive/native visual comparison, dependency updates and clearer
+combined photo/video folder settings.
+
+## Air website and mixed-media destination clarity — 28 October 2026
+
+Added the requested repository-hosted Astro/Cloudflare site for `roll.cloakyard.com`, with
+pinned Air 1.2.4 design sources, a finite photo-filmstrip animation, real sample-library
+screenshots, privacy/404 pages and the hero-to-download flow. Public release availability is
+stated accurately. Native dependencies were already current; the new site's dependencies
+were checked and updated, keeping TypeScript compatible with Astro's checker.
+
+The existing One Folder setting now explicitly explains that photos/videos share the same
+per-iPhone folder. Incremental regression coverage confirms the behavior. Full 622 software
+tests and strict lint pass. Website responsive and interaction checks pass, with small-screen
+artwork clipping corrected during visual review. Cloudflare needs account login before the
+prepared custom-domain deployment can run. See
+[the combined audit](verification/BACKUP-FIX-AND-SITE-2026-10-28.md).
+
+Fixed beta **20261028.1** is built, DMG-validated and installed. All 622 tests and universal
+release checks pass. Finder's normal DMG open and installed About/Backup Settings were inspected.
+Saved history, destination and media were retained. The previous bundle remains recoverable in
+Trash. The user deferred Cloudflare deployment; the Air site and custom-domain configuration
+are ready in the repository. Repeat the failed large backup on the affected Mac with this beta;
+its original catalog-change cause and other physical release gates remain unverified.
+
+## Durable incomplete-backup details — 28 October 2026
+
+History now retains a bounded terminal failure explanation and distinct unavailable-original
+count after dismissal/relaunch. Additive schema v7 preserves previous sessions and their verified
+records; old sessions have no invented explanation. These details never establish completion or
+incremental reuse. Native disclosure details show the historical count and selectable explanation.
+
+All **401 core + 224 hosted app tests (625 total)** pass, with strict lint and the Debug build.
+New coverage checks a populated v6 upgrade, reopening a partial Live Photo failure, duplicate
+missing-resource IDs, bounded messages, and cancellation excluding transient progress. The hosted
+retry test confirms the missing component alone is copied after reconnection. The isolated History
+preview was visually inspected in light/dark and its accessibility disclosure exposes the details.
+This is software evidence only; the full VoiceOver and physical acceptance gates stay open.
+
+The family Air audit compared published Cloakyard/Drop/PDF/Resume and the local Resume Air build
+at desktop, tablet and phone sizes, plus KERR as a separate experiment; CloakIMG was excluded.
+Headers, footers and content hierarchy align. Refined the website screenshot corners in dark
+mode and made verification/privacy copy precise. Website checks pass; deployment remains
+deferred. See [the audit](verification/FAMILY-AIR-AND-HISTORY-2026-10-28.md) for exact coverage.
+
+Beta **20261028.2** was built from the clean audited commit, passed all 625 tests and universal
+release/DMG checks, and was installed from the verified disk image. Native About and preserved
+Backup settings were checked. No physical acceptance was promoted. See
+[release notes](releases/v0.1.0-beta.20261028.2.md) for the exact source and checksum.
+
+## 28 October 2026 — Apple silicon, Settings and Dock closeout
+
+Implemented the user's Apple silicon/macOS 26+ direction in source, packaging, site and installer.
+Settings/About now follow CloakDrop's five-tap Matrix interaction and General reopening behavior.
+The Dock uses an app-owned, coalesced byte-progress ring. All 628 tests, strict lint, normal
+Debug/arm64 Release and actual bundle/DMG checks passed. Beta 20261028.3 was installed from the
+verified DMG; Finder's normal installer-open layout and installed About version were checked.
+See [audit](verification/SILICON-SETTINGS-DOCK-2026-10-28.md) and
+[artifact notes](releases/v0.1.0-beta.20261028.3.md). No hardware acceptance, notarization or
+website deployment was claimed; those gates remain explicit above.
+
+## 29 October 2026 — software acceptance and reproducible beta
+
+Fixed the scale probe's stale macOS target and added source-revision checks throughout beta
+preparation. Five release-tool tests and the built 10k probe now run in that pipeline. Generated
+10k/50k/100k measurements, keyboard focus/selection/search checks, actual system Reduce Motion
+and Reduce Transparency checks, and a short Instruments sample-scrolling trace are recorded in
+[the closeout audit](verification/CLOSEOUT-2026-10-29.md). All changed system preferences were
+restored. Full VoiceOver feedback could not be observed through the tool and remains pending.
+
+Beta **20261029** passed all 628 Swift tests, five release-tool tests, strict lint, Debug/Release,
+bundle and mounted-DMG checks. Inspected the Air installer, installed its byte-matching app,
+verified About and retained backup preferences, and ejected the image. Previous installed app
+is recoverable in Trash. [Release notes](releases/v0.1.0-beta.20261029.md) record the source and
+artifact hash. Hardware, sustained real-library profiling, minimum-OS/clean-Mac, notarization
+and deployment gates remain open; no new product feature is needed before those checks.
+
+## 29 October 2026 — Live Photo support and development workflow
+
+Audited Live Photo assembly, original downloads, verification, persistent retry and recovery.
+Media Info now identifies Photo/Motion originals, explains keeping both files, and labels the
+still preview explicitly. Added eight regression cases across HEIC/JPEG and dated/flat per-iPhone
+folders for duplicate filenames, adjustment companions, incomplete motion and incremental retry.
+No conversion, native Live Photo playback or new iPhone-writing behavior is introduced.
+
+Added the `dev` → `main` workflow, a read-only Website CI check and documented Cloudflare Workers
+settings. Site validation and Wrangler dry-run passed locally. Native light/dark Info checks and
+targeted Live Photo tests passed; exact full-build/PR evidence is recorded in
+[the audit](verification/LIVE-PHOTOS-AND-BRANCHES-2026-10-29.md). Hardware acceptance remains last.
+
+Beta **20261029.1** passed all 630 Swift tests, five release-tool tests, strict lint and the full
+Debug/Release/bundle/DMG pipeline. Installed the byte-matching packaged app; About, retained
+preferences and the normal Air installer layout passed. `main` now requires PRs and the Website
+check; `dev` remains the development branch. [Release notes](releases/v0.1.0-beta.20261029.1.md).

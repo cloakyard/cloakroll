@@ -1,6 +1,7 @@
 # Generated catalog performance probe
 
 This separate command-line package measures the public core APIs with generated metadata.
+Run it on Apple silicon with macOS 26 or later, matching the app and core package.
 It does not access an iPhone, a user's backup folder or the app's database. It creates one
 uniquely named temporary database and removes that fixture folder when the run ends normally.
 

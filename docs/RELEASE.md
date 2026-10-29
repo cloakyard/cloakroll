@@ -1,7 +1,96 @@
-# V1 closeout and release checks
+# Beta preparation and release checks
 
 Target: finish the current USB-original-backup scope, fix acceptance failures, and keep
 restore-to-iPhone in the backlog. Additional feature expansion is not needed to finish V1.
+
+
+## Current beta — 29 October 2026
+
+Prepared and installed **0.1.0 beta (20261029.1)** as an Apple silicon-only, locally ad-hoc signed
+DMG requiring macOS 26+. All 630 Swift tests, five release-tool tests, strict lint, Debug/Release
+builds, bundle and mounted-DMG checks passed. This build clarifies Live Photo originals in Info
+and adds pair-preservation/retry coverage. See
+[the current audit](verification/LIVE-PHOTOS-AND-BRANCHES-2026-10-29.md) and
+[release notes](releases/v0.1.0-beta.20261029.1.md) for the artifact and checks.
+This is a local testing candidate; publication, notarization and clean-Mac acceptance are separate.
+The current feature set needs no expansion before beta testing. Remaining hardware/OS gates below
+stay open and must be disclosed to testers.
+
+## Reproducible dated beta
+
+Prerequisites: Xcode 27+, XcodeGen, SwiftLint, Python **3.11+**, and a clean source commit.
+Install isolated, hash-pinned build tools once, from `apps/macos`:
+
+```sh
+python3.13 -m venv build/dmg-tools
+build/dmg-tools/bin/python -m pip install --require-hashes --only-binary=:all: -r scripts/dmg/requirements.txt
+```
+
+Python 3.11/3.12/3.13 may be used to create the environment. These tools do not ship in the app.
+Then run from `apps/macos`:
+
+```sh
+scripts/prepare_beta.sh --build 20261028
+```
+
+The build number uses CloakDrop’s `YYYYMMDD` convention. Omitting `--build` uses today in
+Asia/Kolkata. Use `.1`, `.2`, etc. for additional builds that day. `CFBundleShortVersionString`
+stays numeric `0.1.0`; the app’s separate channel is **Beta**. Ordinary Debug builds remain
+**Development preview**. Reusing an existing build directory or DMG output is rejected.
+
+The command captures the starting clean Git revision and rejects a changed revision or dirty
+source tree before and after each stage. Do not edit or commit source while it runs. It runs
+release-tool regression tests, core tests, a Release scale-probe build and 10k metadata smoke test,
+hosted app tests, strict lint, normal Debug and Apple silicon Release builds, actual-bundle checks,
+DMG creation and a read-only mounted comparison. It writes:
+
+```text
+build/Beta-0.1.0-20261028/
+  CloakRoll-v0.1.0-beta.20261028.dmg
+  SHA256SUMS.txt
+  build-manifest.json       # Exact commit, toolchain, build, architectures, tests and DMG hash
+  app-inventory.json        # File hashes, permissions and symlink targets
+  logs/                    # Actual command output; retained on failure
+  Release/Build/Products/Release/CloakRoll.app
+```
+
+It neither uploads nor tags a release. Inspect the final artifact in Finder and launch the
+packaged app before publication. A native app screenshot must use sample media; never commit
+personal photos, backup databases or device identifiers.
+
+### Build only the DMG from a verified beta app
+
+```sh
+scripts/dmg/make-dmg.sh /absolute/path/CloakRoll.app /absolute/path/new-installer.dmg
+build/dmg-tools/bin/python scripts/dmg/validate_dmg.py /absolute/path/new-installer.dmg /absolute/path/CloakRoll.app
+```
+
+The Air layout matches CloakDrop’s 760×570-point composition and native 96-point icons.
+The Finder frame is 760×602 points to include its title bar without clipping the artwork.
+`background.swift` authors a 1520×1140 image at 144 dpi, with CloakRoll’s purple accent.
+Regenerate the committed background from `apps/macos`:
+
+```sh
+swift scripts/dmg/background.swift App/Resources/Assets.xcassets/AboutAppIcon.imageset/about_icon_512.png ../../assets/dmg/background.png
+sips -s dpiWidth 144 -s dpiHeight 144 ../../assets/dmg/background.png
+```
+
+Pinned `dmgbuild`/`ds_store`/`mac_alias` write the Finder layout directly, then use macOS
+`hdiutil` for a compressed read-only HFS+ image. This preserves CloakDrop’s installer design
+without depending on Finder automation permission or another repository’s `.DS_Store`.
+App and guide icons are real Finder items; the Applications link targets `/Applications`.
+The packager validates before atomically publishing a new path. It does not alter the input app.
+
+### Signing and distribution
+
+No valid Developer ID identity was available during this preparation. The local beta is
+ad-hoc signed with the reviewed sandbox entitlements and hardened runtime. Notarization and
+Gatekeeper acceptance must not be inferred from `codesign --verify` or a local launch.
+Before distributing a notarized build, sign with the appropriate Developer ID, follow
+[Apple’s notarization workflow](https://developer.apple.com/documentation/security/notarizing-macos-software-before-distribution),
+staple and validate the app/DMG, then run `check_release.py --require-distribution` and test a
+quarantined download on a clean Mac. An approved unnotarized beta must explicitly disclose that
+status; [Apple’s opening guidance](https://support.apple.com/en-us/102445) is linked in the guide.
 
 ## Remaining release gates
 
@@ -12,15 +101,15 @@ restore-to-iPhone in the backlog. Additional feature expansion is not needed to 
 | Physical reliability | Bounded import, repeat, Stop and deferred Quit have recorded evidence | Cable removal during a large transfer; reconnect/retry; external-volume removal, full disk and restoration |
 | Incremental and thumbnails | Bounded real new-item/repeat and nearby-thumbnail evidence exists | Final same-device new capture/reconnect and preview reuse across reconnect |
 | Device destinations | Per-iPhone mappings, access checks and original-folder ID recall implemented; one connected phone's relaunch/missing-folder flow passed | Switch two physical phones with separate folders; external-volume removal/remount |
-| Scale and responsiveness | Generated 10k/50k/100k metadata/history measurements recorded | Sustained app RSS, frame/main-thread timing and rapid physical-library scrolling |
-| Accessibility and OS support | Current-macOS light/dark, compact layout, native labels/actions inspected | Full VoiceOver/keyboard pass, system accessibility variants, macOS 14 runtime |
-| Distribution | Local universal development preview | Developer ID signing, notarization, stapled ticket, clean-Mac launch and final release screenshots |
+| Scale and responsiveness | 29 October 10k/50k/100k metadata probes and a 30.7-second 100k-sample CPU/RSS trace recorded; no potential hangs at 250 ms in that trace | Sustained app RSS, frame/main-thread timing and rapid physical-library scrolling |
+| Accessibility and OS support | Keyboard selection/search/Info focus, system Reduce Motion/Reduce Transparency, light/dark and compact layout checked | Full VoiceOver spoken-feedback acceptance, remaining system variants, minimum macOS 26 runtime |
+| Distribution | Local beta DMG built, inspected and installed; sample release screenshots recorded | Developer ID signing, notarization, stapled ticket and clean-Mac launch |
 
 Hardware testing resumed on 5 October 2026. Physical flat-folder import, zero-byte
 repeat, early Stop/retry and relaunch passed; see [the evidence](verification/HARDWARE-2026-10-05.md).
 New-capture reconnect, cable removal during transfer and destination interruption remain open.
-Software checks do not close those gates. The build remains labeled **Development preview**; 0.1.0
-build 15 identifies this closeout preview, not a public release approval. Per the user's
+Software checks do not close those gates. The previous build 15 was labeled **Development preview**. The dated candidate now uses **Beta**;
+this label does not close the outstanding acceptance gates. Per the user's
 7 October request, remaining software work precedes the final hardware matrix.
 Hardware testing subsequently resumed on 7 October: build 9 passed original imports,
 zero-transfer Live Photo repeat, independent saved-file hashes and observed activity
@@ -52,12 +141,12 @@ signature or downloads credentials.
 To create a **local preview** ZIP, use a new output path:
 
 ```sh
-bash scripts/package_local.sh build/VerifyRelease/Build/Products/Release/CloakRoll.app build/releases/CloakRoll-0.1.0-15-local-universal.zip
+bash scripts/package_local.sh build/VerifyRelease/Build/Products/Release/CloakRoll.app build/releases/CloakRoll-0.1.0-local-arm64.zip
 ```
 
 Packaging validates an isolated copy, checks the ZIP, reports SHA-256 and refuses
-to overwrite an existing artifact. The current Release executable contains both
-arm64 and x86_64; this does not establish Intel or macOS 14 runtime acceptance.
+to overwrite an existing artifact. New Release executables must contain arm64 only and require macOS 26.0. The checker
+validates both Mach-O load commands and Info.plist; historical universal builds below are superseded.
 Before distribution, re-run the app/hardware checks. After the actual Developer ID signing and Apple
 notarization workflow has been completed, the stricter gate is:
 

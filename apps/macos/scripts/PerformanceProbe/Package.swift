@@ -3,7 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "CloakRollScaleProbe",
-    platforms: [.macOS(.v14)],
+    platforms: [.macOS("26.0")],
     dependencies: [
         .package(path: "../../Packages/CloakRollCore"),
         .package(url: "https://github.com/groue/GRDB.swift.git", exact: "7.11.1")

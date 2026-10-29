@@ -1,0 +1,45 @@
+---
+const scenes = [
+  { sky: '#ded6f0', sun: '#f4ce86', far: '#b6a0d1', near: '#79689b', front: '#564b79', x: 72, y: 27 },
+  { sky: '#cbdedb', sun: '#f5db9e', far: '#9ebdb7', near: '#628f88', front: '#436e69', x: 30, y: 32 },
+  { sky: '#eddbcd', sun: '#efb86d', far: '#d8b7a2', near: '#af8d79', front: '#7f695e', x: 70, y: 28 },
+  { sky: '#d1deed', sun: '#f9dfaa', far: '#a2b9cf', near: '#6e92b1', front: '#496c8d', x: 27, y: 25 },
+  { sky: '#e1d7ed', sun: '#f1c483', far: '#bca7cc', near: '#907aa7', front: '#69587f', x: 69, y: 31 },
+];
+---
+<div class="roll-artwork" aria-hidden="true">
+  <div class="roll-strip">
+    {scenes.map((s, i) => <div class="roll-frame" style={`--frame-index:${i}`}>
+      <div class="perforations"><i/><i/><i/><i/></div>
+      <svg viewBox="0 0 100 124" width="100" height="124" focusable="false">
+        <rect width="100" height="124" fill={s.sky}/>
+        <circle cx={s.x} cy={s.y} r="12" fill={s.sun}/>
+        <path d="M0 77 30 42 58 76 80 55 100 77V124H0Z" fill={s.far}/>
+        <path d="M0 92 45 53 85 100 100 88V124H0Z" fill={s.near}/>
+        <path d="M0 106Q30 83 60 109T100 103V124H0Z" fill={s.front}/>
+      </svg>
+      <div class="perforations"><i/><i/><i/><i/></div>
+    </div>)}
+  </div>
+</div>
+<script>
+  import { mountAirArtwork } from '../../design/artwork.mjs';
+  const root = document.querySelector<HTMLElement>('.roll-artwork');
+  if (root) {
+    const frames = [...root.querySelectorAll<HTMLElement>('.roll-frame')];
+    mountAirArtwork(root, {
+      settle() { /* The HTML/CSS is the complete, still composition. */ },
+      async run(animate) {
+        await animate(frames.map((element, index) => ({
+          element,
+          keyframes: [
+            { transform: `translate(${(2-index)*82}px, ${24+Math.abs(2-index)*18}px) rotate(${(index-2)*-13}deg) scale(.88)`, opacity: .15, offset: 0 },
+            { transform: `translate(${(2-index)*24}px, ${Math.abs(2-index)*-14}px) rotate(${(index-2)*4}deg) scale(.98)`, opacity: 1, offset: .65 },
+            { transform: 'translate(0,0) rotate(0deg) scale(1)', opacity: 1, offset: 1 },
+          ],
+          options: { duration: 2100, delay: index*140, easing: 'cubic-bezier(.23,1,.32,1)' },
+        })));
+      },
+    });
+  }
+</script>

@@ -18,4 +18,13 @@ enum BackupOrganization: String, CaseIterable {
         case .singleFolder: .byDeviceFlat
         }
     }
+
+    var explanation: String {
+        switch self {
+        case .byDate:
+            "Photos and videos are saved together, grouped by year and month within each iPhone’s folder."
+        case .singleFolder:
+            "Photos and videos are saved together in one folder for each iPhone, without year or month subfolders."
+        }
+    }
 }

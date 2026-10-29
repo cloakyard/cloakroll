@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://roll.cloakyard.com/sitemap-index.xml

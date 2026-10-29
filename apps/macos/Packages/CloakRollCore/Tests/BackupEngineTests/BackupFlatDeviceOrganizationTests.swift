@@ -5,6 +5,32 @@ import Testing
 
 @Suite("Flat device original folders")
 struct BackupFlatDeviceOrganizationTests {
+    @Test func separatePhotoAndVideoAssetsShareOneFolderAndIncrementalReuse() async throws {
+        let root = try backupDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let photo = asset()
+        let video = MediaAsset(
+            id: "video", deviceID: photo.deviceID,
+            resources: [MediaResource(id: "video-original", filename: "VIDEO.MOV", byteCount: 3)],
+            kind: .video, createdAt: Self.date.addingTimeInterval(90 * 86_400)
+        )
+        let session = UUID()
+        let first = try await BackupEngine().run(assets: [photo, video], sessionID: session,
+                                                destination: root, folderLayout: .byDeviceFlat) { request, _ in
+            try writeOriginal(request, data: Data([1, 2, 3]))
+        }
+        #expect(first.snapshot.phase == .completed && first.snapshot.completedAssets == 2)
+        let folder = try BackupFolderLayout.deviceFolderName(for: photo.deviceID)
+        #expect(Set(first.records.map(\.relativePath)) == [folder + "/IMG.HEIC", folder + "/VIDEO.MOV"])
+        let repeated = try await BackupEngine(previousRecords: first.records).run(
+            assets: [photo, video], sessionID: session, destination: root, folderLayout: .byDeviceFlat
+        ) { _, _ in
+            Issue.record("Verified photos and videos must be reused together")
+            throw BackupTestError.unexpectedLoad
+        }
+        #expect(repeated.snapshot.phase == .completed && repeated.snapshot.transferredBytes == 0)
+    }
+
     @Test(arguments: [true, false])
     func allLivePhotoComponentsStayDirectlyInDeviceFolderIncludingUnknownDates(hasDate: Bool) async throws {
         let root = try backupDirectory()

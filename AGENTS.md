@@ -3,6 +3,11 @@
 Read `docs/PLAN.md` before working. Implement phases in order and record actual verification;
 hardware acceptance cannot be replaced with a mock. CloakDrop is read-only reference material.
 
+Keep only the long-lived `main` and `dev` branches. Continue feature work on `dev`, commit verified
+stages there, and promote to `main` through a pull request after validation. Do not commit feature
+work directly to `main` or delete `dev` after merging. `main` is the Cloudflare production source;
+deployment remains the user's action unless explicitly requested. See `CONTRIBUTING.md`.
+
 The native app is under `apps/macos`. `project.yml` generates the ignored Xcode project.
 The local `Packages/CloakRollCore` package is headless and uses Swift 6 Sendable values.
 Keep SwiftUI, colors, symbols and presentation formatting in the app. Keep AppModel small.
