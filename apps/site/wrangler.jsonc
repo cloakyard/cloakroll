@@ -1,4 +1,5 @@
 {
+  "$schema": "node_modules/wrangler/config-schema.json",
   "name": "cloakroll",
   "compatibility_date": "2026-10-28",
   "assets": {

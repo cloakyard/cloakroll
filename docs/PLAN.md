@@ -11,6 +11,10 @@ A passing mock test never substitutes for a real iPhone acceptance check. Follow
 may proceed while an explicitly recorded hardware check is pending. A phase is not accepted or
 called complete until its actual evidence is recorded. No source media is modified or deleted.
 
+From 29 October, `dev` is the active development branch and `main` receives validated changes
+through PRs. Retain both branches, merge without rewriting shared history, and fast-forward
+`dev` after promotion. The Cloudflare Worker uses `main`; deployment remains deferred to the user.
+
 ## Current platform decision — 28 October 2026
 
 Per the user’s latest direction, CloakRoll now targets **Apple silicon only, macOS 26+**.
@@ -1130,3 +1134,16 @@ verified About and retained backup preferences, and ejected the image. Previous 
 is recoverable in Trash. [Release notes](releases/v0.1.0-beta.20261029.md) record the source and
 artifact hash. Hardware, sustained real-library profiling, minimum-OS/clean-Mac, notarization
 and deployment gates remain open; no new product feature is needed before those checks.
+
+## 29 October 2026 — Live Photo support and development workflow
+
+Audited Live Photo assembly, original downloads, verification, persistent retry and recovery.
+Media Info now identifies Photo/Motion originals, explains keeping both files, and labels the
+still preview explicitly. Added eight regression cases across HEIC/JPEG and dated/flat per-iPhone
+folders for duplicate filenames, adjustment companions, incomplete motion and incremental retry.
+No conversion, native Live Photo playback or new iPhone-writing behavior is introduced.
+
+Added the `dev` → `main` workflow, a read-only Website CI check and documented Cloudflare Workers
+settings. Site validation and Wrangler dry-run passed locally. Native light/dark Info checks and
+targeted Live Photo tests passed; exact full-build/PR evidence is recorded in
+[the audit](verification/LIVE-PHOTOS-AND-BRANCHES-2026-10-29.md). Hardware acceptance remains last.

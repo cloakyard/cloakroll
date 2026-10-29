@@ -4,6 +4,7 @@
 
 - [Beta notes](releases/v0.1.0-beta.20261029.md) — installation, scope and known limits.
 - [Privacy](PRIVACY.md) — local data, originals, recovery records and removal.
+- [Live Photos](LIVE-PHOTOS.md) — paired originals, incremental retry and preview limits.
 - [Folder organization](verification/BACKUP-ORGANIZATION.md) and [per-iPhone folders](verification/DEVICE-DESTINATIONS.md).
 - [Rebuild history](verification/FOLDER-RECOVERY.md) and [check saved files](verification/SAVED-BACKUP-CHECK.md).
 - [Restore-to-iPhone research](RESTORE-TO-IPHONE.md) — backlog, not a shipped feature.
@@ -23,6 +24,7 @@ generated scale measurements and physical device evidence. Dated records describ
 actually observed on that build; they do not imply later hardware or OS acceptance.
 
 - [Keyboard, system accessibility, scale profiling and beta 20261029](verification/CLOSEOUT-2026-10-29.md)
+- [Live Photo support and the dev/main workflow](verification/LIVE-PHOTOS-AND-BRANCHES-2026-10-29.md)
 - [Apple silicon, family Settings and Dock progress](verification/SILICON-SETTINGS-DOCK-2026-10-28.md)
 - [Backup fix, mixed-media folders, Air site and beta 20261028.1](verification/BACKUP-FIX-AND-SITE-2026-10-28.md)
 - [Family Air comparison and durable incomplete-backup details](verification/FAMILY-AIR-AND-HISTORY-2026-10-28.md)

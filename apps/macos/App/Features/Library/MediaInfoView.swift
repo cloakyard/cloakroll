@@ -30,7 +30,7 @@ struct MediaInfoView: View {
                         if asset.kind.isStillImage, !model.isSample, asset.primaryResource != nil {
                             MediaInfoCameraView(asset: asset)
                         }
-                        MediaInfoOriginalsView(resources: asset.resources)
+                        MediaInfoOriginalsView(asset: asset)
                         if model.isSample {
                             Text("Illustrated sample media. No original file is stored or transferred.")
                                 .font(.caption)
@@ -66,11 +66,18 @@ struct MediaInfoView: View {
     }
 
     private var preview: some View {
-        MediaThumbnail(asset: asset, contentMode: .fit)
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .padding(12)
-            .background(Design.cardFill, in: RoundedRectangle(cornerRadius: Design.cardRadius))
-            .clipShape(RoundedRectangle(cornerRadius: Design.cardRadius))
+        VStack(spacing: 8) {
+            MediaThumbnail(asset: asset, contentMode: .fit)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .padding(12)
+                .background(Design.cardFill, in: RoundedRectangle(cornerRadius: Design.cardRadius))
+                .clipShape(RoundedRectangle(cornerRadius: Design.cardRadius))
+            if asset.kind == .livePhoto {
+                Text("Still preview")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
     }
 
     private var heading: some View {
@@ -95,7 +102,7 @@ struct MediaInfoView: View {
                     detail("Dimensions", "\(width) × \(height)")
                 }
                 if let duration = asset.duration, duration.isFinite, duration >= 0 {
-                    detail("Duration", Format.duration(duration))
+                    detail(asset.kind == .livePhoto ? "Motion duration" : "Duration", Format.duration(duration))
                 }
             }
             .padding(6)

@@ -3,7 +3,8 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 struct MediaInfoOriginalsView: View {
-    let resources: [MediaResource]
+    let asset: MediaAsset
+    private var resources: [MediaResource] { asset.resources }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -29,6 +30,12 @@ struct MediaInfoOriginalsView: View {
                     }
                     .padding(6)
                 }
+                if asset.kind == .livePhoto {
+                    Text("The photo and motion file are saved together. Keep both files to preserve your Live Photo.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
             }
         }
     }
@@ -45,14 +52,25 @@ struct MediaInfoOriginalsView: View {
                     .font(.callout)
                     .textSelection(.enabled)
                     .fixedSize(horizontal: false, vertical: true)
-                Text(Format.bytes(resource.byteCount))
+                Text(details(for: resource))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(resource.filename), \(Format.bytes(resource.byteCount))")
+        .accessibilityLabel("\(resource.filename), \(details(for: resource))")
+    }
+
+    private func details(for resource: MediaResource) -> String {
+        let size = Format.bytes(resource.byteCount)
+        guard asset.kind == .livePhoto else { return size }
+        if resource.id == asset.primaryResourceID { return "Photo · \(size)" }
+        let fileExtension = (resource.filename as NSString).pathExtension
+        if UTType(filenameExtension: fileExtension)?.conforms(to: .quickTimeMovie) == true {
+            return "Motion · \(size)"
+        }
+        return size
     }
 
     private func symbol(for resource: MediaResource) -> String {
