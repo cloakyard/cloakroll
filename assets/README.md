@@ -61,7 +61,7 @@ swift apps/macos/scripts/generate_sample_art.swift
 
 The generator creates `Sample0` through `Sample11` image sets, each with a 640 × 480 PNG. They
 depict alpine dawn, a coastal sailboat, flowers, a café still life, an arched courtyard, an island,
-a resting cat, an evening city, desert night, citrus, a green valley and a canyon.
+a resting puppy, an evening city, desert night, citrus, a green valley and a canyon.
 SwiftUI previews and the explicit mock catalog can reuse
 these image names without USB I/O or full-resolution originals. A sample illustration does not
 represent an actual asset's metadata, transfer size or backup state.

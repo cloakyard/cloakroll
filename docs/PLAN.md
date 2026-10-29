@@ -1172,3 +1172,9 @@ Debug build, strict lint, site verification and Worker dry-run passed. Desktop/t
 narrow dark layouts were visually checked; see the same audit above. App-only appearance and
 browser overrides were restored. No hardware acceptance or new beta packaging was claimed;
 the changes remain in the existing `dev` → `main` PR for the user's deployment decision.
+
+The user then requested a puppy instead of the cat and authorized deployment. Updated the
+sample asset, recaptured light/dark native screenshots, and verified desktop/tablet/phone
+layouts. Debug build, strict lint, website validation and Worker dry-run passed. Publication
+proceeds through PR #2 after CI with the Cloudflare build root corrected to `apps/site`;
+the PR records the deployment outcome. Native beta packaging and hardware gates are unchanged.

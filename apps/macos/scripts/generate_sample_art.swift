@@ -197,30 +197,37 @@ func courtyard() {
     }
 }
 
-func restingCat() {
+func restingDog() {
     sky(0xD4DFDA, 0xBBCED0)
     rect(425, 0, 112, 149, 0xEDF0E4)
     rect(479, 0, 5, 149, 0xB8C9C5)
     rect(425, 72, 112, 5, 0xB8C9C5)
     oval(74, 240, 500, 212, 0x809BA9)
     oval(96, 228, 456, 182, 0x99AEB8)
-    oval(194, 189, 281, 172, 0xD7B497)
-    oval(266, 207, 174, 123, 0xE4C3A5)
-    curve((435, 263), [(493, 340, 401, 376, 332, 333)], fill: 0xB58D79, close: false, strokeWidth: 46)
-    oval(211, 300, 79, 41, 0xEED3B5)
-    polygon([(197, 204), (202, 133), (248, 174)], 0xC49A81)
-    polygon([(266, 172), (311, 140), (317, 216)], 0xC49A81)
-    polygon([(208, 179), (211, 151), (234, 176)], 0xDCB0A0)
-    polygon([(281, 177), (302, 157), (304, 189)], 0xDCB0A0)
-    oval(193, 168, 127, 122, 0xE7C6A7)
-    oval(216, 230, 82, 50, 0xF0D7B9)
-    curve((217, 218), [(224, 228, 236, 228, 242, 218)], fill: 0x77685F, close: false, strokeWidth: 3)
-    curve((272, 218), [(279, 228, 290, 228, 296, 218)], fill: 0x77685F, close: false, strokeWidth: 3)
-    polygon([(248, 241), (265, 241), (256, 249)], 0xA17972)
-    curve((256, 248), [(256, 256, 249, 259, 244, 256)], fill: 0xA17972, close: false, strokeWidth: 2)
-    for y in [239.0, 249.0] {
-        curve((222, y), [(205, y - 4, 189, y - 3, 177, y - 7)], fill: 0xA58D7A, close: false, strokeWidth: 2)
-        curve((288, y), [(306, y - 5, 321, y - 3, 335, y - 6)], fill: 0xA58D7A, close: false, strokeWidth: 2)
+    curve((432, 292), [(486, 291, 507, 253, 484, 226)], fill: 0xC99F7C, close: false, strokeWidth: 29)
+    oval(235, 209, 233, 147, 0xD8B18B)
+    oval(299, 223, 146, 117, 0xE5C29C)
+    oval(231, 257, 100, 96, 0xF0D7B5)
+    oval(203, 319, 100, 38, 0xF0D7B5)
+    oval(337, 324, 92, 36, 0xEACAA6)
+    roundedRect(226, 283, 91, 19, radius: 9, hex: 0x618F87)
+    oval(264, 295, 18, 22, 0xE3BB76)
+    // Soft, hanging ears and a broad muzzle distinguish the puppy at thumbnail size.
+    oval(174, 177, 56, 116, 0xB78D70)
+    oval(305, 177, 54, 113, 0xB78D70)
+    oval(195, 154, 143, 145, 0xE8C59D)
+    oval(216, 231, 103, 64, 0xF6DDBA)
+    oval(231, 211, 13, 17, 0x514840)
+    oval(288, 211, 13, 17, 0x514840)
+    oval(234, 213, 4, 5, 0xFFF7E7)
+    oval(291, 213, 4, 5, 0xFFF7E7)
+    oval(254, 241, 26, 18, 0x66534A)
+    oval(258, 243, 8, 4, 0x9C8371)
+    roundedRect(262, 272, 17, 23, radius: 8, hex: 0xCF9690)
+    curve((267, 256), [(267, 275, 250, 278, 244, 269)], fill: 0x8C6C57, close: false, strokeWidth: 3)
+    curve((267, 256), [(267, 275, 283, 278, 289, 269)], fill: 0x8C6C57, close: false, strokeWidth: 3)
+    for x in [228.0, 243.0, 361.0, 376.0] {
+        curve((x, 341), [(x - 2, 345, x - 2, 350, x, 353)], fill: 0xC6A688, close: false, strokeWidth: 2)
     }
 }
 
@@ -296,7 +303,7 @@ func drawScene(_ index: Int) {
         waterLines(0xA5C7BF, from: 352)
         curve((-20, 457), [(109, 414, 150, 446, 265, 475), (350, 502, 493, 436, 660, 445)], fill: 0x397F88)
     case 6:
-        restingCat()
+        restingDog()
     case 7: // Evening river and an invented skyline.
         sky(0x777497, 0xE8B6A5)
         oval(431, 119, 91, 91, 0xF3CAA9)

@@ -69,3 +69,21 @@ Additional verification:
 
 The follow-up remains on `dev` in PR #2. `main`, Cloudflare settings and the deployed site are
 unchanged; merging the PR is the user's production release step.
+
+## Puppy revision and publication request
+
+The user subsequently requested a cute dog instead of the cat and explicitly asked to deploy.
+Replaced only `Sample6` with a floppy-eared puppy on the existing cushion, regenerated the
+deterministic asset, and captured new light/dark native screenshots at 2200×1480. Updated the
+website's image description and artwork inventory. The sample disclosure remains visible;
+no personal photos or composited UI are used.
+
+Normal arm64 Debug build, strict lint (151 files, zero violations), `npm run verify` and Worker
+dry-run passed. Inspected the rebuilt static page at 1440×900, 768×1024 and 390×844, including
+the dark screenshot. No horizontal overflow; both screenshot variants load correctly. App and
+browser appearance overrides were restored and the installed beta reopened. No app beta was
+repackaged. Local evidence: `apps/site/build/verification/20261029-puppy-*.png` (ignored).
+
+Publication is now authorized through PR #2 after CI; its final deployment result is recorded
+in the PR. Cloudflare's previously observed build root `/` must be corrected to `apps/site`
+before promotion. Retain both `main` and `dev` and fast-forward `dev` after the merge.
