@@ -3,14 +3,15 @@ import PhotoRollScene from './PhotoRollScene.astro';
 
 const scenes = ['mountains', 'coast', 'flowers', 'city', 'forest'] as const;
 ---
-<div class="roll-artwork" aria-hidden="true">
-  <div class="roll-strip">
+<div class="roll-artwork air-artwork">
+  <div class="roll-strip" aria-hidden="true">
     {scenes.map((scene, i) => <div class="roll-frame" style={`--frame-index:${i}`}>
       <div class="perforations"><i/><i/><i/><i/></div>
       <PhotoRollScene scene={scene}/>
       <div class="perforations"><i/><i/><i/><i/></div>
     </div>)}
   </div>
+  <button class="air-artwork-replay" type="button" aria-label="Replay CloakRoll animation" hidden />
 </div>
 <script>
   import { mountAirArtwork } from '../../../../docs/air/artwork.mjs';
