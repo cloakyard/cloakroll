@@ -21,6 +21,9 @@ struct AboutSettingsView: View {
                 if let url = SettingsLinks.issues {
                     SettingsLinkRow(title: "Report a Bug", symbol: "ladybug", destination: url)
                 }
+                if let url = SettingsLinks.support {
+                    SettingsLinkRow(title: "Buy me a coffee", symbol: "cup.and.saucer", destination: url)
+                }
                 Button("Open-Source Licenses…") { showingLicenses = true }
             } footer: {
                 Text("Part of Cloakyard. Your camera roll, safely on your Mac.")

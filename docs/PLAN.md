@@ -1205,3 +1205,18 @@ ejected and the previously installed app reopened. Details are recorded in
 [the publication audit](verification/FIRST-PUBLIC-BETA-2026-10-29.md) and
 [release notes](releases/v0.1.0-beta.20261029.2.md). Developer ID/notarization, clean-Mac/minimum-OS,
 full accessibility, sustained performance and physical acceptance gates remain open.
+
+## 30 October 2026 — About support and dependency refresh
+
+Added the requested **Buy me a coffee** About link to `https://ko-fi.com/sumitsahoo21`, matching
+CloakDrop's native row and cup icon. Verified the actual About layout, accessibility destination
+and default-browser activation. Normal Debug build and strict lint pass.
+
+Checked all direct app, website and DMG libraries against their official registries. GRDB and
+DMG libraries are current. Updated Astro to 7.4.4, Wrangler to 4.156.0 and compatible npm
+transitives; removed the redundant Undici override. TypeScript stays at the latest supported
+6.0.3 because Astro Check excludes 7.x. Clean install, dependency-tree validation, zero-vulnerability
+audit, site verification, Worker dry-run and Air portability pass. See
+[the audit](verification/SUPPORT-BETA-2026-10-30.md). The next dated beta will record its full
+clean-source build, DMG and GitHub publication evidence separately. Existing acceptance gates
+remain open; no production website deployment is included in this stage.
