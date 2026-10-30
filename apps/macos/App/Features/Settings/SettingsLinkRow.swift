@@ -32,5 +32,6 @@ enum SettingsLinks {
     static let author = URL(string: "https://github.com/sumitsahoo")
     static let repository = URL(string: "https://github.com/cloakyard/cloakroll")
     static let issues = URL(string: "https://github.com/cloakyard/cloakroll/issues/new?template=bug_report.yml")
+    static let support = URL(string: "https://ko-fi.com/sumitsahoo21")
     static let privacy = URL(string: "https://github.com/cloakyard/cloakroll/blob/main/docs/PRIVACY.md")
 }

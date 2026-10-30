@@ -4,19 +4,19 @@ Target: finish the current USB-original-backup scope, fix acceptance failures, a
 restore-to-iPhone in the backlog. Additional feature expansion is not needed to finish V1.
 
 
-## Current beta — 29 October 2026
+## Current beta — 30 October 2026
 
-Published the first public **0.1.0 beta (20261029.2)** on
-[GitHub Releases](https://github.com/cloakyard/cloakroll/releases/tag/v0.1.0-beta.20261029.2)
-with its DMG and SHA-256 checksum. It is Apple silicon-only, locally ad-hoc signed and requires
-macOS 26+. All 630 Swift tests, five release-tool tests, strict lint, fresh Debug/Release builds,
-bundle and mounted-DMG checks passed. Finder layout, launch directly from the final DMG and
-About build were checked; both uploaded assets were downloaded and compared byte for byte.
-See [the publication audit](verification/FIRST-PUBLIC-BETA-2026-10-29.md) and
-[release notes](releases/v0.1.0-beta.20261029.2.md) for the artifact and checks.
-Publication does not establish Developer ID signing, notarization or clean-Mac acceptance.
-The current feature set needs no expansion before beta testing. Remaining hardware/OS gates below
-stay open and must be disclosed to testers.
+Published **0.1.0 beta (20261030)** on
+[GitHub Releases](https://github.com/cloakyard/cloakroll/releases/tag/v0.1.0-beta.20261030)
+with its DMG and SHA-256 checksum. This update adds **About → Buy me a coffee** and refreshes
+compatible dependencies. It is Apple silicon-only, locally ad-hoc signed and requires macOS 26+.
+All 630 Swift tests, five release-tool tests, strict lint, fresh Debug/Release builds, bundle and
+mounted-DMG checks passed. Finder layout, launch directly from the final DMG and About were
+checked. Both uploaded assets were downloaded and compared with the originals before publication.
+See [the dependency and release audit](verification/SUPPORT-BETA-2026-10-30.md) and
+[release notes](releases/v0.1.0-beta.20261030.md) for versions, artifact and checks.
+Publication does not establish Developer ID signing, notarization, clean-Mac/minimum-OS,
+hardware, sustained performance or full accessibility acceptance. Those gates remain open.
 
 ## Reproducible dated beta
 
