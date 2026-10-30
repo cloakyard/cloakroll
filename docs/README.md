@@ -2,7 +2,7 @@
 
 ## Using the app
 
-- [Beta notes](releases/v0.1.0-beta.20261029.2.md) — installation, scope and known limits.
+- [Beta notes](releases/v0.1.0-beta.20261030.md) — installation, scope and known limits.
 - [Privacy](PRIVACY.md) — local data, originals, recovery records and removal.
 - [Live Photos](LIVE-PHOTOS.md) — paired originals, incremental retry and preview limits.
 - [Folder organization](verification/BACKUP-ORGANIZATION.md) and [per-iPhone folders](verification/DEVICE-DESTINATIONS.md).
@@ -23,6 +23,7 @@ The [verification directory](verification/) separates automated checks, native U
 generated scale measurements and physical device evidence. Dated records describe what was
 actually observed on that build; they do not imply later hardware or OS acceptance.
 
+- [About support, dependency audit and beta 20261030](verification/SUPPORT-BETA-2026-10-30.md)
 - [First public beta, DMG and GitHub publication](verification/FIRST-PUBLIC-BETA-2026-10-29.md)
 - [Keyboard, system accessibility, scale profiling and beta 20261029](verification/CLOSEOUT-2026-10-29.md)
 - [Live Photo support and the dev/main workflow](verification/LIVE-PHOTOS-AND-BRANCHES-2026-10-29.md)

@@ -1217,6 +1217,14 @@ DMG libraries are current. Updated Astro to 7.4.4, Wrangler to 4.156.0 and compa
 transitives; removed the redundant Undici override. TypeScript stays at the latest supported
 6.0.3 because Astro Check excludes 7.x. Clean install, dependency-tree validation, zero-vulnerability
 audit, site verification, Worker dry-run and Air portability pass. See
-[the audit](verification/SUPPORT-BETA-2026-10-30.md). The next dated beta will record its full
-clean-source build, DMG and GitHub publication evidence separately. Existing acceptance gates
-remain open; no production website deployment is included in this stage.
+[the audit](verification/SUPPORT-BETA-2026-10-30.md).
+
+Published **v0.1.0-beta.20261030** from clean source
+`843ba9d9c3b5030a3981a10fcf6816a4e6109326`, with a verified DMG and checksum attachment.
+All 630 Swift tests, five release-tool tests, strict lint, the 10k metadata probe, fresh Debug
+and arm64 Release builds, bundle and mounted-DMG checks passed. Inspected Finder layout and
+the packaged About build/support link, then restored the existing installed app. Both uploaded
+and unauthenticated public downloads passed checksum and byte comparisons. The source's GitHub
+Website and Cloudflare build checks passed. [Release notes](releases/v0.1.0-beta.20261030.md).
+Existing acceptance gates remain open; production website promotion stays in the `dev` → `main`
+PR for review, and both long-lived branches are retained.

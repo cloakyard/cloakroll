@@ -45,6 +45,61 @@ Primary references: [GRDB](https://github.com/groue/GRDB.swift/releases/tag/v7.1
 - Local logs and dependency-tree/audit output are retained under
   `apps/macos/build/Support-Beta-20261030/` and the same prefix beside that directory.
 
-Full dated release verification and publication are recorded after building from the clean
-source commit. Hardware, sustained performance, full VoiceOver, minimum-OS and notarization
-acceptance remain open; this link and dependency update do not close those gates.
+## Beta 20261030 verification
+
+Ran `scripts/prepare_beta.sh --build 20261030` from clean source
+`843ba9d9c3b5030a3981a10fcf6816a4e6109326`, preserved throughout the pipeline. The resulting
+Release app is **0.1.0 (20261030) · Beta**, arm64 only, with a macOS 26.0 minimum in both the
+bundle and Mach-O. Toolchain: **Xcode 27.1 (27A9275), macOS 27.0 SDK**; host **macOS 27.2 (26B123)**.
+
+- All **403 core + 227 hosted app tests (630 Swift tests)** and **five release-tool tests** passed.
+- Strict lint passed across 151 files. Fresh normal Debug and optimized arm64 Release builds
+  passed without compiler warnings or errors. Existing hosted-test system service diagnostics
+  did not fail tests; disk-image tooling emitted deprecation warnings while succeeding.
+- The Release scale probe built and completed its generated **10,000-item** metadata smoke test.
+  This is not USB throughput or sustained UI performance evidence.
+- Bundle checks passed for signature, exact reviewed sandbox entitlements, hardened runtime,
+  architecture, minimum OS, icons, app/GRDB privacy manifests and bundled license notices.
+- The compressed read-only DMG passed filesystem and layout checks. All **19 bundle entries**
+  match the verified Release; artwork, guide, volume icon and Applications link also pass.
+- Opened the final DMG in Finder and visually checked its Air layout. Launched the mounted
+  app, verified the disconnected library and About **0.1.0 (20261030) · Beta**, and inspected
+  the coffee row with its exact Ko-fi destination. The mounted bundle audit passed again.
+- Quit the packaged app, ejected the installer and reopened the previously installed app.
+  No replacement installation, source-media operation or physical backup was performed.
+- Sharp's native image roundtrip and Miniflare/workerd fetch smoke passed. The smoke uses
+  Miniflare 5's `workers/config/manifest` API; an initial legacy-constructor attempt was rejected
+  by option validation before runtime startup. No product-code change was needed.
+- GitHub Website and external Cloudflare build checks passed on the exact source commit.
+  The production `main` branch was not changed or directly deployed during this work.
+
+Logs, the pre-publication build manifest, app inventory and local checksums are retained in
+`apps/macos/build/Beta-0.1.0-20261030/`. The manifest's `published: false` describes preparation;
+publication occurred afterward and is recorded below.
+
+## GitHub publication
+
+Published [v0.1.0 Beta (Build 20261030)](https://github.com/cloakyard/cloakroll/releases/tag/v0.1.0-beta.20261030)
+at **13:30:54 Asia/Kolkata on 30 October 2026**. GitHub release **428774879** is
+`draft: false`, `prerelease: true`; its tag points to the exact source commit above.
+
+| Public asset | Bytes | SHA-256 |
+| --- | ---: | --- |
+| `CloakRoll-v0.1.0-beta.20261030.dmg` | 6,620,001 | `8b842d05dabe24f3a1e9119022d78eabb03b811737742653aea5a5c93b0d537c` |
+| `SHA256SUMS.txt` | 101 | `2124f96595a86cccdb4afb996be91cfd2f975eab200a515fdcfe74a63c93a840` |
+
+Uploaded both assets to a draft, downloaded them and checked the checksum and byte-for-byte
+equality before publishing. Read back both uploaded states and matching GitHub digests, then
+downloaded both files through unauthenticated public URLs and verified them again. The published
+checksum file lists the attached DMG; local checksums also cover the build manifest and inventory.
+
+The source and subsequent release records stay on `dev` for a `dev` → `main` PR. The beta is
+available from its immutable source commit independently of production website promotion.
+Both long-lived branches are retained. See [release notes](../releases/v0.1.0-beta.20261030.md).
+
+## Remaining acceptance
+
+This is **ad-hoc signed and not notarized**; no valid Developer ID identity was available.
+Hardware reliability, sustained physical-library performance, full VoiceOver/accessibility,
+minimum macOS 26, clean-Mac Gatekeeper and notarized distribution acceptance remain open.
+Neither the support link, automated tests nor publication closes those gates.
