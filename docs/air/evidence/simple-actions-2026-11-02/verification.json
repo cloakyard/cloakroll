@@ -1,0 +1,16 @@
+{
+  "date": "2026-11-02",
+  "baseline": "6319d6e0a93976d4a443373a32c17da05bde3d32",
+  "contract": {
+    "version": "1.3.3",
+    "sha256": "32aaa6dd8f858548d29309a87c7aae7878ddafb338b2fd0dce9e2d7e6b0b2a35"
+  },
+  "scratch": "/tmp/air-simple-actions-2026-11-02",
+  "physicalAcceptance": "Physical iPhone/software keyboard, OS IME and spoken assistive acceptance remain open.",
+  "checks": {
+    "design": "pass",
+    "portability": "pass",
+    "build": "pass",
+    "formatLintTypes": "pass"
+  }
+}
