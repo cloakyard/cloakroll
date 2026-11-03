@@ -47,12 +47,19 @@ public struct StoredBackupSession: Sendable, Equatable, Identifiable {
     /// Historical explanation only; never evidence that an original was saved.
     public let failureMessage: String?
     public let unavailableOriginalsCount: Int
+    public let folderLayout: BackupFolderLayout?
+    public let hasContinuation: Bool
+
+    public var canContinue: Bool {
+        folderLayout != nil && !hasContinuation && [.failed, .cancelled, .interrupted].contains(status)
+    }
 
     public init(
         id: UUID, deviceName: String, destinationID: UUID, status: StoredBackupSessionStatus,
         startedAt: Date, finishedAt: Date?, totalAssets: Int, totalResources: Int,
         completedAssets: Int, verifiedResources: Int, verifiedBytes: Int64, transferredBytes: Int64,
-        failureMessage: String? = nil, unavailableOriginalsCount: Int = 0
+        failureMessage: String? = nil, unavailableOriginalsCount: Int = 0,
+        folderLayout: BackupFolderLayout? = nil, hasContinuation: Bool = false
     ) {
         self.id = id
         self.deviceName = deviceName
@@ -68,6 +75,8 @@ public struct StoredBackupSession: Sendable, Equatable, Identifiable {
         self.transferredBytes = transferredBytes
         self.failureMessage = failureMessage
         self.unavailableOriginalsCount = unavailableOriginalsCount
+        self.folderLayout = folderLayout
+        self.hasContinuation = hasContinuation
     }
 }
 

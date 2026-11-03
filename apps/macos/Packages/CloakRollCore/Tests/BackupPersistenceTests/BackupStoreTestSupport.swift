@@ -54,9 +54,9 @@ struct HistoryFixture {
         )])
     }
 
-    func begin(_ store: BackupStore, reusable: Bool = true) async throws -> UUID {
+    func begin(_ store: BackupStore, reusable: Bool = true, layout: BackupFolderLayout? = nil, continuing: UUID? = nil) async throws -> UUID {
         try await store.beginSession(device: device, destinationID: destinationID, sourceSessionID: sourceSessionID,
-                                     assets: assets, identity: identity(reusable: reusable))
+                                     assets: assets, identity: identity(reusable: reusable), folderLayout: layout, continuingSessionID: continuing)
     }
 
     func record(
@@ -90,6 +90,10 @@ struct HistoryDirectory {
 // Recreate the actual v6 schema before exercising an older additive migration.
 func removeFailureDetailsMigration(_ db: Database) throws {
     try db.execute(sql: """
+        DROP INDEX session_continuation;
+        ALTER TABLE backup_session DROP COLUMN continued_from;
+        ALTER TABLE backup_session DROP COLUMN folder_layout;
+        DELETE FROM grdb_migrations WHERE identifier = 'v9_backup_continuation';
         DROP TRIGGER invalidate_integrity_check;
         DROP TABLE integrity_check;
         DELETE FROM grdb_migrations WHERE identifier = 'v8_integrity_checks';

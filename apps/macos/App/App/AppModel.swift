@@ -203,11 +203,6 @@ final class AppModel {
 
     func currentAsset(id: String) -> MediaAsset? { lookup[id] }
 
-    func startBackup(assets: [MediaAsset]) {
-        guard let sessionID = catalogSessionID, let download = originalDownload else { return }
-        backup.start(assets: assets, sessionID: sessionID, folderLayout: backupOrganization.folderLayout, download: download)
-    }
-
     var originalDownload: BackupEngine.Download? {
         guard backupSourceAvailable, let provider = browser as? any OriginalMediaDownloading else { return nil }
         return { request, progress in

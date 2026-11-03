@@ -50,6 +50,7 @@ extension BackupStore {
                         ) AS position FROM backup_session
                     )
                     SELECT s.*, c.checked_at, c.total_files, c.matching_files,
+                        EXISTS(SELECT 1 FROM backup_session child WHERE child.continued_from = s.id) AS has_continuation,
                         (SELECT MAX(finished_at) FROM backup_session done WHERE done.device_key = s.device_key
                             AND done.destination_id = s.destination_id AND done.status = 'completed'
                             AND done.total_assets > 0 AND done.completed_assets = done.total_assets

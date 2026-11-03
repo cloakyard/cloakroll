@@ -1,7 +1,14 @@
 import AppKit
+import BackupEngine
 import MediaModels
 
 extension AppModel {
+    func startBackup(assets: [MediaAsset], folderLayout: BackupFolderLayout? = nil, continuingSessionID: UUID? = nil) {
+        guard let sessionID = catalogSessionID, let download = originalDownload else { return }
+        backup.start(assets: assets, sessionID: sessionID, folderLayout: folderLayout ?? backupOrganization.folderLayout,
+                     continuingSessionID: continuingSessionID, download: download)
+    }
+
     func showSelectedInfo() {
         if let activeID, selection.selectedIDs.contains(activeID) {
             infoAsset = currentAsset(id: activeID)
@@ -48,7 +55,7 @@ extension AppModel {
 
     func retryLastBackup() {
         guard canRetryBackup, let attempt = backup.lastAttempt else { return }
-        startBackup(assets: attempt.assets)
+        startBackup(assets: attempt.assets, folderLayout: attempt.folderLayout, continuingSessionID: backup.lastStoredSessionID)
     }
 
     var canCheckSavedOriginals: Bool {

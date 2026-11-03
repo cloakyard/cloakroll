@@ -68,6 +68,7 @@ private struct BackupHealthRow: View {
     let model: AppModel
     let check: () -> Void
     @State private var folder: BackupDestinationStore?
+    @State private var showingContinuation = false
 
     var body: some View {
         Section(entry.latestSession.deviceName) {
@@ -91,6 +92,9 @@ private struct BackupHealthRow: View {
             Text("A completed backup is a historical result. A file check covers that attempt’s saved originals at the time shown.")
                 .font(.caption).foregroundStyle(.secondary)
             HStack {
+                if entry.latestSession.canContinue {
+                    Button("Continue Backup…") { showingContinuation = true }.disabled(model.backup.isBusy)
+                }
                 Button("Check Saved Files…", action: check)
                     .disabled(!entry.latestSession.canCheckSavedFiles || model.backup.isBusy)
                 Button("Back Up Missing Items") {
@@ -114,6 +118,7 @@ private struct BackupHealthRow: View {
             folder = selected
             await selected.checkFolder()
         }
+        .sheet(isPresented: $showingContinuation) { BackupContinuationView(session: entry.latestSession) }
     }
 
     private var canShowMissing: Bool {

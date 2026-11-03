@@ -7,8 +7,8 @@ an iPhone, removable-drive, sleep/wake or power-loss scenario.
 | Order | Priority | Feature | Status |
 | --- | --- | --- | --- |
 | 1 | P0 | Backup health overview | Software checks passed; UI acceptance pending |
-| 2 | P0 | Continue an unfinished backup after relaunch | In progress |
-| 3 | P1 | Browse saved originals without an iPhone | Pending |
+| 2 | P0 | Continue an unfinished backup after relaunch | Software checks passed; UI acceptance pending |
+| 3 | P1 | Browse saved originals without an iPhone | In progress |
 | 4 | P1 | Review storage and destination before a backup | Pending |
 | 5 | P2 | Optional local notifications and backup reminders | Pending |
 | 6 | P0 acceptance | Physical device and removable-drive testing | Deferred until all software stages |
@@ -23,11 +23,11 @@ an iPhone, removable-drive, sleep/wake or power-loss scenario.
 
 ## 2. Persistent continuation
 
-- [ ] Preserve the original job selection and folder organization across relaunch.
-- [ ] Match the same persistent phone, destination and unambiguous resource identities.
-- [ ] Recheck completed originals and restart unfinished components; never imply byte-range resume.
-- [ ] Explain unavailable/changed items and require explicit Continue; never start automatically.
-- [ ] Test relaunch, changed identities, partial Live Photos and destination mismatches using isolated fixtures.
+- [x] Preserve the original job selection and folder organization across relaunch.
+- [x] Match the same persistent phone, destination and unambiguous resource identities.
+- [x] Recheck completed originals and restart unfinished components; never imply byte-range resume.
+- [x] Explain unavailable/changed items and require explicit Continue; never start automatically.
+- [x] Test relaunch, changed identities, partial Live Photos and destination mismatches using isolated fixtures.
 
 ## 3. Saved-original browser
 

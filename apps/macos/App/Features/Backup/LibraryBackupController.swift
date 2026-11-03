@@ -11,6 +11,7 @@ final class LibraryBackupController {
     struct Attempt {
         let assets: [MediaAsset]
         let sessionID: UUID
+        var folderLayout: BackupFolderLayout = .byDevice
 
         func matches(sessionID: UUID?, currentAsset: (String) -> MediaAsset?) -> Bool {
             self.sessionID == sessionID && assets.allSatisfy { currentAsset($0.id) == $0 }
@@ -32,6 +33,7 @@ final class LibraryBackupController {
     private(set) var stopReason: StopReason?
     private(set) var wasInterrupted = false
     private(set) var lastAttempt: Attempt?
+    private(set) var lastStoredSessionID: UUID?
     private(set) var isCheckingHistory = false
     private(set) var historyErrorMessage: String?
     var errorMessage: String?
@@ -72,7 +74,7 @@ final class LibraryBackupController {
 
     func start(
         assets: [MediaAsset], sessionID: UUID, folderLayout: BackupFolderLayout = .byDevice,
-        download: @escaping BackupEngine.Download
+        continuingSessionID: UUID? = nil, download: @escaping BackupEngine.Download
     ) {
         guard !isBusy, !isCheckingHistory, historyErrorMessage == nil,
               !destination.isChoosing, !assets.isEmpty else { return }
@@ -85,10 +87,14 @@ final class LibraryBackupController {
         stopReason = nil
         wasInterrupted = false
         errorMessage = nil
-        lastAttempt = Attempt(assets: assets, sessionID: sessionID)
+        lastAttempt = Attempt(assets: assets, sessionID: sessionID, folderLayout: folderLayout)
+        lastStoredSessionID = nil
         snapshot = BackupSnapshot(phase: .preparing, totalAssets: assets.count)
         // Capture the organization before any folder picker or lease awaits. One run uses one layout.
-        runTask = Task { await perform(assets: assets, sessionID: sessionID, folderLayout: folderLayout, download: download) }
+        runTask = Task {
+            await perform(assets: assets, sessionID: sessionID, folderLayout: folderLayout,
+                          continuingSessionID: continuingSessionID, download: download)
+        }
     }
 
     func cancel() {
@@ -139,7 +145,8 @@ final class LibraryBackupController {
     }
 
     private func perform(
-        assets: [MediaAsset], sessionID: UUID, folderLayout: BackupFolderLayout, download: @escaping BackupEngine.Download
+        assets: [MediaAsset], sessionID: UUID, folderLayout: BackupFolderLayout,
+        continuingSessionID: UUID?, download: @escaping BackupEngine.Download
     ) async {
         defer {
             engine = nil
@@ -159,7 +166,8 @@ final class LibraryBackupController {
             }
             try Task.checkCancellation()
             try await activity.perform(reason: "Backing up iPhone originals") {
-                try await runBackup(assets: assets, sessionID: sessionID, folderLayout: folderLayout, download: download)
+                try await runBackup(assets: assets, sessionID: sessionID, folderLayout: folderLayout,
+                                    continuingSessionID: continuingSessionID, download: download)
             }
         } catch is CancellationError {
             snapshot = terminalSnapshot(BackupSnapshot(phase: .cancelled, totalAssets: assets.count))
@@ -169,13 +177,16 @@ final class LibraryBackupController {
     }
 
     private func runBackup(
-        assets: [MediaAsset], sessionID: UUID, folderLayout: BackupFolderLayout, download: @escaping BackupEngine.Download
+        assets: [MediaAsset], sessionID: UUID, folderLayout: BackupFolderLayout,
+        continuingSessionID: UUID?, download: @escaping BackupEngine.Download
     ) async throws {
         let lease = try await destination.acquireLease()
         defer { lease.release() }
         try Task.checkCancellation()
         let scope = LibraryBackupHistory.Scope(sessionID: sessionID, destinationID: lease.destinationID)
-        let journal = try await beginJournal(assets: assets, sessionID: sessionID, destinationID: lease.destinationID)
+        let journal = try await beginJournal(assets: assets, sessionID: sessionID, destinationID: lease.destinationID,
+                                             folderLayout: folderLayout, continuingSessionID: continuingSessionID)
+        lastStoredSessionID = journal?.id
         let engine = BackupEngine(previousRecords: history.records(in: scope))
         self.engine = engine
         let monitor = Task { [weak self] in
@@ -239,7 +250,10 @@ final class LibraryBackupController {
         destination.clearError()
     }
 
-    private func beginJournal(assets: [MediaAsset], sessionID: UUID, destinationID: UUID) async throws -> BackupJournalSession? {
+    private func beginJournal(
+        assets: [MediaAsset], sessionID: UUID, destinationID: UUID,
+        folderLayout: BackupFolderLayout, continuingSessionID: UUID?
+    ) async throws -> BackupJournalSession? {
         guard let persistence else { return nil }
         guard let context, context.identity.sessionID == sessionID else { throw LibraryHistoryError.libraryChanged }
         let validation = Task.detached(priority: .utility) {
@@ -254,7 +268,7 @@ final class LibraryBackupController {
         let store = try await persistence.store()
         let id = try await store.beginSession(
             device: context.device, destinationID: destinationID, sourceSessionID: sessionID,
-            assets: assets, identity: context.identity
+            assets: assets, identity: context.identity, folderLayout: folderLayout, continuingSessionID: continuingSessionID
         )
         return BackupJournalSession(id: id, store: store)
     }

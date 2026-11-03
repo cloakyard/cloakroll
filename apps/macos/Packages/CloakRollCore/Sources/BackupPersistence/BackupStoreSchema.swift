@@ -57,6 +57,13 @@ enum BackupStoreSchema {
                 BEGIN DELETE FROM integrity_check WHERE session_id = NEW.session_id; END;
                 """)
         }
+        migrator.registerMigration("v9_backup_continuation") { db in
+            try db.execute(sql: """
+                ALTER TABLE backup_session ADD COLUMN folder_layout TEXT;
+                ALTER TABLE backup_session ADD COLUMN continued_from TEXT REFERENCES backup_session(id);
+                CREATE UNIQUE INDEX session_continuation ON backup_session(continued_from) WHERE continued_from IS NOT NULL;
+                """)
+        }
         try migrator.migrate(queue)
         try queue.write { db in
             try db.execute(
