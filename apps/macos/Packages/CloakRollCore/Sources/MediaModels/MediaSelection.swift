@@ -1,5 +1,3 @@
-import Foundation
-
 /// Finder-style selection independent of views, resource handles, and catalog storage.
 public struct MediaSelection: Equatable, Sendable {
     public private(set) var selectedIDs: Set<String>

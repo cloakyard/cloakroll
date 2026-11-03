@@ -4,7 +4,26 @@ Target: finish the current USB-original-backup scope, fix acceptance failures, a
 restore-to-iPhone in the backlog. Additional feature expansion is not needed to finish V1.
 
 
-## Current beta — 30 October 2026
+## Current beta — 3 November 2026
+
+Published **0.1.0 beta (20261103)** on
+[GitHub Releases](https://github.com/cloakyard/cloakroll/releases/tag/v0.1.0-beta.20261103)
+with its DMG and SHA-256 checksum. Backup Health, explicit unfinished-backup continuation,
+offline Saved Originals, storage review and optional local notifications are implemented, with
+follow-up correctness, lifecycle and keyboard/AX fixes. All 664 Swift tests, five release-tool
+tests, strict lint, fresh Debug/Release builds, generated metadata probe, bundle and mounted-DMG
+checks passed. The packaged app launched directly from the DMG and reported the correct beta
+build in About. Both uploaded assets were downloaded and matched byte-for-byte before publication.
+The tag points to the exact clean app/installer source, `ac275dbb4162063f2d5366065daa67c609c7677b`.
+
+The user's existing ad-hoc signing process is retained; paid-account signing/notarization is
+deferred. No macOS 26/clean test environment is available. Full VoiceOver feedback remains
+unobservable through the control tool, and physical testing remains the final stage. None of
+these gates is closed by publication. See [the nonphysical audit](verification/NONPHYSICAL-2026-11-03.md)
+and [release notes](releases/v0.1.0-beta.20261103.md). No installed-app replacement or production
+website deployment was performed.
+
+## Previous beta — 30 October 2026
 
 Published **0.1.0 beta (20261030)** on
 [GitHub Releases](https://github.com/cloakyard/cloakroll/releases/tag/v0.1.0-beta.20261030)

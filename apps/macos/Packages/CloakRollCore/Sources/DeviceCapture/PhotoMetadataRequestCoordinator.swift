@@ -44,8 +44,11 @@ final class PhotoMetadataRequestCoordinator {
         self.sleep = sleep
     }
 
+    #if DEBUG
+    // Test diagnostics; production scheduling owns these collections directly.
     var outstandingCount: Int { active == nil ? 0 : 1 }
     var queuedCount: Int { queued.count }
+    #endif
 
     func begin(sessionID: UUID) {
         guard self.sessionID != sessionID else { return }

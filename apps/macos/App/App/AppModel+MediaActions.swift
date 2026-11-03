@@ -1,7 +1,36 @@
 import AppKit
+import BackupEngine
 import MediaModels
 
 extension AppModel {
+    var isViewingLibrary: Bool {
+        if case .library = navigation { return true }
+        return false
+    }
+
+    func startBackup(assets: [MediaAsset], folderLayout: BackupFolderLayout? = nil, continuingSessionID: UUID? = nil) {
+        guard let sessionID = catalogSessionID, let download = originalDownload else { return }
+        backup.start(assets: assets, sessionID: sessionID, folderLayout: folderLayout ?? backupOrganization.folderLayout,
+                     continuingSessionID: continuingSessionID, download: download)
+    }
+
+    func reviewBackup(assets: [MediaAsset], folderLayout: BackupFolderLayout? = nil, continuingSessionID: UUID? = nil) {
+        guard backupPreviewRequest == nil, backupSourceAvailable, let sessionID = catalogSessionID else { return }
+        let layout = folderLayout ?? backupOrganization.folderLayout
+        Task {
+            if backup.destination.selection == nil {
+                await backup.chooseDestination()
+                await backup.waitUntilHistoryChecked()
+                await waitUntilProjected()
+            }
+            guard backupSourceAvailable, catalogSessionID == sessionID, let destination = backup.destination.selection,
+                  assets.allSatisfy({ currentAsset(id: $0.id) == $0 }) else { return }
+            backupPreviewRequest = BackupPreviewRequest(assets: assets, sessionID: sessionID,
+                                                        destinationID: destination.id, destinationPath: destination.lastKnownPath,
+                                                        layout: layout, continuingSessionID: continuingSessionID)
+        }
+    }
+
     func showSelectedInfo() {
         if let activeID, selection.selectedIDs.contains(activeID) {
             infoAsset = currentAsset(id: activeID)
@@ -17,7 +46,7 @@ extension AppModel {
 
     func backUpCurrentSelection() {
         guard canBackUp else { return }
-        startBackup(assets: backupCandidates(context: nil))
+        reviewBackup(assets: backupCandidates(context: nil))
     }
 
     func canBackUp(asset: MediaAsset) -> Bool {
@@ -26,7 +55,7 @@ extension AppModel {
 
     func backUpFromContext(asset: MediaAsset) {
         guard canBackUp(asset: asset) else { return }
-        startBackup(assets: backupCandidates(context: asset))
+        reviewBackup(assets: backupCandidates(context: asset))
     }
 
     /// Context actions use the selected batch only if the clicked item belongs to it.
@@ -48,7 +77,7 @@ extension AppModel {
 
     func retryLastBackup() {
         guard canRetryBackup, let attempt = backup.lastAttempt else { return }
-        startBackup(assets: attempt.assets)
+        reviewBackup(assets: attempt.assets, folderLayout: attempt.folderLayout, continuingSessionID: backup.lastStoredSessionID)
     }
 
     var canCheckSavedOriginals: Bool {

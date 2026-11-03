@@ -64,3 +64,20 @@ disk-space checking, with no tracking or collected-data declarations. macOS sand
 USB and user-selected-folder permissions restrict access. A USB catalog can omit media
 not exposed by the phone; a successful backup does not assert complete iCloud Photos
 coverage.
+
+## Unreleased additions — 3 November 2026
+
+The next-beta development branch also keeps the original backup selection and folder layout
+for explicit continuation, capture dates/media types for offline browsing, and dated results
+of completed saved-file checks in the local database. Quick Look reads saved originals with
+scoped read-only folder access. A preview is not evidence of file integrity. The pre-backup
+storage review rechecks reusable originals locally and reads available destination capacity.
+
+Completion/attention notices and a one-time overdue reminder are optional and off by default.
+Authorization is requested only when enabling them. Notices are scheduled through macOS on
+this Mac and contain no phone names, filenames, paths or media. Local preferences retain the
+chosen interval and latest completed-backup time. A successful backup replaces the reminder;
+disabling a feature removes its pending and delivered notices. There is no notification server,
+automatic backup or media upload. macOS controls notification delivery and presentation.
+
+This section describes unreleased changes; it does not change the dated public-beta statement above.

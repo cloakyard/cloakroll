@@ -1,5 +1,3 @@
-import Foundation
-
 /// An opaque position in one filtered history. Keep the database timestamp unchanged:
 /// converting through Date can round older timestamps and repeat a boundary row.
 public struct BackupHistoryCursor: Sendable, Equatable {

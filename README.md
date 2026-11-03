@@ -54,6 +54,11 @@ dependency versions and remaining acceptance limits.
 
 ## What it does
 
+Development for the next beta adds backup health, explicit continuation of unfinished jobs,
+an offline saved-original browser, a storage review before Start, and opt-in local notifications.
+These changes are not in build 20261030. See the prioritized [feature checklist](docs/FEATURE-TODO.md)
+and [software verification](docs/verification/NEXT-BETA-2026-11-03.md); physical acceptance is the final stage.
+
 | Capability | Implementation |
 |---|---|
 | **Browse your iPhone** | Photos, videos, RAW and Live Photos exposed over USB; filename search, capture-date filtering, chronological groups and three thumbnail sizes. |

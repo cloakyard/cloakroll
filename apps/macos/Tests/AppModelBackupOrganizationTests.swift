@@ -7,6 +7,32 @@ import Testing
 @Suite("Backup organization app wiring", .timeLimit(.minutes(1)))
 @MainActor
 struct AppModelBackupOrganizationTests {
+    @Test func previewDoesNotTransferAndRejectsAChangedDestination() async throws {
+        let fixture = try BackupControllerFixture(allowsFolderSelection: true)
+        let source = OrganizationLibrarySource()
+        let model = AppModel(makeBrowser: { source }, preferences: LibraryPreferences(defaults: nil), backup: fixture.controller)
+        model.startLive()
+        defer { model.shutdown() }
+        try await organizationWait { model.assets.count == 1 && model.backupSourceAvailable }
+        await fixture.controller.chooseDestination()
+        try await organizationWait { model.backupSourceAvailable }
+        let asset = try #require(model.assets.first)
+        model.reviewBackup(assets: [asset])
+        try await organizationWait { model.backupPreviewRequest != nil }
+        let request = try #require(model.backupPreviewRequest)
+        #expect(request.matches(model))
+        #expect(source.calls.isEmpty && !fixture.controller.isBusy)
+        let summary = try await fixture.controller.storagePreview(assets: request.assets, sessionID: request.sessionID,
+                                                                   destinationID: request.destinationID)
+        #expect(summary.additionalBytes == 3 && summary.originalCount == 1)
+        #expect(source.calls.isEmpty && fixture.scope.counts.active == 0)
+        let wrongFolder = BackupPreviewRequest(assets: [asset], sessionID: request.sessionID,
+                                               destinationID: UUID(), destinationPath: "Fixture", layout: request.layout)
+        #expect(!wrongFolder.matches(model))
+        await model.loadSample(count: 0)
+        #expect(!request.matches(model))
+    }
+
     @Test func activeRunKeepsCapturedOrganizationAndNextRunUsesChangedPreference() async throws {
         let fixture = try BackupControllerFixture(allowsFolderSelection: true)
         let source = OrganizationLibrarySource()

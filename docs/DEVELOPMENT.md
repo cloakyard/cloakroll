@@ -28,6 +28,20 @@ codes when recording results. The app treats first-party warnings as errors. Cor
 Testing and deterministic protocol-friendly fixtures without launching the app; hosted tests launch
 an app with physical discovery disabled.
 
+For compiler-backed unused-import analysis, retain the full log from a clean build. From
+`apps/macos` (the audit build directory is disposable and separate from `build/Verify`):
+
+```sh
+GIT_CONFIG_COUNT=0 xcodebuild -project CloakRoll.xcodeproj -scheme CloakRoll -destination 'platform=macOS,arch=arm64' -configuration Debug -derivedDataPath build/CodeAudit clean build > build/code-audit-build.log 2>&1
+swiftlint analyze --compiler-log-path build/code-audit-build.log --strict
+```
+
+The analyzer retains the public OSLog import used by the logging code. A deeper declaration audit can
+add `--only-rule unused_declaration`; review its findings against tests, synthesized Codable
+encoding and framework entry points before removing anything. In particular, constant identity
+fields are part of durable hashes even when Swift source never reads them directly. See the
+[3 November cleanup audit](verification/CODE-CLEANUP-2026-11-03.md) for the reviewed cases.
+
 ## Sample UI
 
 The app now starts in live device-discovery mode. Use `--sample` for 1,200 illustrated sample items. This is a development preview, and
@@ -35,6 +49,13 @@ sample backup status never represents transferred files. Use the Debug **Develop
 switch between 20/1,200/100,000 items, no-device/restricted/disconnected states and static progress.
 The same menu includes Compact Window (860-point width) and Standard Window for repeatable UI checks.
 Sample media is generated locally from editable illustration code; no personal photos are used.
+
+**Development → New Features · Generated Backups** opens a separate model with an isolated
+temporary database and folder. It writes three generated illustrations, seeds a completed and
+an unfinished backup, and lets you inspect Health, Continue, storage review and Saved Originals.
+Preview Settings uses a simulated notification client: it never prompts macOS or sends a notice.
+The window labels these limits. `--feature-preview` uses this environment for the main Debug
+window as well. This exercises local software paths, not USB, removable-drive or OS-delivery acceptance.
 
 Debug launch options:
 
@@ -178,7 +199,7 @@ The project and beta pipeline use arm64. Packaging rejects Intel/universal execu
 checks both the bundle and Mach-O minimum macOS version (26.0).
 
 Settings follows the family’s native tabbed window, grouped forms and centered About header.
-General, Backup, Privacy and About remain app-side components. Closing Settings resets the next opening to General, matching CloakDrop.
+General, Backup, Notifications, Privacy and About remain app-side components. Closing Settings resets the next opening to General, matching CloakDrop.
 The source/bug/privacy links are explicit user actions; there are no background network requests.
 Bundled MIT and GRDB notices are readable offline from About → Open-Source Licenses.
 

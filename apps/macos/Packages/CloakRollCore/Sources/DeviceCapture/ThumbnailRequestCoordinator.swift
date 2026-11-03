@@ -46,8 +46,11 @@ final class ThumbnailRequestCoordinator {
         self.maximumQueued = max(1, maximumQueued)
     }
 
+    #if DEBUG
+    // Test diagnostics; live aggregate logging uses diagnostics below.
     var outstandingCount: Int { active.count }
     var queuedCount: Int { queued.count }
+    #endif
 
     var diagnostics: ThumbnailRequestDiagnostics {
         var value = metrics

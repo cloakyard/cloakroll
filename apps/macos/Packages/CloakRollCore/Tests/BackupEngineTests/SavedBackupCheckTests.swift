@@ -100,6 +100,33 @@ struct SavedBackupCheckTests {
     }
 }
 
+@Suite("Saved-original preview access")
+struct SavedOriginalAccessTests {
+    @Test func opensOnlyOriginalRootAndRejectsSymlinksAndMissingFiles() async throws {
+        let fixture = try await SavedCheckFixture.make()
+        defer { fixture.remove() }
+        let record = fixture.records[0]
+        let expected = fixture.root.appendingPathComponent(record.relativePath)
+        #expect(try await SavedOriginalAccess.url(destination: fixture.root, record: record) == expected)
+        try FileManager.default.createSymbolicLink(at: fixture.root.appendingPathComponent("alias"), withDestinationURL: expected)
+        await #expect(throws: (any Error).self) {
+            try await SavedOriginalAccess.url(destination: fixture.root, record: record.replacing(path: "alias"))
+        }
+        await #expect(throws: (any Error).self) {
+            try await SavedOriginalAccess.url(destination: fixture.root, record: record.replacing(path: "../original"))
+        }
+        let other = try backupDirectory()
+        defer { try? FileManager.default.removeItem(at: other) }
+        await #expect(throws: SavedBackupCheckError.differentFolder) {
+            try await SavedOriginalAccess.url(destination: other, record: record)
+        }
+        try FileManager.default.removeItem(at: expected)
+        await #expect(throws: (any Error).self) {
+            try await SavedOriginalAccess.url(destination: fixture.root, record: record)
+        }
+    }
+}
+
 private struct SavedCheckFixture {
     let root: URL
     let records: [VerifiedBackupResource]

@@ -4,6 +4,26 @@ Started 12 September 2026. Product: **Your camera roll, safely on your Mac.**
 
 ## Working agreement
 
+On 3 November 2026 the user authorized the five next-beta features, implemented in
+priority order with physical device testing deferred to the end. The active queue and
+separate software/physical checkboxes are in [FEATURE-TODO.md](FEATURE-TODO.md).
+All five implementations are now present on `dev`. The [3 November software audit](verification/NEXT-BETA-2026-11-03.md)
+records automated and generated-data UI evidence. Physical, real-notification and full accessibility
+acceptance remain open; no new release or production promotion is implied.
+The follow-up [code and lifecycle cleanup](verification/CODE-CLEANUP-2026-11-03.md) removes obsolete
+paths and audits async preview ownership without closing any hardware gate.
+The subsequent [correctness audit](verification/CORRECTNESS-2026-11-03.md) fixes same-connection
+retry, saved-source identity and notification ordering with reproducible regression tests.
+The user subsequently authorized the remaining nonphysical acceptance and next beta, retaining
+the existing ad-hoc build process without a paid Apple developer account. No macOS 26/clean test
+environment is available. The [nonphysical acceptance audit](verification/NONPHYSICAL-2026-11-03.md)
+records keyboard/AX fixes and real macOS-reported local notification delivery; VoiceOver feedback
+observation remains blocked. Physical testing stays last and production deployment remains separate.
+The requested [beta 20261103](https://github.com/cloakyard/cloakroll/releases/tag/v0.1.0-beta.20261103)
+is published with its verified DMG and checksum from source `ac275db`. Its 664 Swift tests,
+five release-tool tests, strict lint, clean Debug/Release builds, bundle checks and packaged-app
+launch passed; publication does not close the recorded external acceptance gates.
+
 CloakDrop (`../cloakdrop`) is read-only. Work proceeds through the gates below in order.
 Every phase records its build, relevant tests, manual evidence and remaining limitations here.
 A passing mock test never substitutes for a real iPhone acceptance check. Following the user's

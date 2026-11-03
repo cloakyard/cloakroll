@@ -5,6 +5,7 @@ struct BackupHistoryRow: View {
     @Environment(AppModel.self) private var model
     let session: StoredBackupSession
     let checkSavedFiles: () -> Void
+    @State private var showingContinuation = false
 
     var body: some View {
         DisclosureGroup {
@@ -52,6 +53,7 @@ struct BackupHistoryRow: View {
             }
         }
         .accessibilityElement(children: .contain)
+        .sheet(isPresented: $showingContinuation) { BackupContinuationView(session: session) }
         .accessibilityActions {
             if canCheck { Button("Check Saved Files", action: checkSavedFiles) }
         }
@@ -86,6 +88,9 @@ struct BackupHistoryRow: View {
 
     private var actions: some View {
         HStack(spacing: 10) {
+            if session.canContinue {
+                Button("Continue Backup…") { showingContinuation = true }.disabled(model.backup.isBusy)
+            }
             if model.backup.destination.selection?.id == session.destinationID {
                 Button("Show in Finder") {
                     Task {

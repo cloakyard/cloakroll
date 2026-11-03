@@ -1,5 +1,3 @@
-import Foundation
-
 /// Grid rows restart at each date section. Preserve the intended column across
 /// short rows, while clicks, horizontal movement and layout changes reset it.
 enum GridDirection: CaseIterable, Equatable { case left, right, up, down }
