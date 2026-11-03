@@ -12,7 +12,10 @@ typealias DeviceViewState = DeviceConnectionState
 @MainActor @Observable
 final class AppModel {
     var navigation = SidebarDestination.library(.all)
-    var isViewingLibrary: Bool { navigation != .backupHistory }
+    var isViewingLibrary: Bool {
+        if case .library = navigation { return true }
+        return false
+    }
     var filter: LibraryFilter = .all { didSet { navigation = .library(filter); scheduleProjection() } }
     var search = "" { didSet { scheduleProjection() } }
     var searchPresented = false

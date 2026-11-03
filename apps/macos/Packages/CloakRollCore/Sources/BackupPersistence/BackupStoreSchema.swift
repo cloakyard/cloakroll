@@ -47,6 +47,16 @@ enum BackupStoreSchema {
                     CHECK(unavailable_originals >= 0);
                 """)
         }
+        migrator.registerMigration("v8_integrity_checks") { db in
+            try db.execute(sql: """
+                CREATE TABLE integrity_check (
+                    session_id TEXT PRIMARY KEY NOT NULL REFERENCES backup_session(id),
+                    checked_at DOUBLE NOT NULL, total_files INTEGER NOT NULL CHECK(total_files > 0),
+                    matching_files INTEGER NOT NULL CHECK(matching_files >= 0 AND matching_files <= total_files));
+                CREATE TRIGGER invalidate_integrity_check AFTER INSERT ON backup_record
+                BEGIN DELETE FROM integrity_check WHERE session_id = NEW.session_id; END;
+                """)
+        }
         try migrator.migrate(queue)
         try queue.write { db in
             try db.execute(

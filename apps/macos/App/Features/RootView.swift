@@ -21,6 +21,9 @@ struct RootView: View {
                 case .backupHistory:
                     BackupHistoryView()
                         .navigationTitle("Backup History")
+                case .backupHealth:
+                    BackupHealthView()
+                        .navigationTitle("Backup Health")
                 }
             }
             .modifier(BackupBarPlacement(isVisible: model.showsBackupBar))

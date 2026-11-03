@@ -90,6 +90,9 @@ struct HistoryDirectory {
 // Recreate the actual v6 schema before exercising an older additive migration.
 func removeFailureDetailsMigration(_ db: Database) throws {
     try db.execute(sql: """
+        DROP TRIGGER invalidate_integrity_check;
+        DROP TABLE integrity_check;
+        DELETE FROM grdb_migrations WHERE identifier = 'v8_integrity_checks';
         ALTER TABLE backup_session DROP COLUMN failure_message;
         ALTER TABLE backup_session DROP COLUMN unavailable_originals;
         DELETE FROM grdb_migrations WHERE identifier = 'v7_session_failure_details';
