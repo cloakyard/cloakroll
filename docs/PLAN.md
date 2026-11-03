@@ -19,6 +19,10 @@ the existing ad-hoc build process without a paid Apple developer account. No mac
 environment is available. The [nonphysical acceptance audit](verification/NONPHYSICAL-2026-11-03.md)
 records keyboard/AX fixes and real macOS-reported local notification delivery; VoiceOver feedback
 observation remains blocked. Physical testing stays last and production deployment remains separate.
+The requested [beta 20261103](https://github.com/cloakyard/cloakroll/releases/tag/v0.1.0-beta.20261103)
+is published with its verified DMG and checksum from source `ac275db`. Its 664 Swift tests,
+five release-tool tests, strict lint, clean Debug/Release builds, bundle checks and packaged-app
+launch passed; publication does not close the recorded external acceptance gates.
 
 CloakDrop (`../cloakdrop`) is read-only. Work proceeds through the gates below in order.
 Every phase records its build, relevant tests, manual evidence and remaining limitations here.

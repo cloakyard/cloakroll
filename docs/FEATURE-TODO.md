@@ -10,7 +10,7 @@ an iPhone, removable-drive, sleep/wake or power-loss scenario.
 | 2 | P0 | Continue an unfinished backup after relaunch | Implemented; automated and generated-data UI checks passed |
 | 3 | P1 | Browse saved originals without an iPhone | Implemented; automated and generated-data UI checks passed |
 | 4 | P1 | Review storage and destination before a backup | Implemented; automated and generated-data UI checks passed |
-| 5 | P2 | Optional local notifications and backup reminders | Implemented; injected-client tests and Settings UI checks passed |
+| 5 | P2 | Optional local notifications and backup reminders | Implemented; client tests, Settings UI and real OS-reported test delivery passed |
 | 6 | P0 acceptance | Physical device and removable-drive testing | Final stage; pending available hardware |
 
 Actual evidence and limits: [3 November audit](verification/NEXT-BETA-2026-11-03.md).
@@ -69,7 +69,8 @@ corrections, real macOS-reported notification delivery and 664 passing Swift tes
 - [ ] Full VoiceOver spoken/caption-feedback acceptance — the control tool cannot observe the feedback surface.
 - [ ] macOS 26 runtime and clean-Mac acceptance — no additional environment is available, confirmed by the user.
 - [ ] Developer ID/notarization — deferred by the user until a paid Apple developer account is available.
-- [ ] Publish the next dated ad-hoc GitHub beta with its verified DMG and checksum.
+- [x] Publish [beta 20261103](https://github.com/cloakyard/cloakroll/releases/tag/v0.1.0-beta.20261103)
+      with its verified DMG and checksum; the tag preserves the exact tested source commit.
 
 ## 7. Physical acceptance — last
 

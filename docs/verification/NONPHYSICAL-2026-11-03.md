@@ -60,8 +60,8 @@ macOS authorization is now allowed after this explicit test; app-level notificat
   no unsolicited authorization, separate/private test content, reminder preservation, pending
   versus delivered status, replacing an old delivered test and disabling cleanup.
 - Normal arm64 Debug build, strict SwiftLint across 167 files and `git diff --check` passed.
-- The final clean-commit beta pipeline and packaged-app inspection are recorded below after
-  they finish; no artifact is attributed to an uncommitted source revision.
+- The final clean-commit beta pipeline and packaged-app inspection passed as recorded below;
+  no artifact is attributed to an uncommitted source revision.
 
 VoiceOver's original off state was recorded, enabled, and restored to off. VoiceOver Utility
 already had its caption panel enabled and that preference was left unchanged. The feedback
@@ -78,3 +78,44 @@ no-extra-iPhone-app constraint.
 References: [Apple VoiceOver caption panels](https://support.apple.com/guide/voiceover/unac078/mac),
 [Apple notarization workflow](https://developer.apple.com/documentation/security/notarizing-macos-software-before-distribution).
 Local ignored logs: `apps/macos/build/acceptance-*`.
+
+## Final beta pipeline and publication
+
+Ran `scripts/prepare_beta.sh --build 20261103` from the clean source commit
+`ac275dbb4162063f2d5366065daa67c609c7677b`, which remained unchanged throughout every stage.
+The pipeline passed all 418 core and 246 hosted tests, five release-tool regression tests,
+strict lint across 167 files, fresh arm64 Debug/Release builds, the Release scale-probe build
+and generated 10,000-item smoke check. The signed bundle passed architecture, minimum-OS,
+entitlement, hardened-runtime, license and privacy-manifest checks. All 19 bundle entries
+matched the read-only DMG; artwork, saved Finder layout, guide and Applications symlink checks passed.
+
+The final DMG was mounted read-only. Finder's artwork, app/Applications items and Install Guide
+were visually inspected. Navigating into it through the existing Finder window retained that
+window's sidebar and required scrolling to see the guide/footer; the stored installer layout
+was separately validated by the packaging tool. The packaged app launched directly from the
+mounted image with no iPhone connected. About showed **0.1.0 (20261103) · Beta** and **Buy me a
+coffee** with the destination `https://ko-fi.com/sumitsahoo21`. The app was quit and the volume
+ejected; the installed app was not replaced.
+
+| Artifact | Value |
+| --- | --- |
+| DMG | `CloakRoll-v0.1.0-beta.20261103.dmg` |
+| Size | 6,905,017 bytes |
+| SHA-256 | `a4e50990e4e03bc0c07a4c454b8fa195c4b3d858311f606569c39a0107e8165a` |
+| Build environment | macOS 27.2; Xcode 27.2 (27B52); macOS 27.2 SDK |
+| Distribution | arm64; macOS 26+; ad-hoc; not notarized |
+
+Created a draft prerelease, uploaded the DMG and a public `SHA256SUMS.txt` containing only its
+checksum, downloaded both assets and compared them byte-for-byte with the originals. Published
+[v0.1.0-beta.20261103](https://github.com/cloakyard/cloakroll/releases/tag/v0.1.0-beta.20261103)
+at 11:54:05 UTC on 3 November 2026. GitHub reports `isDraft: false`, `isPrerelease: true`, and the
+tag resolves to the exact source commit above. The uploaded DMG's reported SHA-256 also matches.
+Both published asset URLs were downloaded without authentication and again matched the local
+DMG and checksum byte-for-byte.
+Private local logs/manifests were not attached. GitHub Website checks and the Cloudflare dev
+preview passed for the source commit; no production promotion or deployment was performed.
+
+Local artifacts and individual stage logs remain under `apps/macos/build/Beta-0.1.0-20261103/`.
+The build manifest's `published: false` records the packaging stage; publication is recorded here
+without altering the tested artifacts. [PR #13](https://github.com/cloakyard/cloakroll/pull/13)
+remains a draft from `dev` to `main` pending the explicit acceptance limits above.
