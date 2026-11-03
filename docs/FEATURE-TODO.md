@@ -18,6 +18,8 @@ Implementation is complete; the physical and full accessibility gates below rema
 
 Follow-up development: [unused-code and async-lifetime audit](verification/CODE-CLEANUP-2026-11-03.md).
 This preserves physical testing as the final acceptance stage.
+The [correctness audit](verification/CORRECTNESS-2026-11-03.md) records the subsequent retry,
+source-selection and notification-race fixes and 662 passing Swift tests.
 
 ## 1. Backup health
 

@@ -17,6 +17,7 @@ final class BackupNotifications {
     @ObservationIgnored private var lastCompleted: Date?
     @ObservationIgnored private var tail: Task<Void, Never>?
     @ObservationIgnored private var generation = 0
+    @ObservationIgnored private var permissionGeneration = 0
 
     init(defaults: UserDefaults? = nil, client: BackupNotificationClient = .disabled,
          now: @escaping @Sendable () -> Date = Date.init) {
@@ -34,23 +35,29 @@ final class BackupNotifications {
             ? BackupNotifications() : BackupNotifications(defaults: .standard, client: .system)
     }
 
-    func refreshPermission() async { permission = await client.permission() }
+    func refreshPermission() async { _ = await readPermission() }
 
     func configure(completion: Bool, reminderDays days: Int) async {
         guard [0, 7, 14, 30].contains(days) else { return }
         generation += 1
+        permissionGeneration += 1
         let requested = generation
         isUpdating = true
         errorMessage = nil
         defer { if generation == requested { isUpdating = false } }
         do {
             if (completion && !completionEnabled) || (days > 0 && days != reminderDays) {
-                permission = await client.permission()
-                if permission == .unknown {
-                    permission = try await client.authorize() ? .allowed : .denied
+                var currentPermission = await readPermission()
+                guard requested == generation else { return }
+                if currentPermission == .unknown {
+                    currentPermission = try await client.authorize() ? .allowed : .denied
+                    guard requested == generation else { return }
+                    // The authorization result supersedes reads started before it finished.
+                    permissionGeneration += 1
+                    permission = currentPermission
                 }
                 guard requested == generation else { return }
-                guard permission == .allowed else {
+                guard currentPermission == .allowed else {
                     errorMessage = "Allow CloakRoll in System Settings → Notifications, then try again."
                     return
                 }
@@ -65,7 +72,10 @@ final class BackupNotifications {
                 if !self.completionEnabled { await self.client.remove([Self.completionID]) }
                 if reminderChanged { await self.scheduleReminder() }
             }
-        } catch { errorMessage = "Notification permission couldn’t be requested. Try again." }
+        } catch {
+            guard requested == generation else { return }
+            errorMessage = "Notification permission couldn’t be requested. Try again."
+        }
     }
 
     /// Upgrade existing history without inventing a backup time or prompting on launch.
@@ -107,11 +117,22 @@ final class BackupNotifications {
     }
 
     private func send(_ notice: BackupNotice) async {
-        permission = await client.permission()
-        guard permission == .allowed else { return }
+        let requested = generation
+        let currentPermission = await readPermission()
+        guard currentPermission == .allowed,
+              notice.id == Self.completionID ? completionEnabled : reminderDays > 0 else { return }
         do { try await client.add(notice) } catch {
+            guard requested == generation else { return }
             errorMessage = "A local notification couldn’t be scheduled. Check permission and try again."
         }
+    }
+
+    private func readPermission() async -> BackupNotificationPermission {
+        permissionGeneration += 1
+        let requested = permissionGeneration
+        let result = await client.permission()
+        if requested == permissionGeneration { permission = result }
+        return result
     }
 
     private func enqueue(_ operation: @escaping @MainActor () async -> Void) async {

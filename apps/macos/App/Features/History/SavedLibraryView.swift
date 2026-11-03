@@ -5,7 +5,7 @@ import SwiftUI
 struct SavedLibraryView: View {
     @Environment(AppModel.self) private var model
     @State private var sources: [BackupHealthEntry] = []
-    @State private var selectedSource: UUID?
+    @State private var selectedSource: BackupHealthEntry.SourceID?
     @State private var kind: MediaKind?
     @State private var usesDates = false
     @State private var fromDate = Date()
@@ -75,7 +75,7 @@ struct SavedLibraryView: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Picker("Backup", selection: $selectedSource) {
-                    Text("Choose a backup").tag(UUID?.none)
+                    Text("Choose a backup").tag(BackupHealthEntry.SourceID?.none)
                     ForEach(sources) { source in
                         Text(source.latestSession.deviceName + " · " + destinationName(source))
                             .tag(Optional(source.id))
@@ -165,6 +165,7 @@ struct SavedLibraryView: View {
         let generation = loadGeneration
         loading = true
         items = []
+        nextCursor = nil
         message = nil
         folderAvailable = false
         var loadedRecords = false

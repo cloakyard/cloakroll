@@ -5,6 +5,23 @@ import Testing
 
 @Suite("Backup health evidence")
 struct BackupHealthTests {
+    @Test func sourceIdentitySurvivesANewAttemptAndSeparatesPhonesAndFolders() async throws {
+        let directory = HistoryDirectory()
+        defer { directory.remove() }
+        let store = try await BackupStore(databaseURL: directory.databaseURL)
+        let first = HistoryFixture()
+        let original = try await first.begin(store)
+        let sourceID = try #require(try await store.backupHealth().first).id
+        let latest = try await first.begin(store)
+        let refreshed = try #require(try await store.backupHealth().first)
+        #expect(refreshed.id == sourceID)
+        #expect(refreshed.latestSession.id == latest && latest != original)
+        _ = try await HistoryFixture(deviceValue: "another-phone", destinationID: first.destinationID).begin(store)
+        _ = try await HistoryFixture().begin(store)
+        let sources = try await store.backupHealth()
+        #expect(sources.count == 3 && Set(sources.map(\.id)).count == 3)
+    }
+
     @Test func emptyAndUncheckedHistoryNeverInventsAHealthyCheck() async throws {
         let directory = HistoryDirectory()
         defer { directory.remove() }

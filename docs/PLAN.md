@@ -12,6 +12,8 @@ records automated and generated-data UI evidence. Physical, real-notification an
 acceptance remain open; no new release or production promotion is implied.
 The follow-up [code and lifecycle cleanup](verification/CODE-CLEANUP-2026-11-03.md) removes obsolete
 paths and audits async preview ownership without closing any hardware gate.
+The subsequent [correctness audit](verification/CORRECTNESS-2026-11-03.md) fixes same-connection
+retry, saved-source identity and notification ordering with reproducible regression tests.
 
 CloakDrop (`../cloakdrop`) is read-only. Work proceeds through the gates below in order.
 Every phase records its build, relevant tests, manual evidence and remaining limitations here.

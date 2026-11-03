@@ -5,6 +5,32 @@ import Testing
 
 @Suite("Persistent backup continuation")
 struct BackupContinuationTests {
+    @Test(arguments: [true, false])
+    func sameConnectionRetriesSessionOnlyEvidenceWithoutAllowingReconnect(persistent: Bool) async throws {
+        let directory = HistoryDirectory()
+        defer { directory.remove() }
+        let store = try await BackupStore(databaseURL: directory.databaseURL)
+        let first = HistoryFixture(persistent: persistent)
+        let id = try await first.begin(store, reusable: false, layout: .byDevice)
+        try await store.finishSession(id: id, result: .init(phase: .failed))
+        let plan = try await store.continuation(sessionID: id, destinationID: first.destinationID,
+                                                 identity: first.identity(reusable: false))
+        #expect(plan.assetIDs == first.assets.map(\.id))
+        #expect(plan.unavailableAssets == 0)
+
+        let reconnected = HistoryFixture(destinationID: first.destinationID, persistent: persistent)
+        await #expect(throws: BackupStoreError.invalidIdentity) {
+            try await reconnected.begin(store, reusable: false, layout: .byDevice, continuing: id)
+        }
+        let changed = HistoryFixture(sessionID: first.sourceSessionID, destinationID: first.destinationID,
+                                     prefix: "changed", persistent: persistent)
+        await #expect(throws: BackupStoreError.invalidIdentity) {
+            try await changed.begin(store, reusable: false, layout: .byDevice, continuing: id)
+        }
+        let child = try await first.begin(store, reusable: false, layout: .byDevice, continuing: id)
+        #expect(try await store.recentSessions().contains { $0.id == child })
+    }
+
     @Test func relaunchMapsChangedRuntimeIDsAndKeepsOriginalLayout() async throws {
         let directory = HistoryDirectory()
         defer { directory.remove() }

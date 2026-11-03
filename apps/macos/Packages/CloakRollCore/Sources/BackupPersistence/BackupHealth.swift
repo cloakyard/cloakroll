@@ -10,7 +10,13 @@ public struct StoredIntegrityCheck: Sendable, Equatable {
 }
 
 public struct BackupHealthEntry: Sendable, Identifiable {
-    public var id: UUID { latestSession.id }
+    /// A new attempt must not change which phone/folder the offline browser has selected.
+    public struct SourceID: Sendable, Hashable {
+        public let deviceKey: String
+        public let destinationID: UUID
+    }
+
+    public var id: SourceID { SourceID(deviceKey: deviceKey, destinationID: latestSession.destinationID) }
     public let deviceKey: String
     public let latestSession: StoredBackupSession
     public let lastCompletedAt: Date?

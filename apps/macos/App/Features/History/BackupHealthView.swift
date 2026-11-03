@@ -115,7 +115,7 @@ private struct BackupHealthRow: View {
                     .font(.caption).foregroundStyle(.secondary)
             }
         }
-        .task(id: entry.id) {
+        .task(id: entry.latestSession.id) {
             let selected = model.backup.destination.selectionForHistoryCheck(destinationID: entry.latestSession.destinationID)
             folder = selected
             await selected.checkFolder()
