@@ -35,9 +35,9 @@ const releases = `${site.repo}/releases`;
         <figcaption>CloakRoll on macOS. Sample library shown; your photos stay on your devices.</figcaption>
       </figure>
       <div class="features">
-        <article><p class="eyebrow">01 / Original by default</p><h3>All the pieces, together.</h3><p>Live Photos retain their still image and motion file. Back up the original bytes without converting files or deleting anything from your iPhone.</p></article>
-        <article><p class="eyebrow">02 / Ready for next time</p><h3>Only what is missing.</h3><p>Saved originals are checked before reuse. Return to a backup, reconnect after an interruption, and continue with the files still needed.</p></article>
-        <article><p class="eyebrow">03 / A folder of your own</p><h3>Organised your way.</h3><p>Keep photos and videos together in one folder per iPhone, or group them by year and month. Each iPhone remembers its own destination.</p></article>
+        <article><p class="eyebrow">Original by default</p><h3>All the pieces, together.</h3><p>Live Photos retain their still image and motion file. Back up the original bytes without converting files or deleting anything from your iPhone.</p></article>
+        <article><p class="eyebrow">Ready for next time</p><h3>Only what is missing.</h3><p>Saved originals are checked before reuse. Return to a backup, reconnect after an interruption, and continue with the files still needed.</p></article>
+        <article><p class="eyebrow">A folder of your own</p><h3>Organised your way.</h3><p>Keep photos and videos together in one folder per iPhone, or group them by year and month. Each iPhone remembers its own destination.</p></article>
       </div>
     </section>
     <section id="provenance" class="section frame" tabindex="-1" aria-labelledby="craft-title">
@@ -60,10 +60,10 @@ const releases = `${site.repo}/releases`;
       <div class="download-grid">
         <div class="section-intro"><p class="eyebrow">Yours to keep</p><h2 id="download-title">Make room for<br />what comes next.</h2><p>macOS 26 or later · Apple silicon only<br />Free · Open source</p>
           <a class="air-button air-button--primary" href={releases}><Icon name="download" size={18} />View beta releases</a>
-          <p class="detail release-note">The first public beta is being prepared. Published builds and release notes will appear on GitHub.</p>
+          <p class="detail release-note">CloakRoll is in public beta. Find available builds and release notes on GitHub.</p>
         </div>
         <div class="install" aria-labelledby="install-title"><h3>From iPhone to folder.</h3><ol>
-          <li>Download the <strong>.dmg</strong> from <a href={releases}>GitHub Releases</a> when available. Open it and drag <strong>CloakRoll</strong> to <strong>Applications</strong>.</li>
+          <li>Download the <strong>.dmg</strong> from <a href={releases}>GitHub Releases</a>. Open it and drag <strong>CloakRoll</strong> to <strong>Applications</strong>.</li>
           <li>Connect your iPhone with a USB cable. Unlock it and accept <strong>Trust</strong> if prompted.</li>
           <li>Choose your backup folder, select your photos and videos, and start your backup.</li>
         </ol><p class="detail">Beta builds are locally signed and not notarized. Review the release notes and <a href="https://support.apple.com/en-us/102445">Apple’s opening guide</a>. CloakRoll backs up the media exposed over USB; it cannot guarantee complete coverage of originals stored only in iCloud.</p><p class="detail"><a href={`${site.repo}/issues`}>Share beta feedback</a></p></div>
