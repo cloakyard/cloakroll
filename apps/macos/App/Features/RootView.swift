@@ -21,6 +21,8 @@ struct RootView: View {
                 case .backupHistory:
                     BackupHistoryView()
                         .navigationTitle("Backup History")
+                case .savedLibrary:
+                    SavedLibraryView().navigationTitle("Saved Originals")
                 case .backupHealth:
                     BackupHealthView()
                         .navigationTitle("Backup Health")

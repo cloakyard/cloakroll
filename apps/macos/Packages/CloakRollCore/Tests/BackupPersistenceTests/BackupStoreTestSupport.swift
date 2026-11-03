@@ -90,6 +90,11 @@ struct HistoryDirectory {
 // Recreate the actual v6 schema before exercising an older additive migration.
 func removeFailureDetailsMigration(_ db: Database) throws {
     try db.execute(sql: """
+        DROP INDEX asset_capture_page;
+        ALTER TABLE asset DROP COLUMN primary_canonical;
+        ALTER TABLE asset DROP COLUMN captured_at;
+        ALTER TABLE asset DROP COLUMN kind;
+        DELETE FROM grdb_migrations WHERE identifier = 'v10_saved_library_metadata';
         DROP INDEX session_continuation;
         ALTER TABLE backup_session DROP COLUMN continued_from;
         ALTER TABLE backup_session DROP COLUMN folder_layout;

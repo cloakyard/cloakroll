@@ -64,6 +64,14 @@ enum BackupStoreSchema {
                 CREATE UNIQUE INDEX session_continuation ON backup_session(continued_from) WHERE continued_from IS NOT NULL;
                 """)
         }
+        migrator.registerMigration("v10_saved_library_metadata") { db in
+            try db.execute(sql: """
+                ALTER TABLE asset ADD COLUMN kind TEXT;
+                ALTER TABLE asset ADD COLUMN captured_at DOUBLE;
+                ALTER TABLE asset ADD COLUMN primary_canonical TEXT;
+                CREATE INDEX asset_capture_page ON asset(device_key, captured_at DESC, id DESC);
+                """)
+        }
         try migrator.migrate(queue)
         try queue.write { db in
             try db.execute(

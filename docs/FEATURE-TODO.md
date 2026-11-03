@@ -8,8 +8,8 @@ an iPhone, removable-drive, sleep/wake or power-loss scenario.
 | --- | --- | --- | --- |
 | 1 | P0 | Backup health overview | Software checks passed; UI acceptance pending |
 | 2 | P0 | Continue an unfinished backup after relaunch | Software checks passed; UI acceptance pending |
-| 3 | P1 | Browse saved originals without an iPhone | In progress |
-| 4 | P1 | Review storage and destination before a backup | Pending |
+| 3 | P1 | Browse saved originals without an iPhone | Software checks passed; UI acceptance pending |
+| 4 | P1 | Review storage and destination before a backup | In progress |
 | 5 | P2 | Optional local notifications and backup reminders | Pending |
 | 6 | P0 acceptance | Physical device and removable-drive testing | Deferred until all software stages |
 
@@ -31,10 +31,10 @@ an iPhone, removable-drive, sleep/wake or power-loss scenario.
 
 ## 3. Saved-original browser
 
-- [ ] Browse recorded local originals with date/type filters and bounded thumbnail loading.
-- [ ] Preview and reveal originals while retaining read-only folder access.
-- [ ] Distinguish an unavailable drive from missing media; reject unsafe paths and unrelated roots.
-- [ ] Preserve companions and do not infer verification from a thumbnail or filename.
+- [x] Browse recorded local originals with date/type filters and bounded thumbnail loading.
+- [x] Preview and reveal originals while retaining read-only folder access.
+- [x] Distinguish an unavailable drive from missing media; reject unsafe paths and unrelated roots.
+- [x] Preserve companions and do not infer verification from a thumbnail or filename.
 - [ ] Test paging, access lifetime, missing files and cancellation with generated local media.
 
 ## 4. Backup preview

@@ -15,6 +15,7 @@ struct SidebarView: View {
                 ForEach([LibraryFilter.all, .photos, .videos, .livePhotos, .raw], id: \.self) { row($0) }
             }
             Section("Backup") {
+                Label("Saved Originals", systemImage: "photo.stack").tag(SidebarDestination.savedLibrary)
                 Label("Backup Health", systemImage: "checkmark.shield")
                     .tag(SidebarDestination.backupHealth)
                 ForEach([LibraryFilter.notBackedUp, .backedUp, .recentlyBackedUp], id: \.self) { row($0) }
@@ -88,6 +89,7 @@ struct SidebarView: View {
             case .library(let filter): model.filter = filter
             case .backupHistory: model.navigation = .backupHistory
             case .backupHealth: model.navigation = .backupHealth
+            case .savedLibrary: model.navigation = .savedLibrary
             case nil: break
             }
         })

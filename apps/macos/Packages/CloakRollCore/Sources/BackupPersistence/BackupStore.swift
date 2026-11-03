@@ -33,6 +33,7 @@ public actor BackupStore {
                           plan.folderLayout == folderLayout else { throw BackupStoreError.invalidIdentity }
                 }
                 try BackupStoreWriting.begin(db, id: id, destinationID: destinationID, registration: registration)
+                try SavedLibraryReading.recordMetadata(db, assets: assets, identity: identity)
                 try db.execute(sql: "UPDATE backup_session SET folder_layout = ?, continued_from = ? WHERE id = ?",
                                arguments: [folderLayout?.rawValue, continuingSessionID?.uuidString, id.uuidString])
             }
