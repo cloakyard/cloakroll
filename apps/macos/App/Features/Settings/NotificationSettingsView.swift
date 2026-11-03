@@ -35,6 +35,12 @@ struct NotificationSettingsView: View {
             Section("Permission") {
                 LabeledContent("Notifications", value: permissionTitle)
                 Button("Check Permission") { Task { await notifications.refreshPermission() } }
+                Button("Send Test Notification") { Task { await notifications.sendTestNotification() } }
+                    .disabled(notifications.permission != .allowed)
+                if let message = notifications.testMessage {
+                    Text(message).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                    Button("Check Test Delivery") { Task { await notifications.checkTestDelivery() } }
+                }
                 if let message = notifications.errorMessage {
                     Text(message).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
                 }

@@ -23,7 +23,7 @@ struct BackupHealthView: View {
                 ContentUnavailableView("No Backups Yet", systemImage: "checkmark.shield",
                                        description: Text("Your iPhones and backup folders will appear here after a backup."))
             } else {
-                List {
+                Form {
                     Section {
                         Text("Backups cover originals exposed over USB. iCloud-only or hidden items may be absent. ")
                             .foregroundStyle(.secondary)
@@ -33,7 +33,7 @@ struct BackupHealthView: View {
                             request = BackupSessionCheckRequest(session: entry.latestSession)
                         }
                     }
-                }
+                }.formStyle(.grouped)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -77,17 +77,17 @@ private struct BackupHealthRow: View {
             LabeledContent("Folder access") {
                 DestinationReadinessLabel(readiness: folder?.readiness ?? .unchecked)
             }
-            LabeledContent("Last completed backup") {
-                if let date = entry.lastCompletedAt { Text(date, style: .date) } else { Text("No completed backup recorded") }
-            }
-            LabeledContent("Latest attempt", value: entry.latestSession.status.historyTitle)
-            LabeledContent("Originals saved in that attempt",
+            BackupDetailValue("Last completed backup", value: entry.lastCompletedAt.map {
+                $0.formatted(date: .long, time: .omitted)
+            } ?? "No completed backup recorded")
+            BackupDetailValue("Latest attempt", value: entry.latestSession.status.historyTitle)
+            BackupDetailValue("Originals saved in that attempt",
                            value: "\(entry.latestSession.verifiedResources) of \(entry.latestSession.totalResources)")
             if let result = entry.integrityCheck {
-                LabeledContent("Latest attempt checked") { Text(result.checkedAt, style: .date) }
-                LabeledContent("Files matching at that check", value: "\(result.matchingFiles) of \(result.totalFiles)")
+                BackupDetailValue("Latest attempt checked", value: result.checkedAt.formatted(date: .long, time: .omitted))
+                BackupDetailValue("Files matching at that check", value: "\(result.matchingFiles) of \(result.totalFiles)")
             } else {
-                LabeledContent("Latest attempt checked", value: "Not checked")
+                BackupDetailValue("Latest attempt checked", value: "Not checked")
             }
             Text("A completed backup is a historical result. A file check covers that attempt’s saved originals at the time shown.")
                 .font(.caption).foregroundStyle(.secondary)

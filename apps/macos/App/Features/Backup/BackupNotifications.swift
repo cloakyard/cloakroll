@@ -6,11 +6,13 @@ import Observation
 final class BackupNotifications {
     static let completionID = "cloakroll.backup.outcome"
     static let reminderID = "cloakroll.backup.reminder"
+    static let testID = "cloakroll.backup.test"
     private(set) var completionEnabled: Bool
     private(set) var reminderDays: Int
     private(set) var permission = BackupNotificationPermission.unknown
     private(set) var isUpdating = false
     private(set) var errorMessage: String?
+    private(set) var testMessage: String?
     @ObservationIgnored private let client: BackupNotificationClient
     @ObservationIgnored private let defaults: UserDefaults?
     @ObservationIgnored private let now: @Sendable () -> Date
@@ -44,6 +46,7 @@ final class BackupNotifications {
         let requested = generation
         isUpdating = true
         errorMessage = nil
+        testMessage = nil
         defer { if generation == requested { isUpdating = false } }
         do {
             if (completion && !completionEnabled) || (days > 0 && days != reminderDays) {
@@ -70,12 +73,50 @@ final class BackupNotifications {
             defaults?.set(days, forKey: "notifications.reminderDays")
             await enqueue {
                 if !self.completionEnabled { await self.client.remove([Self.completionID]) }
+                if !self.completionEnabled && self.reminderDays == 0 { await self.client.remove([Self.testID]) }
                 if reminderChanged { await self.scheduleReminder() }
             }
         } catch {
             guard requested == generation else { return }
             errorMessage = "Notification permission couldn’t be requested. Try again."
         }
+    }
+
+    /// An explicit user action; never requests permission or changes the last-backup date.
+    func sendTestNotification() async {
+        guard !isUpdating else { return }
+        generation += 1
+        let requested = generation
+        isUpdating = true
+        errorMessage = nil
+        testMessage = nil
+        defer { if generation == requested { isUpdating = false } }
+        await enqueue {
+            guard requested == self.generation else { return }
+            await self.client.remove([Self.testID])
+            let sent = await self.send(BackupNotice(
+                id: Self.testID, title: "CloakRoll notifications are ready",
+                body: "This is a test notification. No backup was started.",
+                deliveryDate: self.now().addingTimeInterval(5)
+            ))
+            guard requested == self.generation else { return }
+            if sent {
+                self.testMessage = "Test scheduled in 5 seconds. Switch to another app to see it. macOS controls delivery."
+            } else if self.errorMessage == nil {
+                self.errorMessage = "Allow CloakRoll in System Settings → Notifications, then try again."
+            }
+        }
+    }
+
+    /// Report delivery separately from scheduling; this does not establish that a banner was shown.
+    func checkTestDelivery() async {
+        guard testMessage != nil, !isUpdating else { return }
+        let requested = generation
+        let delivered = await client.deliveredIDs()
+        guard requested == generation else { return }
+        testMessage = delivered.contains(Self.testID)
+            ? "macOS reports the test in Notification Centre. Banner presentation depends on your system settings."
+            : "macOS hasn’t reported the test in Notification Centre. Wait a few seconds, then check again or review system settings."
     }
 
     /// Upgrade existing history without inventing a backup time or prompting on launch.
@@ -116,14 +157,17 @@ final class BackupNotifications {
                                deliveryDate: max(due, current.addingTimeInterval(60))))
     }
 
-    private func send(_ notice: BackupNotice) async {
+    @discardableResult
+    private func send(_ notice: BackupNotice) async -> Bool {
         let requested = generation
         let currentPermission = await readPermission()
-        guard currentPermission == .allowed,
-              notice.id == Self.completionID ? completionEnabled : reminderDays > 0 else { return }
-        do { try await client.add(notice) } catch {
-            guard requested == generation else { return }
+        let enabled = notice.id == Self.testID ? requested == generation
+            : notice.id == Self.completionID ? completionEnabled : reminderDays > 0
+        guard currentPermission == .allowed, enabled else { return false }
+        do { try await client.add(notice); return true } catch {
+            guard requested == generation else { return false }
             errorMessage = "A local notification couldn’t be scheduled. Check permission and try again."
+            return false
         }
     }
 

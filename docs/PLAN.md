@@ -14,6 +14,11 @@ The follow-up [code and lifecycle cleanup](verification/CODE-CLEANUP-2026-11-03.
 paths and audits async preview ownership without closing any hardware gate.
 The subsequent [correctness audit](verification/CORRECTNESS-2026-11-03.md) fixes same-connection
 retry, saved-source identity and notification ordering with reproducible regression tests.
+The user subsequently authorized the remaining nonphysical acceptance and next beta, retaining
+the existing ad-hoc build process without a paid Apple developer account. No macOS 26/clean test
+environment is available. The [nonphysical acceptance audit](verification/NONPHYSICAL-2026-11-03.md)
+records keyboard/AX fixes and real macOS-reported local notification delivery; VoiceOver feedback
+observation remains blocked. Physical testing stays last and production deployment remains separate.
 
 CloakDrop (`../cloakdrop`) is read-only. Work proceeds through the gates below in order.
 Every phase records its build, relevant tests, manual evidence and remaining limitations here.

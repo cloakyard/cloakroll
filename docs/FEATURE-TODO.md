@@ -14,12 +14,14 @@ an iPhone, removable-drive, sleep/wake or power-loss scenario.
 | 6 | P0 acceptance | Physical device and removable-drive testing | Final stage; pending available hardware |
 
 Actual evidence and limits: [3 November audit](verification/NEXT-BETA-2026-11-03.md).
-Implementation is complete; the physical and full accessibility gates below remain open.
+Implementation is complete; the remaining acceptance limits are separated below.
 
 Follow-up development: [unused-code and async-lifetime audit](verification/CODE-CLEANUP-2026-11-03.md).
 This preserves physical testing as the final acceptance stage.
 The [correctness audit](verification/CORRECTNESS-2026-11-03.md) records the subsequent retry,
 source-selection and notification-race fixes and 662 passing Swift tests.
+The [nonphysical acceptance audit](verification/NONPHYSICAL-2026-11-03.md) records keyboard/AX
+corrections, real macOS-reported notification delivery and 664 passing Swift tests.
 
 ## 1. Backup health
 
@@ -60,14 +62,23 @@ source-selection and notification-race fixes and 662 passing Swift tests.
 - [x] Cancel obsolete reminders after successful backups or disabling the preference.
 - [x] Test scheduling/content with an injected notification client; inspect native Settings.
 
-## 6. Physical acceptance — last
+## 6. Software acceptance and distribution
+
+- [x] Keyboard traversal, sheet shortcuts/focus return and individual AX labels for the new workflows.
+- [x] Real local-notification authorization and macOS-reported delivery using an explicit test action.
+- [ ] Full VoiceOver spoken/caption-feedback acceptance — the control tool cannot observe the feedback surface.
+- [ ] macOS 26 runtime and clean-Mac acceptance — no additional environment is available, confirmed by the user.
+- [ ] Developer ID/notarization — deferred by the user until a paid Apple developer account is available.
+- [ ] Publish the next dated ad-hoc GitHub beta with its verified DMG and checksum.
+
+## 7. Physical acceptance — last
 
 - [ ] Real iPhone disconnect/reconnect and relaunch continuation, including a partial Live Photo.
 - [ ] External-drive removal/remount, full disk, replaced folder and restored access.
 - [ ] Independent saved-file hashes after import/continuation and zero-transfer repeat.
 - [ ] Sleep/wake, new captures, two physical phones and sustained large-library performance.
-- [ ] Real OS notification delivery and real-library accessibility acceptance.
-- [ ] Complete keyboard/VoiceOver acceptance of the new list actions and sustained preview cancellation/access-lifetime checks.
+- [ ] Real-library accessibility and sustained preview cancellation/access-lifetime checks.
 
 Developer ID/notarization and minimum-OS/clean-Mac acceptance remain separate release gates.
-This checklist does not authorize publication, installation over the user's app or production deployment.
+The user's subsequent instruction authorizes the next beta using the existing ad-hoc process.
+Installation over the user's app and production website deployment are not part of this pass.

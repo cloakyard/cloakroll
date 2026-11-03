@@ -15,6 +15,7 @@ struct BackupNotificationClient: Sendable {
     var authorize: @Sendable () async throws -> Bool
     var add: @Sendable (BackupNotice) async throws -> Void
     var remove: @Sendable ([String]) async -> Void
+    var deliveredIDs: @Sendable () async -> [String] = { [] }
 
     static let system = Self(
         permission: {
@@ -39,6 +40,9 @@ struct BackupNotificationClient: Sendable {
         remove: { ids in
             UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ids)
             UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: ids)
+        },
+        deliveredIDs: {
+            await UNUserNotificationCenter.current().deliveredNotifications().map(\.request.identifier)
         }
     )
 

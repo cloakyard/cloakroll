@@ -46,7 +46,7 @@ struct SavedLibraryView: View {
                                        description: Text("Choose a backup and adjust the filters. Your iPhone isn’t needed."))
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
-                List(items) { item in row(item) }
+                Form { ForEach(items) { item in row(item) } }.formStyle(.grouped)
             }
             HStack {
                 Text("Recorded originals · previews do not verify file integrity").font(.caption).foregroundStyle(.secondary)
@@ -119,7 +119,9 @@ struct SavedLibraryView: View {
                     Text(Format.bytes(original.byteCount)).foregroundStyle(.secondary)
                     if let folder {
                         Button("Preview") { actions.open(original, folder: folder, previewing: true) }
+                            .accessibilityLabel("Preview \(original.filename)")
                         Button("Reveal") { actions.open(original, folder: folder, previewing: false) }
+                            .accessibilityLabel("Reveal \(original.filename) in Finder")
                     }
                 }
                 .buttonStyle(.bordered)

@@ -31,14 +31,14 @@ struct BackupPreviewView: View {
     var body: some View {
         NavigationStack {
             Form {
-                LabeledContent("Destination", value: request.destinationPath).textSelection(.enabled)
-                LabeledContent("Selection", value: "\(request.assets.count) items")
+                BackupDetailValue("Destination", value: request.destinationPath).textSelection(.enabled)
+                BackupDetailValue("Selection", value: "\(request.assets.count) items")
                 if loading { ProgressView("Checking saved originals and space…") }
                 if let preview {
-                    LabeledContent("Original files", value: preview.originalCount.formatted())
-                    LabeledContent("Already saved and checked", value: preview.reusableOriginals.formatted())
-                    LabeledContent("Estimated additional space", value: Format.bytes(preview.additionalBytes))
-                    LabeledContent("Available space", value: preview.availableBytes.map(Format.bytes) ?? "Unknown")
+                    BackupDetailValue("Original files", value: preview.originalCount.formatted())
+                    BackupDetailValue("Already saved and checked", value: preview.reusableOriginals.formatted())
+                    BackupDetailValue("Estimated additional space", value: Format.bytes(preview.additionalBytes))
+                    BackupDetailValue("Available space", value: preview.availableBytes.map(Format.bytes) ?? "Unknown")
                     if preview.hasKnownShortfall {
                         Text("There isn’t enough space for this selection. Free space or choose another backup folder.")
                             .foregroundStyle(.secondary)
@@ -59,7 +59,9 @@ struct BackupPreviewView: View {
             .formStyle(.grouped)
             .navigationTitle("Review Backup")
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }.keyboardShortcut(.cancelAction)
+                }
                 ToolbarItem { Button("Check Again") { revision += 1 }.disabled(loading || !request.matches(model)) }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Start Backup") {
@@ -68,7 +70,8 @@ struct BackupPreviewView: View {
                                           continuingSessionID: request.continuingSessionID)
                         dismiss()
                         didStart()
-                    }.disabled(loading || preview?.canStart != true || !request.matches(model))
+                    }.keyboardShortcut(.defaultAction)
+                        .disabled(loading || preview?.canStart != true || !request.matches(model))
                 }
             }
         }

@@ -16,14 +16,14 @@ struct BackupContinuationView: View {
     var body: some View {
         NavigationStack {
             Form {
-                LabeledContent("iPhone", value: session.deviceName)
-                LabeledContent("Original selection", value: "\(session.totalAssets) items")
+                BackupDetailValue("iPhone", value: session.deviceName)
+                BackupDetailValue("Original selection", value: "\(session.totalAssets) items")
                 Text("Completed originals will be checked before reuse. Unfinished files restart from the beginning.")
                     .foregroundStyle(.secondary)
                 if loading { ProgressView("Matching the original selection…") }
                 if let message { Text(message).foregroundStyle(.secondary) }
                 if let plan {
-                    LabeledContent("Matched items", value: "\(plan.assetIDs.count) of \(session.totalAssets)")
+                    BackupDetailValue("Matched items", value: "\(plan.assetIDs.count) of \(session.totalAssets)")
                     if plan.unavailableAssets > 0 {
                         Text("\(plan.unavailableAssets) items are unavailable, changed or ambiguous. "
                              + "Reconnect the original iPhone and retry.")
@@ -36,12 +36,15 @@ struct BackupContinuationView: View {
             .formStyle(.grouped)
             .navigationTitle("Continue Backup")
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }.keyboardShortcut(.cancelAction)
+                }
                 ToolbarItem {
                     Button("Review Again") { revision += 1 }.disabled(loading)
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Continue Backup") { continueBackup() }
+                        .keyboardShortcut(.defaultAction)
                         .disabled(!canContinue)
                 }
             }
