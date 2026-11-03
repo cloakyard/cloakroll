@@ -36,6 +36,13 @@ switch between 20/1,200/100,000 items, no-device/restricted/disconnected states 
 The same menu includes Compact Window (860-point width) and Standard Window for repeatable UI checks.
 Sample media is generated locally from editable illustration code; no personal photos are used.
 
+**Development → New Features · Generated Backups** opens a separate model with an isolated
+temporary database and folder. It writes three generated illustrations, seeds a completed and
+an unfinished backup, and lets you inspect Health, Continue, storage review and Saved Originals.
+Preview Settings uses a simulated notification client: it never prompts macOS or sends a notice.
+The window labels these limits. `--feature-preview` uses this environment for the main Debug
+window as well. This exercises local software paths, not USB, removable-drive or OS-delivery acceptance.
+
 Debug launch options:
 
 ```sh
@@ -178,7 +185,7 @@ The project and beta pipeline use arm64. Packaging rejects Intel/universal execu
 checks both the bundle and Mach-O minimum macOS version (26.0).
 
 Settings follows the family’s native tabbed window, grouped forms and centered About header.
-General, Backup, Privacy and About remain app-side components. Closing Settings resets the next opening to General, matching CloakDrop.
+General, Backup, Notifications, Privacy and About remain app-side components. Closing Settings resets the next opening to General, matching CloakDrop.
 The source/bug/privacy links are explicit user actions; there are no background network requests.
 Bundled MIT and GRDB notices are readable offline from About → Open-Source Licenses.
 

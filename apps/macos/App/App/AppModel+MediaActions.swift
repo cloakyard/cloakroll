@@ -3,6 +3,11 @@ import BackupEngine
 import MediaModels
 
 extension AppModel {
+    var isViewingLibrary: Bool {
+        if case .library = navigation { return true }
+        return false
+    }
+
     func startBackup(assets: [MediaAsset], folderLayout: BackupFolderLayout? = nil, continuingSessionID: UUID? = nil) {
         guard let sessionID = catalogSessionID, let download = originalDownload else { return }
         backup.start(assets: assets, sessionID: sessionID, folderLayout: folderLayout ?? backupOrganization.folderLayout,
@@ -16,6 +21,7 @@ extension AppModel {
             if backup.destination.selection == nil {
                 await backup.chooseDestination()
                 await backup.waitUntilHistoryChecked()
+                await waitUntilProjected()
             }
             guard backupSourceAvailable, catalogSessionID == sessionID, let destination = backup.destination.selection,
                   assets.allSatisfy({ currentAsset(id: $0.id) == $0 }) else { return }

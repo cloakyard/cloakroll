@@ -6,12 +6,15 @@ an iPhone, removable-drive, sleep/wake or power-loss scenario.
 
 | Order | Priority | Feature | Status |
 | --- | --- | --- | --- |
-| 1 | P0 | Backup health overview | Software checks passed; UI acceptance pending |
-| 2 | P0 | Continue an unfinished backup after relaunch | Software checks passed; UI acceptance pending |
-| 3 | P1 | Browse saved originals without an iPhone | Software checks passed; UI acceptance pending |
-| 4 | P1 | Review storage and destination before a backup | Software checks passed; UI acceptance pending |
-| 5 | P2 | Optional local notifications and backup reminders | In progress |
-| 6 | P0 acceptance | Physical device and removable-drive testing | Deferred until all software stages |
+| 1 | P0 | Backup health overview | Implemented; automated and generated-data UI checks passed |
+| 2 | P0 | Continue an unfinished backup after relaunch | Implemented; automated and generated-data UI checks passed |
+| 3 | P1 | Browse saved originals without an iPhone | Implemented; automated and generated-data UI checks passed |
+| 4 | P1 | Review storage and destination before a backup | Implemented; automated and generated-data UI checks passed |
+| 5 | P2 | Optional local notifications and backup reminders | Implemented; injected-client tests and Settings UI checks passed |
+| 6 | P0 acceptance | Physical device and removable-drive testing | Final stage; pending available hardware |
+
+Actual evidence and limits: [3 November audit](verification/NEXT-BETA-2026-11-03.md).
+Implementation is complete; the physical and full accessibility gates below remain open.
 
 ## 1. Backup health
 
@@ -19,7 +22,7 @@ an iPhone, removable-drive, sleep/wake or power-loss scenario.
 - [x] Persist the result/date of a completed saved-file integrity check; never invent an earlier check.
 - [x] Distinguish historical completion, present file health, folder access and unknown USB coverage.
 - [x] Provide Check Saved Files and a safe route to back up missing items.
-- [ ] Verify database upgrades, empty/partial history and native light/dark/keyboard behavior.
+- [x] Verify database upgrades, empty/partial history and native light/dark compact presentation.
 
 ## 2. Persistent continuation
 
@@ -35,7 +38,7 @@ an iPhone, removable-drive, sleep/wake or power-loss scenario.
 - [x] Preview and reveal originals while retaining read-only folder access.
 - [x] Distinguish an unavailable drive from missing media; reject unsafe paths and unrelated roots.
 - [x] Preserve companions and do not infer verification from a thumbnail or filename.
-- [ ] Test paging, access lifetime, missing files and cancellation with generated local media.
+- [x] Test paging and unsafe/missing paths with generated local media; inspect native Quick Look and Escape dismissal.
 
 ## 4. Backup preview
 
@@ -46,11 +49,11 @@ an iPhone, removable-drive, sleep/wake or power-loss scenario.
 
 ## 5. Local notifications
 
-- [ ] Add opt-in completion/attention notifications and a configurable overdue-backup reminder.
-- [ ] Ask for OS authorization only when enabled; show denied permission and allow retry.
-- [ ] Keep names, filenames and paths out of notifications; no server, analytics or automatic uploads.
-- [ ] Cancel obsolete reminders after successful backups or disabling the preference.
-- [ ] Test scheduling/content with an injected notification client; inspect native Settings.
+- [x] Add opt-in completion/attention notifications and a configurable overdue-backup reminder.
+- [x] Ask for OS authorization only when enabled; show denied permission and allow retry.
+- [x] Keep names, filenames and paths out of notifications; no server, analytics or automatic uploads.
+- [x] Cancel obsolete reminders after successful backups or disabling the preference.
+- [x] Test scheduling/content with an injected notification client; inspect native Settings.
 
 ## 6. Physical acceptance — last
 
@@ -59,6 +62,7 @@ an iPhone, removable-drive, sleep/wake or power-loss scenario.
 - [ ] Independent saved-file hashes after import/continuation and zero-transfer repeat.
 - [ ] Sleep/wake, new captures, two physical phones and sustained large-library performance.
 - [ ] Real OS notification delivery and real-library accessibility acceptance.
+- [ ] Complete keyboard/VoiceOver acceptance of the new list actions and sustained preview cancellation/access-lifetime checks.
 
 Developer ID/notarization and minimum-OS/clean-Mac acceptance remain separate release gates.
 This checklist does not authorize publication, installation over the user's app or production deployment.

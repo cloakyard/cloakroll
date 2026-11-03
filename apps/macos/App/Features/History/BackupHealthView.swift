@@ -102,12 +102,14 @@ private struct BackupHealthRow: View {
                     model.captureDateRange = nil
                     model.search = ""
                     model.filter = .notBackedUp
-                    model.checkSavedOriginals()
+                    model.backup.retryHistoryCheck()
                 }
                 .disabled(!canShowMissing)
                 Button("Check Folder") { Task { await folder?.checkFolder() } }
                     .disabled(folder?.selection == nil || folder?.readiness.isChecking == true)
             }
+            .buttonStyle(.bordered)
+            .accessibilityElement(children: .contain)
             if !canShowMissing {
                 Text("Connect this iPhone and select this backup folder to review missing items.")
                     .font(.caption).foregroundStyle(.secondary)

@@ -20,6 +20,7 @@ final class LibraryBackupController {
 
     let destination: BackupDestinationStore
     let persistence: LibraryBackupPersistence?
+    let notifications: BackupNotifications
     private(set) var snapshot: BackupSnapshot?
     let recovery: BackupFolderRecoveryController
     private(set) var isBackingUp = false
@@ -49,9 +50,10 @@ final class LibraryBackupController {
     @ObservationIgnored private let activity: BackupActivity
 
     init(destination: BackupDestinationStore = BackupDestinationStore(), persistence: LibraryBackupPersistence? = nil,
-         activity: BackupActivity = .system) {
+         activity: BackupActivity = .system, notifications: BackupNotifications = .appDefault()) {
         self.destination = destination
         self.persistence = persistence
+        self.notifications = notifications
         self.activity = activity
         recovery = BackupFolderRecoveryController(activity: activity)
     }
@@ -187,6 +189,7 @@ final class LibraryBackupController {
         } catch {
             snapshot = BackupSnapshot(phase: .failed, totalAssets: assets.count, message: error.localizedDescription)
         }
+        if let snapshot { await notifications.backupFinished(snapshot) }
     }
 
     private func runBackup(

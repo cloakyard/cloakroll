@@ -46,6 +46,7 @@ struct SavedLibraryView: View {
             } else if items.isEmpty {
                 ContentUnavailableView("No Saved Originals in This View", systemImage: "photo.stack",
                                        description: Text("Choose a backup and adjust the filters. Your iPhone isn’t needed."))
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 List(items) { item in row(item) }
             }
@@ -85,15 +86,18 @@ struct SavedLibraryView: View {
             }
             HStack {
                 Toggle("Capture dates", isOn: $usesDates).toggleStyle(.checkbox)
-                if usesDates {
-                    DatePicker("From", selection: $fromDate, displayedComponents: .date)
-                    DatePicker("Through", selection: $throughDate, displayedComponents: .date)
-                }
                 Spacer(minLength: 0)
                 if let folder {
                     Button("Locate Folder…") {
                         Task { if await folder.chooseFolder() { pageRevision += 1 } }
                     }.disabled(loading || folder.isChoosing)
+                }
+            }
+            if usesDates {
+                HStack {
+                    DatePicker("From", selection: $fromDate, displayedComponents: .date).fixedSize()
+                    DatePicker("Through", selection: $throughDate, displayedComponents: .date).fixedSize()
+                    Spacer(minLength: 0)
                 }
             }
         }
@@ -113,7 +117,9 @@ struct SavedLibraryView: View {
                     Text(Format.bytes(original.byteCount)).foregroundStyle(.secondary)
                     Button("Preview") { Task { await open(original, previewing: true) } }
                     Button("Reveal") { Task { await open(original, previewing: false) } }
-                }.disabled(!folderAvailable)
+                }
+                .buttonStyle(.bordered)
+                .disabled(!folderAvailable)
             }
         } label: {
             HStack(spacing: 12) {
@@ -155,12 +161,14 @@ struct SavedLibraryView: View {
         items = []
         message = nil
         folderAvailable = false
+        var loadedRecords = false
         defer { if loadGeneration == generation { loading = false } }
         do {
             let page = try await persistence.store().savedLibrary(query: query, after: cursors.last)
             try Task.checkCancellation()
             guard self.query == query, loadGeneration == generation else { return }
             items = page.items
+            loadedRecords = true
             nextCursor = page.nextCursor
             if folderDestinationID != query.destinationID {
                 folderDestinationID = query.destinationID
@@ -174,8 +182,10 @@ struct SavedLibraryView: View {
             folderAvailable = true
         } catch is CancellationError { return } catch {
             guard loadGeneration == generation else { return }
-            message = "The backup folder couldn’t be opened. Reconnect its drive or locate the original folder. "
-                + "Recorded items remain visible; this does not mean their files are missing."
+            message = loadedRecords
+                ? "The backup folder couldn’t be opened. Reconnect its drive or locate the original folder. "
+                    + "Recorded items remain visible; this does not mean their files are missing."
+                : "Saved history couldn’t be read. Refresh to try again. Your original files have not been changed."
         }
     }
 

@@ -12,10 +12,6 @@ typealias DeviceViewState = DeviceConnectionState
 @MainActor @Observable
 final class AppModel {
     var navigation = SidebarDestination.library(.all)
-    var isViewingLibrary: Bool {
-        if case .library = navigation { return true }
-        return false
-    }
     var filter: LibraryFilter = .all { didSet { navigation = .library(filter); scheduleProjection() } }
     var search = "" { didSet { scheduleProjection() } }
     var searchPresented = false
@@ -95,7 +91,10 @@ final class AppModel {
         #if DEBUG
         if ProcessInfo.processInfo.environment["CLOAKROLL_TESTING"] == "1" { return }
         let arguments = ProcessInfo.processInfo.arguments
-        if arguments.contains("--empty") {
+        if arguments.contains("--feature-preview") {
+            await FeaturePreview.prepare(self)
+            return
+        } else if arguments.contains("--empty") {
             await loadSample(count: 0, state: .disconnected)
             return
         } else if arguments.contains("--locked") {
@@ -108,6 +107,7 @@ final class AppModel {
         #endif
         startLive()
         await backup.persistence?.loadSessions()
+        await backup.restoreNotificationHistory()
     }
 
     func loadSample(count: Int, state: DeviceViewState = .ready) async {
@@ -203,6 +203,8 @@ final class AppModel {
     }
 
     func currentAsset(id: String) -> MediaAsset? { lookup[id] }
+
+    func waitUntilProjected() async { await projectionTask?.value }
 
     var originalDownload: BackupEngine.Download? {
         guard backupSourceAvailable, let provider = browser as? any OriginalMediaDownloading else { return nil }

@@ -7,6 +7,9 @@ Started 12 September 2026. Product: **Your camera roll, safely on your Mac.**
 On 3 November 2026 the user authorized the five next-beta features, implemented in
 priority order with physical device testing deferred to the end. The active queue and
 separate software/physical checkboxes are in [FEATURE-TODO.md](FEATURE-TODO.md).
+All five implementations are now present on `dev`. The [3 November software audit](verification/NEXT-BETA-2026-11-03.md)
+records automated and generated-data UI evidence. Physical, real-notification and full accessibility
+acceptance remain open; no new release or production promotion is implied.
 
 CloakDrop (`../cloakdrop`) is read-only. Work proceeds through the gates below in order.
 Every phase records its build, relevant tests, manual evidence and remaining limitations here.

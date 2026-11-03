@@ -18,6 +18,10 @@ struct PrivacySettingsView: View {
                 Camera information is read when you open Media Info. CloakRoll does not extract GPS fields from that request.
                 """)
             }
+            Section("Notifications") {
+                Text("Optional backup notifications and reminders are scheduled locally. "
+                     + "Their text excludes phone names, filenames and paths. No notification server is used.")
+            }
             Section("Your Originals") {
                 Text("""
                 Photos, videos and companion files are copied without conversion. Embedded metadata, including any location \
