@@ -36,6 +36,7 @@ final class AppModel {
     private(set) var deviceInventory = DeviceInventory()
     var isProjecting = false
     var presentation: LibraryPresentation?
+    var backupPreviewRequest: BackupPreviewRequest?
     var settingsTab = SettingsTab.general
     var backupOrganization = BackupOrganization.byDate { didSet { preferences.save(backupOrganization) } }
     var sampleProgress = false

@@ -9,8 +9,8 @@ an iPhone, removable-drive, sleep/wake or power-loss scenario.
 | 1 | P0 | Backup health overview | Software checks passed; UI acceptance pending |
 | 2 | P0 | Continue an unfinished backup after relaunch | Software checks passed; UI acceptance pending |
 | 3 | P1 | Browse saved originals without an iPhone | Software checks passed; UI acceptance pending |
-| 4 | P1 | Review storage and destination before a backup | In progress |
-| 5 | P2 | Optional local notifications and backup reminders | Pending |
+| 4 | P1 | Review storage and destination before a backup | Software checks passed; UI acceptance pending |
+| 5 | P2 | Optional local notifications and backup reminders | In progress |
 | 6 | P0 acceptance | Physical device and removable-drive testing | Deferred until all software stages |
 
 ## 1. Backup health
@@ -39,10 +39,10 @@ an iPhone, removable-drive, sleep/wake or power-loss scenario.
 
 ## 4. Backup preview
 
-- [ ] Show selection, original-component count, destination, estimated additional bytes and free capacity.
-- [ ] Account for verified incremental reuse and companion files; make unknown capacity explicit.
-- [ ] Revalidate source/destination before Start and retain per-file capacity protection.
-- [ ] Test shortfall, changed selection/folder, partial reuse and arithmetic boundaries.
+- [x] Show selection, original-component count, destination, estimated additional bytes and free capacity.
+- [x] Account for verified incremental reuse and companion files; make unknown capacity explicit.
+- [x] Revalidate source/destination before Start and retain per-file capacity protection.
+- [x] Test shortfall, changed selection/folder, partial reuse and arithmetic boundaries.
 
 ## 5. Local notifications
 

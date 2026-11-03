@@ -144,6 +144,19 @@ final class LibraryBackupController {
         return history.projection(assets: assets, scope: .init(sessionID: sessionID, destinationID: destinationID))
     }
 
+    func waitUntilHistoryChecked() async { await historyTask?.value }
+
+    func storagePreview(assets: [MediaAsset], sessionID: UUID, destinationID: UUID) async throws -> BackupStoragePreview {
+        guard !isBusy, !isCheckingHistory, destination.selection?.id == destinationID else {
+            throw BackupDestinationError.selectionChanged
+        }
+        let lease = try await destination.acquireLease(readOnly: true)
+        defer { lease.release() }
+        guard lease.destinationID == destinationID else { throw BackupDestinationError.selectionChanged }
+        let records = history.records(in: .init(sessionID: sessionID, destinationID: destinationID))
+        return try await BackupStoragePreview.prepare(assets: assets, sessionID: sessionID, destination: lease.url, records: records)
+    }
+
     private func perform(
         assets: [MediaAsset], sessionID: UUID, folderLayout: BackupFolderLayout,
         continuingSessionID: UUID?, download: @escaping BackupEngine.Download

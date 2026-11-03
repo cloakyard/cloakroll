@@ -40,6 +40,7 @@ struct RootView: View {
                     .id(topic)
             }
         }
+        .sheet(item: $model.backupPreviewRequest) { BackupPreviewView(request: $0) }
         .alert("Backup Unavailable", isPresented: Binding(
             get: { model.backup.errorMessage != nil },
             set: { if !$0 { model.backup.errorMessage = nil } }

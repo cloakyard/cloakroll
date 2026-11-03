@@ -6,6 +6,7 @@ struct BackupContinuationView: View {
     let session: StoredBackupSession
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
+    @State private var storageRequest: BackupPreviewRequest?
     @State private var plan: BackupContinuationPlan?
     @State private var reviewedIdentity: BackupCatalogIdentity?
     @State private var message: String?
@@ -47,6 +48,7 @@ struct BackupContinuationView: View {
         }
         .frame(width: 540, height: 360)
         .task(id: reviewKey) { await review() }
+        .sheet(item: $storageRequest) { BackupPreviewView(request: $0, didStart: { dismiss() }) }
     }
 
     private var reviewKey: String {
@@ -90,7 +92,9 @@ struct BackupContinuationView: View {
         guard canContinue, let plan else { return }
         let assets = plan.assetIDs.compactMap(model.currentAsset(id:))
         guard assets.count == plan.assetIDs.count else { return }
-        model.startBackup(assets: assets, folderLayout: plan.folderLayout, continuingSessionID: session.id)
-        dismiss()
+        guard let destination = model.backup.destination.selection, let sourceID = model.catalogSessionID else { return }
+        storageRequest = BackupPreviewRequest(assets: assets, sessionID: sourceID, destinationID: destination.id,
+                                              destinationPath: destination.lastKnownPath, layout: plan.folderLayout,
+                                              continuingSessionID: session.id)
     }
 }
