@@ -1,6 +1,5 @@
 #if DEBUG
 import AppKit
-import BackupEngine
 import Foundation
 import MediaModels
 import SwiftUI
@@ -26,6 +25,7 @@ struct FeaturePreviewWindow: View {
             prepared = true
             await FeaturePreview.prepare(model)
         }
+        .onDisappear { model.shutdown(); prepared = false }
         .sheet(isPresented: $settings) {
             VStack {
                 SettingsView()
@@ -38,11 +38,9 @@ struct FeaturePreviewWindow: View {
 /// Opt-in UI acceptance environment. No device browser, personal database or real notifications.
 @MainActor
 enum FeaturePreview {
-    static let source = FeaturePreviewSource()
-    static let root = FileManager.default.temporaryDirectory
-        .appendingPathComponent("CloakRoll Generated Feature Preview " + UUID().uuidString, isDirectory: true)
-
     static func makeModel() -> AppModel {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("CloakRoll Generated Feature Preview " + UUID().uuidString, isDirectory: true)
         let defaults = UserDefaults(suiteName: "CloakRoll.FeaturePreview." + UUID().uuidString)!
         let folder = root.appendingPathComponent("Generated Originals", isDirectory: true)
         try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
@@ -50,7 +48,7 @@ enum FeaturePreview {
         let persistence = LibraryBackupPersistence(databaseURL: root.appendingPathComponent("Preview.sqlite"))
         let notifications = BackupNotifications(client: .init(permission: { .allowed }, authorize: { true },
                                                               add: { _ in }, remove: { _ in }))
-        return AppModel(makeBrowser: { source }, preferences: LibraryPreferences(defaults: defaults),
+        return AppModel(makeBrowser: { FeaturePreviewSource() }, preferences: LibraryPreferences(defaults: defaults),
                         backup: LibraryBackupController(destination: destination, persistence: persistence,
                                                          notifications: notifications))
     }
@@ -61,14 +59,14 @@ enum FeaturePreview {
         await model.backup.chooseDestination()
         await model.backup.waitUntilHistoryChecked()
         await model.waitUntilProjected()
-        guard model.backupSourceAvailable else { return }
+        guard !Task.isCancelled, model.backupSourceAvailable else { return }
         model.startBackup(assets: model.assets.filter { $0.resources.contains { $0.id == "sample-0" } })
         await model.backup.waitUntilStopped()
         await model.waitUntilProjected()
-        source.unavailableResource = "sample-2"
+        guard !Task.isCancelled, model.backupSourceAvailable else { return }
         model.startBackup(assets: model.assets)
         await model.backup.waitUntilStopped()
-        source.unavailableResource = nil
+        guard !Task.isCancelled else { return }
         model.backup.dismissSummary()
         model.navigation = .backupHealth
     }
@@ -89,7 +87,7 @@ final class FeaturePreviewSource: DeviceMediaSource, OriginalMediaDownloading {
     let session = UUID()
     let events: AsyncStream<DeviceEvent>
     let catalogs: AsyncStream<DeviceMediaSnapshot>
-    var unavailableResource: String?
+    private var missingOriginalPending = true
     private let connections: AsyncStream<DeviceEvent>.Continuation
     private let library: AsyncStream<DeviceMediaSnapshot>.Continuation
     private var files: [String: Data] = [:]
@@ -119,16 +117,20 @@ final class FeaturePreviewSource: DeviceMediaSource, OriginalMediaDownloading {
         library.yield(DeviceMediaSnapshot(sessionID: session, deviceID: device.id, revision: 1, records: records, state: .complete))
     }
 
-    func stop() {}
-    func retry() {}
+    func stop() { connections.finish(); library.finish() }
+    func retry() { start() }
 
     func downloadOriginal(
         resourceID: String, sessionID: UUID, to directory: URL, filename: String,
         progress: @escaping @Sendable (DownloadProgress) -> Void
     ) async throws -> DownloadedOriginal {
         guard sessionID == session else { throw MediaSourceError.staleSession }
-        guard resourceID != unavailableResource, let bytes = files[resourceID] else { throw MediaSourceError.missingResource }
         try Task.checkCancellation()
+        if resourceID == "sample-2", missingOriginalPending {
+            missingOriginalPending = false
+            throw MediaSourceError.missingResource
+        }
+        guard let bytes = files[resourceID] else { throw MediaSourceError.missingResource }
         let file = directory.appendingPathComponent(filename)
         try bytes.write(to: file, options: .withoutOverwriting)
         progress(.init(downloadedBytes: Int64(bytes.count), totalBytes: Int64(bytes.count)))

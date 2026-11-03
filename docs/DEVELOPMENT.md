@@ -28,6 +28,20 @@ codes when recording results. The app treats first-party warnings as errors. Cor
 Testing and deterministic protocol-friendly fixtures without launching the app; hosted tests launch
 an app with physical discovery disabled.
 
+For compiler-backed unused-import analysis, retain the full log from a clean build. From
+`apps/macos` (the audit build directory is disposable and separate from `build/Verify`):
+
+```sh
+GIT_CONFIG_COUNT=0 xcodebuild -project CloakRoll.xcodeproj -scheme CloakRoll -destination 'platform=macOS,arch=arm64' -configuration Debug -derivedDataPath build/CodeAudit clean build > build/code-audit-build.log 2>&1
+swiftlint analyze --compiler-log-path build/code-audit-build.log --strict
+```
+
+The analyzer retains the public OSLog import used by the logging code. A deeper declaration audit can
+add `--only-rule unused_declaration`; review its findings against tests, synthesized Codable
+encoding and framework entry points before removing anything. In particular, constant identity
+fields are part of durable hashes even when Swift source never reads them directly. See the
+[3 November cleanup audit](verification/CODE-CLEANUP-2026-11-03.md) for the reviewed cases.
+
 ## Sample UI
 
 The app now starts in live device-discovery mode. Use `--sample` for 1,200 illustrated sample items. This is a development preview, and

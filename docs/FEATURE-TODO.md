@@ -16,6 +16,9 @@ an iPhone, removable-drive, sleep/wake or power-loss scenario.
 Actual evidence and limits: [3 November audit](verification/NEXT-BETA-2026-11-03.md).
 Implementation is complete; the physical and full accessibility gates below remain open.
 
+Follow-up development: [unused-code and async-lifetime audit](verification/CODE-CLEANUP-2026-11-03.md).
+This preserves physical testing as the final acceptance stage.
+
 ## 1. Backup health
 
 - [x] List remembered iPhones/destinations and their latest backup outcomes.

@@ -1,4 +1,3 @@
-import AppKit
 import BackupEngine
 import QuickLookThumbnailing
 import QuickLookUI

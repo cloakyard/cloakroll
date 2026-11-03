@@ -57,25 +57,13 @@ private struct BackupBarPlacement: ViewModifier {
     let isVisible: Bool
 
     func body(content: Content) -> some View {
-        if #available(macOS 26.0, *) {
-            content.safeAreaInset(edge: .bottom, spacing: 0) {
-                if isVisible {
-                    BackupBar(model: model, horizontalInset: 12)
-                        .frame(maxWidth: 680)
-                        .glassEffect(.regular, in: .rect(cornerRadius: 16))
-                        .frame(maxWidth: .infinity)
-                        .padding(12)
-                }
-            }
-        } else {
-            content.safeAreaInset(edge: .bottom, spacing: 0) {
-                if isVisible {
-                    VStack(spacing: 0) {
-                        Divider()
-                        BackupBar(model: model)
-                    }
-                    .background(.bar)
-                }
+        content.safeAreaInset(edge: .bottom, spacing: 0) {
+            if isVisible {
+                BackupBar(model: model, horizontalInset: 12)
+                    .frame(maxWidth: 680)
+                    .glassEffect(.regular, in: .rect(cornerRadius: 16))
+                    .frame(maxWidth: .infinity)
+                    .padding(12)
             }
         }
     }

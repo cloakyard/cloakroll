@@ -1,5 +1,3 @@
-import AppKit
-import BackupEngine
 import BackupPersistence
 import MediaModels
 import SwiftUI
@@ -21,8 +19,7 @@ struct SavedLibraryView: View {
     @State private var loading = false
     @State private var folderAvailable = false
     @State private var message: String?
-    @State private var actionError: String?
-    @State private var preview: SavedPreviewRequest?
+    @State private var actions = SavedOriginalActions()
     @State private var refresh = 0
     @State private var pageRevision = 0
 
@@ -37,6 +34,7 @@ struct SavedLibraryView: View {
     }
 
     var body: some View {
+        @Bindable var actions = actions
         VStack(spacing: 0) {
             filters.padding()
             Divider()
@@ -63,10 +61,14 @@ struct SavedLibraryView: View {
         .task(id: refresh) { await loadSources() }
         .task(id: query) { cursors = []; await loadPage() }
         .task(id: pageRevision) { if pageRevision > 0 { await loadPage() } }
-        .sheet(item: $preview) { SavedOriginalPreview(request: $0) }
-        .alert("Original Unavailable", isPresented: Binding(get: { actionError != nil }, set: { if !$0 { actionError = nil } })) {
-            Button("OK") { actionError = nil }
-        } message: { Text(actionError ?? "") }
+        .onChange(of: query) { actions.cancel() }
+        .onDisappear { actions.cancel() }
+        .sheet(item: $actions.preview) { SavedOriginalPreview(request: $0) }
+        .alert("Original Unavailable", isPresented: Binding(
+            get: { actions.errorMessage != nil }, set: { if !$0 { actions.errorMessage = nil } }
+        )) {
+            Button("OK") { actions.errorMessage = nil }
+        } message: { Text(actions.errorMessage ?? "") }
     }
 
     private var filters: some View {
@@ -115,11 +117,13 @@ struct SavedLibraryView: View {
                     Text(original.filename).textSelection(.enabled)
                     Spacer()
                     Text(Format.bytes(original.byteCount)).foregroundStyle(.secondary)
-                    Button("Preview") { Task { await open(original, previewing: true) } }
-                    Button("Reveal") { Task { await open(original, previewing: false) } }
+                    if let folder {
+                        Button("Preview") { actions.open(original, folder: folder, previewing: true) }
+                        Button("Reveal") { actions.open(original, folder: folder, previewing: false) }
+                    }
                 }
                 .buttonStyle(.bordered)
-                .disabled(!folderAvailable)
+                .disabled(!folderAvailable || actions.isOpening)
             }
         } label: {
             HStack(spacing: 12) {
@@ -151,11 +155,13 @@ struct SavedLibraryView: View {
     }
 
     private func loadPage() async {
+        loadGeneration += 1
+        actions.cancel()
         guard let query, let persistence = model.backup.persistence else {
-            items = []; nextCursor = nil; folderAvailable = false
+            items = []; nextCursor = nil; folderAvailable = false; loading = false
+            folder = nil; folderDestinationID = nil; message = nil
             return
         }
-        loadGeneration += 1
         let generation = loadGeneration
         loading = true
         items = []
@@ -181,28 +187,11 @@ struct SavedLibraryView: View {
             guard self.query == query, loadGeneration == generation else { return }
             folderAvailable = true
         } catch is CancellationError { return } catch {
-            guard loadGeneration == generation else { return }
+            guard self.query == query, loadGeneration == generation else { return }
             message = loadedRecords
                 ? "The backup folder couldn’t be opened. Reconnect its drive or locate the original folder. "
                     + "Recorded items remain visible; this does not mean their files are missing."
                 : "Saved history couldn’t be read. Refresh to try again. Your original files have not been changed."
-        }
-    }
-
-    private func open(_ record: VerifiedBackupResource, previewing: Bool) async {
-        guard let folder else { return }
-        do {
-            let lease = try await folder.acquireLease(readOnly: true)
-            let url = try await SavedOriginalAccess.url(destination: lease.url, record: record)
-            try Task.checkCancellation()
-            if previewing {
-                preview = SavedPreviewRequest(url: url, lease: lease)
-            } else {
-                NSWorkspace.shared.activateFileViewerSelecting([url]); lease.release()
-            }
-        } catch {
-            actionError = "This original is missing, changed or inaccessible. "
-                + "Check the folder and run Check Saved Files for integrity."
         }
     }
 }
