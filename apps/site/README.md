@@ -1,77 +1,99 @@
 # CloakRoll website
 
-Static Astro landing page for **https://roll.cloakyard.com**, deployed as Cloudflare Worker
-`cloakroll`. It follows CloakDrop's repository/deployment pattern and Air 1.2.5.
+**The Air website for CloakRoll.**
+
+[Website](https://roll.cloakyard.com/) · [Product README](../../README.md) · [Support](https://ko-fi.com/sumitsahoo21)
+
+## Overview
+
+The static Astro website for [CloakRoll](https://roll.cloakyard.com/), hosted as a Cloudflare Worker. The native macOS app lives separately in [`../macos`](../macos); this directory owns the landing, privacy and recovery pages.
+
+## Features
+
+A finite product illustration, clear download/installation guidance, real native-app screenshots and the shared Air header/footer. Navigation and policy reading remain useful without JavaScript. The small local script adds Escape, anchor focus and active-section behavior.
+
+A local filmstrip arrives once, then rests. The shared lifecycle pauses offscreen/hidden and respects reduced motion, forced colours, Save-Data and constrained devices. After completion, the artwork itself accepts a deliberate replay; there are no separate playback controls.
+
+## Privacy
+
+The site serves static assets without analytics, external fonts, a database or media uploads. Cloudflare handles website requests. Native-app processing and network behavior are described separately in the [native privacy policy](../../docs/PRIVACY.md); the website preserves that policy and its genuine revision date. Keep policy sources and displayed copy aligned.
+
+## Getting started
+
+Visit [roll.cloakyard.com](https://roll.cloakyard.com/) for the product and published downloads. The website links to the [GitHub Releases index](https://github.com/cloakyard/cloakroll/releases) so prereleases remain visible. Source versions, available releases and signing status are distinct; preserve the current [root installation guidance](../../README.md#getting-started).
+
+## Development
+
+Use the Node range in `package.json` (`^22.23.4 || ^24.15.0 || >=26.0.0`) and the pinned npm 12.2.2. From a full repository checkout:
 
 ```sh
-npm ci
+cd apps/site
+npx --yes npm@12.2.2 ci
 npm run dev
-npm run verify
-npm run check:worker
-npm run deploy
 ```
 
-Use Node 24.15 or later in the supported engine ranges. The lockfile pins dependencies;
-TypeScript 6.0.3 is retained because `astro check` does not support TypeScript 7.0.
-`npm run verify` checks types, builds the site, and validates routes, anchors, assets,
-canonical links and the pinned Air sources. `npm audit` checks the dependency tree.
-`.node-version` selects Node 24.22.1 for Workers Builds and GitHub Actions. `check:worker`
-dry-runs the configured static Worker without publishing it or requiring Cloudflare credentials.
+| Command | Purpose |
+| --- | --- |
+| `npm run check` | Astro type checking |
+| `npm run build` | Sync source assets and build static `dist/` |
+| `npm run preview` | Serve the production build |
+| `npm audit` | Check the dependency graph |
+| `npx --yes knip@6.44.2` | Audit the web module/dependency graph |
 
-## Cloudflare Workers Builds
+TypeScript 6 is retained for the supported Astro checker. Astro 7 may leave a server running after the command returns; stop owned servers with `npx astro dev stop` or `npx astro preview stop`.
 
-Connect this repository as a **Worker**, with these settings when ready to deploy:
+`npm run verify` combines type checking, build and route/asset/canonical-source checks. `npm run check:worker` dry-runs the Worker without publishing. Run both before committing. Website checks do not certify native or physical-device acceptance.
+
+Inspect phone, tablet, laptop and desktop in both themes, including privacy/recovery, menu focus, enlarged text, reduced motion and no-JavaScript fallback.
+
+## Design and assets
+
+Read the complete portable [DESIGN.md](DESIGN.md) before visible changes. The pinned `src/styles/air.css` owns shared tokens, controls and page geometry; `src/styles/global.css` owns product composition. Product colours stay in artwork.
+
+`scripts/sync-assets.mjs` copies the native app icon and synthetic library screenshots from the repository sources. Do not use a site-only sparse checkout. Edit source assets, then rebuild. Generated public copies are not the source of truth. Screenshot content is illustrative; it contains no personal media.
+
+The [surface inventory](../../docs/air/surfaces.json) and dated audits record actual verification separately from the design reference.
+
+## Project structure
+
+```text
+apps/site/
+├── src/components/       # Landing sections, public chrome and artwork
+├── src/pages/            # Home, privacy and recovery routes
+├── src/styles/           # Pinned Air foundation and site composition
+├── scripts/              # Asset sync and static verification
+├── public/               # Static/generated public assets
+├── astro.config.mjs      # Static Astro configuration
+└── wrangler.jsonc        # Cloudflare Worker and custom domain
+```
+
+<a id="cloudflare-workers-builds"></a>
+
+## Deployment and releases
+
+Promote verified changes through a `dev` → `main` PR and keep `dev` updated. When dev also contains unrelated native work, follow the maintainer's reviewed website-only exception instead of publishing that work. The production Worker is `cloakroll`; the repository is `cloakyard/cloakroll` and the build root is `apps/site`.
 
 | Setting | Value |
 | --- | --- |
-| Repository | `cloakyard/cloakroll` |
 | Production branch | `main` |
-| Root directory | `apps/site` |
 | Build command | `npm run verify` |
 | Deploy command | `npx wrangler deploy` |
-| Worker name | `cloakroll` |
 | Custom domain | `roll.cloakyard.com` |
-| Non-production branch builds | Disabled initially; `dev` is for ongoing app/site work |
 
-The full repository must be checked out: the asset-sync step reads the app icon and sample
-screenshots outside `apps/site`. Avoid a site-only sparse checkout. If adding build watch paths,
-include those asset sources as well as `apps/site/**`. Node and npm are pinned in `.node-version`
-and `package.json`; dependency installation uses the committed npm lockfile. Do not use
-`npm run deploy` as the build command, because that would publish before the deploy stage.
+Workers Builds uses dashboard-managed Git settings. Production deployment belongs to main; branch/PR builds must use preview versions. Never point a non-production branch at the production deploy command. Check the actual dashboard configuration and exact commit receipt rather than inferring deployment from `wrangler.jsonc`.
 
-Work on `dev`, open a PR into `main`, and merge after the Website check and relevant native
-checks pass. The GitHub workflow only validates/builds/dry-runs; it has no deployment credentials.
-Keep `dev` after merging and fast-forward it from `main`. Never use `wrangler deploy` for a
-non-production branch against this production configuration. Preview deployment can be configured
-separately if requested; it is not enabled by this repository setup.
+Keep watch paths aligned with `apps/site/**`, asset-sync sources, the root policy and imported `docs/air/**` assets. The full checkout is required. Native-only work must not be released by a website merge. CI validates/builds the website; no Cloudflare credentials belong in the repository.
 
-These settings follow Cloudflare's [Workers Builds configuration](https://developers.cloudflare.com/workers/ci-cd/builds/configuration/),
-[production/preview branch behavior](https://developers.cloudflare.com/workers/ci-cd/builds/build-branches/)
-and [runtime version overrides](https://developers.cloudflare.com/workers/ci-cd/builds/build-image/).
+For an explicitly authorized manual deployment, `npm run deploy` checks/builds as configured and publishes. For a local validation only, build first and run `npx wrangler deploy --dry-run`. After publication, verify the exact main build, public headers, routes and asset hashes. Native app releases and notarization are separate; the published [release notes](https://github.com/cloakyard/cloakroll/releases) own artifact and signing facts.
 
-## Manual deployment and content
+## Contributing
 
-For first deployment, run `npx wrangler login` with access to the Cloakyard Cloudflare account.
-Review `wrangler.jsonc` before deploying. The custom-domain route creates the binding for
-`roll.cloakyard.com` in that account. Existing unrelated DNS records must be reviewed rather
-than overwritten. No credentials are committed. The site has no server runtime, database,
-analytics, external fonts or media upload endpoint. Cloudflare still handles network requests.
+Read [AGENTS.md](../../AGENTS.md) and [CONTRIBUTING.md](../../CONTRIBUTING.md). Follow the [family README standard](https://github.com/cloakyard/cloakyard/blob/main/docs/README_STANDARD.md), keep shared Air patterns portable, and record browser coverage without claiming unperformed hardware tests.
 
-The download button scrolls to `#download`; its release link points to the GitHub Releases
-index so prereleases remain visible. The public repository currently has no published release.
-Update the honest preparation copy only after a beta asset and release notes are published.
-Do not link to a guessed asset URL or automatically publish an app release from this site.
+[Buy me a coffee](https://ko-fi.com/sumitsahoo21) supports the project.
 
-App icon and sample-library screenshots are copied from this repository by `predev`/`prebuild`.
-They contain no personal media. Light and dark screenshots follow the visitor's system theme.
-The privacy page preserves `docs/PRIVACY.md` and includes website hosting behavior; keep both
-in sync when the app changes its data handling.
+## License
 
-The filmstrip is a local SVG/CSS composition. It plays once (maximum 2.66 seconds), then
-settles. The shared Air lifecycle pauses offscreen/hidden, and uses the static scene for reduced
-motion, forced colors, Save-Data and constrained devices. All content and navigation remain
-available without JavaScript.
+Released under the [MIT License](../../LICENSE). Third-party components retain their own notices.
 
-See `DESIGN.md` for source provenance and the dated verification document under
-`../../docs/verification/` for actual browser results. Browser viewport checks do not establish
-physical iPhone/Safari compatibility or the native app's remaining USB acceptance gates.
+Built by [Sumit Sahoo](https://github.com/sumitsahoo), part of [Cloakyard](https://cloakyard.com/).
