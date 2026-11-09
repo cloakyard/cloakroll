@@ -257,7 +257,7 @@ struct DeviceLifecycleTests {
         #expect(lifecycle.connection.device == phone)
         #expect(lifecycle.connection.message == "Session could not open.")
 
-        lifecycle.removed(token: token)
+        lifecycle.reset()
         #expect(lifecycle.connection.state == .disconnected)
         #expect(lifecycle.connection.device == nil)
         #expect(lifecycle.activeToken == nil)
@@ -306,8 +306,6 @@ struct DeviceLifecycleTests {
         #expect(lifecycle.connection.state == .ready)
         lifecycle.failed(token: staleToken, message: "Old device disappeared.")
         #expect(lifecycle.connection.state == .ready)
-        lifecycle.removed(token: staleToken)
-        #expect(lifecycle.connection.state == .ready)
         #expect(lifecycle.connection.device == currentPhone)
         #expect(lifecycle.activeToken == currentToken)
     }
@@ -334,7 +332,7 @@ struct DeviceLifecycleTests {
         lifecycle.opened(token: token, errorMessage: nil, restricted: false)
         lifecycle.ready(token: token)
 
-        lifecycle.removed(token: token)
+        lifecycle.reset()
         #expect(lifecycle.connection.state == .disconnected)
         #expect(lifecycle.connection.device == nil)
         #expect(lifecycle.activeToken == nil)

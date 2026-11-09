@@ -35,7 +35,11 @@ struct LibraryCommands: Commands {
             Button("Show Library") { model.navigation = .library(model.filter) }
                 .disabled(model.isViewingLibrary)
             Button("Show Backup History") { model.navigation = .backupHistory }
-                .disabled(!model.isViewingLibrary)
+                .disabled(model.navigation == .backupHistory)
+            Button("Show Backup Health") { model.navigation = .backupHealth }
+                .disabled(model.navigation == .backupHealth)
+            Button("Show Saved Originals") { model.navigation = .savedLibrary }
+                .disabled(model.navigation == .savedLibrary)
         }
         CommandMenu("Library") {
             LibraryActionItems(model: model)
@@ -86,7 +90,7 @@ private struct LibraryActionItems: View {
         Button("Refresh Backup History") {
             Task { await model.backup.persistence?.loadSessions() }
         }
-        .disabled(model.isViewingLibrary || model.backup.persistence == nil
+        .disabled(model.navigation != .backupHistory || model.backup.persistence == nil
                   || model.backup.persistence?.isLoadingSessions == true)
         Divider()
         Button(model.backup.destination.selection == nil ? "Choose Backup Folder…" : "Change Backup Folder…") {

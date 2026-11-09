@@ -9,7 +9,7 @@ struct LibrarySectionHeader: View {
 
     var body: some View {
         let target = model.dateGroupTarget(sectionID: section.id)
-        surface
+        label.glassEffect(.regular, in: .capsule)
             .contentShape(Capsule())
             .contextMenu { DateGroupSelectionActions(model: model, target: target, didSelect: onSelection) }
             .accessibilityElement(children: .combine)
@@ -18,15 +18,6 @@ struct LibrarySectionHeader: View {
             .help("Right-click to select or deselect this date group.")
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.vertical, 8)
-    }
-
-    @ViewBuilder
-    private var surface: some View {
-        if #available(macOS 26.0, *) {
-            label.glassEffect(.regular, in: .capsule)
-        } else {
-            label.background(.regularMaterial, in: Capsule())
-        }
     }
 
     private var label: some View {

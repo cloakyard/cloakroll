@@ -47,6 +47,31 @@ enum BackupStoreSchema {
                     CHECK(unavailable_originals >= 0);
                 """)
         }
+        migrator.registerMigration("v8_integrity_checks") { db in
+            try db.execute(sql: """
+                CREATE TABLE integrity_check (
+                    session_id TEXT PRIMARY KEY NOT NULL REFERENCES backup_session(id),
+                    checked_at DOUBLE NOT NULL, total_files INTEGER NOT NULL CHECK(total_files > 0),
+                    matching_files INTEGER NOT NULL CHECK(matching_files >= 0 AND matching_files <= total_files));
+                CREATE TRIGGER invalidate_integrity_check AFTER INSERT ON backup_record
+                BEGIN DELETE FROM integrity_check WHERE session_id = NEW.session_id; END;
+                """)
+        }
+        migrator.registerMigration("v9_backup_continuation") { db in
+            try db.execute(sql: """
+                ALTER TABLE backup_session ADD COLUMN folder_layout TEXT;
+                ALTER TABLE backup_session ADD COLUMN continued_from TEXT REFERENCES backup_session(id);
+                CREATE UNIQUE INDEX session_continuation ON backup_session(continued_from) WHERE continued_from IS NOT NULL;
+                """)
+        }
+        migrator.registerMigration("v10_saved_library_metadata") { db in
+            try db.execute(sql: """
+                ALTER TABLE asset ADD COLUMN kind TEXT;
+                ALTER TABLE asset ADD COLUMN captured_at DOUBLE;
+                ALTER TABLE asset ADD COLUMN primary_canonical TEXT;
+                CREATE INDEX asset_capture_page ON asset(device_key, captured_at DESC, id DESC);
+                """)
+        }
         try migrator.migrate(queue)
         try queue.write { db in
             try db.execute(

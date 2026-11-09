@@ -75,18 +75,6 @@ final class BackupFileStore: @unchecked Sendable {
         try capacity.check(directory: root.path(), requiredBytes: byteCount)
     }
 
-    func verifyAndFinalize(
-        _ staged: StagedOriginal, returnedURL: URL, expectedByteCount: Int64, createdAt: Date?,
-        afterPublication: @Sendable () throws -> Void = {}
-    ) throws -> FinalizedOriginal {
-        let verified = try verifyStaged(staged, returnedURL: returnedURL, expectedByteCount: expectedByteCount, createdAt: createdAt)
-        for collision in 0..<10_000 {
-            let filename = BackupPathNaming.filename(staged.filename, collision: collision)
-            if let result = try publish(verified, filename: filename, afterPublication: afterPublication) { return result }
-        }
-        throw BackupFileError.tooManyCollisions
-    }
-
     func verifyStaged(
         _ staged: StagedOriginal, returnedURL: URL, expectedByteCount: Int64, createdAt: Date?
     ) throws -> VerifiedStagedOriginal {

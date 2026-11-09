@@ -4,7 +4,7 @@ import MediaModels
 
 /// Organization applies only to newly published originals. Previously verified paths remain
 /// valid in every layout and are never renamed or moved as part of an incremental backup.
-public enum BackupFolderLayout: Equatable, Sendable {
+public enum BackupFolderLayout: String, Codable, Equatable, Sendable {
     case byDate
     case byDevice
     case byDeviceFlat
