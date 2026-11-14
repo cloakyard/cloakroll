@@ -2,11 +2,7 @@
 
 **Your camera roll, safely on your Mac.**
 
-A native, open-source macOS app for backing up iPhone photos and videos over USB.
-Browse your library, keep original files, and copy only what is missing into folders you control.
-Built with SwiftUI and a separately tested Swift engine. No account, analytics or media uploads.
-
-**[Beta notes](docs/releases/v0.1.0-beta.20261030.md)** · **[Releases](https://github.com/cloakyard/cloakroll/releases)** · **[Documentation](docs/README.md)** · **[Contributing](CONTRIBUTING.md)**
+[Website](https://roll.cloakyard.com/) · [Source](https://github.com/cloakyard/cloakroll) · [Support](https://ko-fi.com/sumitsahoo21)
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
@@ -19,40 +15,15 @@ Built with SwiftUI and a separately tested Swift engine. No account, analytics o
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="assets/screenshots/library-dark.png">
-    <img src="assets/screenshots/library-light.png" alt="CloakRoll’s native photo library with varied illustrated sample media, date groups and compact backup controls." width="900">
+    <img src="assets/screenshots/library-light.png" alt="CloakRoll’s native photo library with varied illustrated sample media, date groups and compact backup controls." width="800">
   </picture>
 </p>
 
-Part of **[Cloakyard](https://github.com/cloakyard)**. Screenshots use the clearly labeled,
-locally generated sample library; they contain no personal photos and do not show a real backup.
+## Overview
 
-## Download and install
+A native macOS app for backing up iPhone photos and videos over USB. Browse the library and copy original components into folders you control. The SwiftUI app is separate from the Air website.
 
-The latest **0.1.0 beta, build 20261030**, is available on
-[GitHub Releases](https://github.com/cloakyard/cloakroll/releases/tag/v0.1.0-beta.20261030),
-with a DMG and SHA-256 checksum. The [beta notes](docs/releases/v0.1.0-beta.20261030.md)
-record the features, verification and known limits; release binaries stay out of source control.
-
-1. Download and open [CloakRoll-v0.1.0-beta.20261030.dmg](https://github.com/cloakyard/cloakroll/releases/download/v0.1.0-beta.20261030/CloakRoll-v0.1.0-beta.20261030.dmg).
-2. Drag **CloakRoll** to **Applications**, then open it and eject the installer.
-3. Connect and unlock your iPhone over USB, accepting Trust if prompted. Choose a backup folder.
-4. Back up new items, or select items and back up the selection.
-
-Requires **macOS 26 or later on Apple silicon**. Intel Macs are not supported. This beta is locally ad-hoc signed and
-**not notarized**. If macOS blocks a trusted copy after your first launch attempt, see
-[Apple’s opening guidance](https://support.apple.com/en-us/102445). Current runtime validation
-is on Apple silicon with macOS 27; macOS 26 runtime acceptance remains open.
-
-Keep another independent copy of irreplaceable originals while evaluating the beta.
-
-## Version 0.1.0 beta
-
-The latest beta adds **About → Buy me a coffee** and refreshes compatible project dependencies.
-It retains original USB backups, incremental verification, bundled license notices and the Air
-installer. See the [release audit](docs/verification/SUPPORT-BETA-2026-10-30.md) for checks,
-dependency versions and remaining acceptance limits.
-
-## What it does
+## Features
 
 Development for the next beta adds backup health, explicit continuation of unfinished jobs,
 an offline saved-original browser, a storage review before Start, and opt-in local notifications.
@@ -83,19 +54,19 @@ recorded evidence. Final cable/removable-drive interruption, full-disk/remount, 
 reconnect, sustained scrolling/memory, complete assistive-technology and older-OS checks remain
 open. See the [release checklist](docs/RELEASE.md). Automated tests do not close those gates.
 
-## Troubleshooting
+### Troubleshooting
 
-### The iPhone does not appear
+#### The iPhone does not appear
 
 Unlock it, reconnect the cable, and accept Trust if asked. Check whether Apple’s Image Capture
 can see it. **Help → About USB Availability** explains why some originals may be unavailable.
 
-### The backup folder moved or is unavailable
+#### The backup folder moved or is unavailable
 
 Reconnect the drive, or choose the original folder again. CloakRoll checks access and never
 silently redirects a backup. Right-click the destination to **Open in Finder**.
 
-### App data or backup history was lost
+#### App data or backup history was lost
 
 Open **Backup History → Rebuild History…** and select the backup folder. Keep its hidden
 `.cloakroll-recovery` records with the originals when moving it. Older folders without records
@@ -109,7 +80,35 @@ Original embedded metadata is preserved. A cloud-managed folder may sync through
 External Help/About links open in your browser only when chosen. Read the
 [privacy policy](docs/PRIVACY.md), also summarized in Settings → Privacy.
 
-## Build the app
+## Getting started
+
+The published **0.1.0 beta, build 20261030**, is available on
+[GitHub Releases](https://github.com/cloakyard/cloakroll/releases/tag/v0.1.0-beta.20261030),
+with a DMG and SHA-256 checksum. The [beta notes](docs/releases/v0.1.0-beta.20261030.md)
+record the features, verification and known limits; release binaries stay out of source control.
+
+1. Download and open [CloakRoll-v0.1.0-beta.20261030.dmg](https://github.com/cloakyard/cloakroll/releases/download/v0.1.0-beta.20261030/CloakRoll-v0.1.0-beta.20261030.dmg).
+2. Drag **CloakRoll** to **Applications**, then open it and eject the installer.
+3. Connect and unlock your iPhone over USB, accepting Trust if prompted. Choose a backup folder.
+4. Back up new items, or select items and back up the selection.
+
+Requires **macOS 26 or later on Apple silicon**. Intel Macs are not supported. This beta is locally ad-hoc signed and
+**not notarized**. If macOS blocks a trusted copy after your first launch attempt, see
+[Apple’s opening guidance](https://support.apple.com/en-us/102445). Current runtime validation
+is on Apple silicon with macOS 27; macOS 26 runtime acceptance remains open.
+
+Keep another independent copy of irreplaceable originals while evaluating the beta.
+
+### Published release and source
+
+The October 30 beta adds **About → Buy me a coffee** and refreshes compatible project dependencies.
+It retains original USB backups, incremental verification, bundled license notices and the Air
+installer. See the [release audit](docs/verification/SUPPORT-BETA-2026-10-30.md) for checks,
+dependency versions and remaining acceptance limits.
+
+## Development
+
+### Native app
 
 Development uses **Xcode 27+**, Swift 6, [XcodeGen](https://github.com/yonaskolb/XcodeGen) and SwiftLint.
 
@@ -150,7 +149,7 @@ This checks the same clean source revision between stages, runs tests/lint/build
 metadata probe, packages an arm64-only Release app, validates the mounted DMG and writes
 checksums and a build manifest. It does not publish a release.
 
-## Testing
+### Verification
 
 The public beta passed **403 core + 227 hosted app tests (630 Swift tests)**, five release-tool
 tests, strict lint and fresh Debug/Apple silicon Release builds. The mounted DMG, packaged-app
@@ -167,13 +166,17 @@ Run hosted app tests, the normal Debug build and strict lint from `apps/macos` a
 companion files, collisions, interrupted publication, recovery, folder access and UI state.
 Physical iPhone acceptance is recorded separately in [verification](docs/verification/).
 
-## Website
+### Website
 
-The Air landing page for `roll.cloakyard.com` lives in [`apps/site`](apps/site/README.md).
-It uses the same static Astro + Cloudflare deployment pattern as CloakDrop.
-Run `npm ci && npm run verify` there to check and build it.
+The independent Air website is in [`apps/site`](apps/site/README.md). Its README documents Node/npm setup, browser verification and deployment; native tests do not verify website layouts.
 
-## Repository layout
+## Design and assets
+
+The website follows the portable [Air contract](DESIGN.md) and its pinned local bundle. The native app keeps SwiftUI, SF Symbols and macOS system conventions. Do not apply web control skins to native UI.
+
+[Brand assets](assets/README.md) own the marks, installer artwork and synthetic screenshots. Website asset sync reads those checked-in sources; edit the sources rather than generated copies. Screenshots are examples, not evidence of a real transfer or backup.
+
+## Project structure
 
 ```text
 cloakroll/
@@ -191,10 +194,20 @@ cloakroll/
 See [architecture](ARCHITECTURE.md), [artwork](assets/README.md) and the
 [documentation index](docs/README.md).
 
-## Contributing and license
+## Deployment and releases
 
-Read [CONTRIBUTING.md](CONTRIBUTING.md) and report reproducible issues through
-[GitHub Issues](https://github.com/cloakyard/cloakroll/issues). Exclude private media and device data.
+Publish website changes through tested `dev` → `main` PRs and keep `dev` updated. When dev also holds unrelated native work, use a separately reviewed website-only PR under the maintainer's approved exception, then merge main into dev without releasing that native work. The [website guide](apps/site/README.md#deployment-and-releases) records build and deployment commands.
 
-CloakRoll source is released under the [MIT License](LICENSE). Third-party components retain
-their own licenses. Built by Sumit Sahoo as part of [Cloakyard](https://github.com/cloakyard).
+Native release preparation is separate from website deployment. Follow the existing build/packaging and verification instructions above; publish binaries and checksums to [GitHub Releases](https://github.com/cloakyard/cloakroll/releases), not the source tree. Preserve documented signing, runtime and physical-device limits.
+
+## Contributing
+
+Read [AGENTS.md](AGENTS.md) and [DESIGN.md](DESIGN.md) before changes. See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution and disclosure guidance. Keep changes bounded, preserve features and output, remove obsolete references, and record actual verification. Compare all applicable views in phone, tablet, laptop and desktop layouts, both themes.
+
+The [family README standard](https://github.com/cloakyard/cloakyard/blob/main/docs/README_STANDARD.md) defines this document's section order. Support the project through [Buy me a coffee](https://ko-fi.com/sumitsahoo21).
+
+## License
+
+Released under the [MIT License](LICENSE). Third-party components retain their own licenses.
+
+Built by [Sumit Sahoo](https://github.com/sumitsahoo), part of [Cloakyard](https://cloakyard.com/).
