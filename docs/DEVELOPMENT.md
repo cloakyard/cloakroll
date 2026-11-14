@@ -4,7 +4,7 @@
 
 Development uses Xcode 27+ with Swift 6 language mode, an arm64-only app and macOS 26 deployment
 target. Install XcodeGen and SwiftLint. `apps/macos/project.yml` is authoritative; regenerate the
-ignored Xcode project after adding sources or changing configuration. GRDB 7.11.1 is the only third-party Swift dependency, pinned in the package lockfile. CloakDrop is a read-only architectural/design reference.
+ignored Xcode project after adding sources or changing configuration. GRDB 7.12.0 is the only third-party Swift dependency, pinned in the package lockfile. CloakDrop is a read-only architectural/design reference.
 
 ## Verification commands
 
@@ -124,7 +124,7 @@ runtime namespaces are purged on startup. Hosted tests disable default disk cach
 
 ## Persistent original-backup history
 
-Phase 6 adds GRDB 7.11.1, pinned exactly with `Package.resolved`. Run `swift package resolve` from
+Phase 6 adds GRDB 7.12.0, pinned exactly with `Package.resolved`. Run `swift package resolve` from
 the core package when setting up a new checkout; preserve the lockfile in commits. The app stores
 its local SQLite database at `Application Support/CloakRoll/Backups.sqlite` inside the sandbox.
 The database contains source metadata, device/destination references and local verification

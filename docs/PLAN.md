@@ -2,6 +2,13 @@
 
 Started 12 September 2026. Product: **Your camera roll, safely on your Mac.**
 
+## Dependency audit — 14 November 2026
+
+GRDB 7.12.0 is verified in the app core and performance probe. All 664 Swift tests,
+strict lint, normal/clean builds, compiler-backed import analysis and the 10k probe
+pass. See [evidence](verification/DEPENDENCIES-2026-11-14.md). Native UI and hardware
+acceptance are unchanged; this is not a new beta publication.
+
 ## Working agreement
 
 On 3 November 2026 the user authorized the five next-beta features, implemented in
