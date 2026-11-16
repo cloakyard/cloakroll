@@ -97,3 +97,5 @@ Read [AGENTS.md](../../AGENTS.md) and [CONTRIBUTING.md](../../CONTRIBUTING.md). 
 Released under the [MIT License](../../LICENSE). Third-party components retain their own notices.
 
 Built by [Sumit Sahoo](https://github.com/sumitsahoo), part of [Cloakyard](https://cloakyard.com/).
+
+Social cards follow the [portable Air workflow](../../docs/air/social-previews.md): build, run `npm run generate:og`, rebuild, then run `npm run check:og`.

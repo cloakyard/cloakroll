@@ -1,0 +1,19 @@
+{
+  "name": "CloakRoll",
+  "url": "https://roll.cloakyard.com/",
+  "dist": "apps/site/dist",
+  "logo": "apps/site/public/cloakroll-mark.svg",
+  "output": "assets/social/og.png",
+  "artwork": ".roll-frame",
+  "headline": [
+    "Your memories.",
+    "In your hands."
+  ],
+  "description": [
+    "Bring original photos and videos",
+    "from your iPhone to your Mac."
+  ],
+  "artAlt": "A filmstrip of illustrated landscapes, flowers and city scenes.",
+  "imageAlt": "CloakRoll — Your memories. In your hands. A filmstrip of illustrated landscapes, flowers and city scenes.",
+  "imagePath": "/og.png?v=air-1.7.5"
+}

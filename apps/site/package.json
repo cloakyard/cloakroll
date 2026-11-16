@@ -2,18 +2,20 @@
   "name": "cloakroll-site",
   "version": "1.0.0",
   "private": true,
-  "description": "CloakRoll — roll.cloakyard.com",
+  "description": "CloakRoll \u2014 roll.cloakyard.com",
   "type": "module",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "astro build && node ../../docs/air/check-social.mjs",
     "preview": "astro preview",
     "check": "astro check",
     "verify": "npm run check && npm run build && node scripts/verify-site.mjs",
     "check:worker": "wrangler deploy --dry-run --outdir build/worker",
     "deploy": "npm run verify && wrangler deploy",
     "predev": "node scripts/sync-assets.mjs",
-    "prebuild": "node scripts/sync-assets.mjs"
+    "prebuild": "node scripts/sync-assets.mjs",
+    "generate:og": "node ../../docs/air/render-social.mjs",
+    "check:og": "node ../../docs/air/check-social.mjs"
   },
   "dependencies": {
     "@astrojs/sitemap": "3.7.5",
