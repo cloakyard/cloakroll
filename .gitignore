@@ -9,3 +9,5 @@ xcuserdata/
 *.log
 __pycache__/
 *.pyc
+# Generated from assets/social/og.png by the website prebuild.
+apps/site/public/og.png
