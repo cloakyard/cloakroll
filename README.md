@@ -74,7 +74,8 @@ can be verified once with the source iPhone. Filenames alone are never treated a
 
 ## Privacy
 
-No accounts, analytics, automatic crash uploads, update checks or app-operated network services.
+No accounts, analytics, automatic crash uploads or media uploads. Sparkle update checks/downloads
+are manual unless enabled in About settings; see [update publishing](docs/UPDATES.md).
 Media, previews, preferences and history stay on your Mac or in the folder you choose.
 Original embedded metadata is preserved. A cloud-managed folder may sync through its own service.
 External Help/About links open in your browser only when chosen. Read the
@@ -136,8 +137,9 @@ avoids inherited agent Git configuration interfering with SwiftPM. See
 | Verification | Original sizes, CryptoKit SHA-256 and exclusive file publication |
 | Build and packaging | XcodeGen, SwiftLint, hdiutil and pinned build-time dmgbuild tooling |
 
-GRDB 7.11.1 is the only third-party Swift dependency. Its exact revision is pinned, and its
-MIT notice and privacy manifest ship in the app. The installer tools are build-only dependencies.
+GRDB 7.12.0 is the core’s only third-party Swift dependency; its MIT notice and privacy manifest
+ship in the app. The app also embeds pinned Sparkle 2.10.1 and its license notices. The installer
+tools are build-only dependencies.
 
 To prepare a dated beta and DMG, follow the setup in [Release](docs/RELEASE.md), then run:
 

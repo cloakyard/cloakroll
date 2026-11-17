@@ -184,7 +184,9 @@ Do not bypass Gatekeeper or treat an ad-hoc signature as notarization.
 See [the privacy policy](PRIVACY.md). The app has no network entitlements, analytics,
 account system or remote processing. The actual signed bundle must contain only the
 reviewed sandbox, USB, user-selected read/write, app-scoped bookmark and photo-library
-entitlements. Existing photo access permission is retained until device testing can
+entitlements, Sparkle’s app-scoped installer Mach lookup exceptions, and (for ad-hoc builds only)
+the library-validation exception. Sparkle’s separate downloader service performs opt-in update
+network requests; the host retains no network entitlement. Existing photo access permission is retained until device testing can
 validate any reduction; this pass does not expand access. No download path enables
 conversion, source deletion, private PTP commands or device writes.
 

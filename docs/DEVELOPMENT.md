@@ -4,7 +4,10 @@
 
 Development uses Xcode 27+ with Swift 6 language mode, an arm64-only app and macOS 26 deployment
 target. Install XcodeGen and SwiftLint. `apps/macos/project.yml` is authoritative; regenerate the
-ignored Xcode project after adding sources or changing configuration. GRDB 7.12.0 is the only third-party Swift dependency, pinned in the package lockfile. CloakDrop is a read-only architectural/design reference.
+ignored Xcode project after adding sources or changing configuration. GRDB 7.12.0 is the core's
+only third-party Swift dependency, pinned in the package lockfile. The app embeds Sparkle 2.10.1,
+pinned in the project spec; see [signed updates](UPDATES.md). CloakDrop is a read-only
+architectural/design reference.
 
 ## Verification commands
 

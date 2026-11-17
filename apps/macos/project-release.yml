@@ -1,0 +1,7 @@
+# Future Developer ID distribution: library validation stays enabled.
+include: [project.yml]
+targets:
+  CloakRoll:
+    settings:
+      base:
+        CODE_SIGN_ENTITLEMENTS: App/Resources/CloakRoll.Release.entitlements

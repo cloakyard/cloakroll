@@ -22,8 +22,8 @@ swiftlint --strict
 
 From `apps/macos/Packages/CloakRollCore`: `GIT_CONFIG_COUNT=0 swift test`.
 
-Use native controls and semantic `AppAccent`, system surfaces and small components. No network
-services, analytics, photo conversions, iPhone deletion or private APIs. Never mark an incomplete
+Use native controls and semantic `AppAccent`, system surfaces and small components. Network access is limited to manual Sparkle update checks or automatic checks/downloads explicitly
+enabled by the user, through Sparkle’s separate downloader service. No analytics, photo conversions, iPhone deletion or private APIs. Never mark an incomplete
 transfer verified. Never match by filename alone or overwrite unrelated destination files.
 Consult `docs/APPLE_APIS.md` before making ImageCaptureCore assumptions.
 

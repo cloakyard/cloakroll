@@ -177,3 +177,11 @@ identity, immutable backup inventory, whole-asset resource grouping, and durable
 evidence. Backup success must never imply successful phone restoration. Source bytes stay intact;
 target additions require explicit selection, and an unknown target commit cannot be retried
 silently or rolled back through deletion. Those are conditional requirements, not current behavior.
+
+
+## App updates
+
+`AppUpdater` owns one app-lifetime `SPUStandardUpdaterController`. The SwiftUI command and
+About settings observe Sparkle’s KVO state. Update preferences stay in Sparkle’s local defaults,
+independent of core persistence. Ed25519 authenticates both feeds and archives, with profiling
+disabled and automatic checks/downloads off by default. See [update publishing](docs/UPDATES.md).

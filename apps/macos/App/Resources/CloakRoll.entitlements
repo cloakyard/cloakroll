@@ -12,5 +12,14 @@
     <true/>
     <key>com.apple.security.personal-information.photos-library</key>
     <true/>
+    <!-- Ad-hoc signatures have no Team ID; allow the embedded Sparkle framework to load. -->
+    <key>com.apple.security.cs.disable-library-validation</key>
+    <true/>
+    <!-- Sparkle installer status and installation, scoped to this app. -->
+    <key>com.apple.security.temporary-exception.mach-lookup.global-name</key>
+    <array>
+        <string>$(PRODUCT_BUNDLE_IDENTIFIER)-spks</string>
+        <string>$(PRODUCT_BUNDLE_IDENTIFIER)-spki</string>
+    </array>
 </dict>
 </plist>

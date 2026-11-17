@@ -24,6 +24,9 @@ settings:
     # Example: CURRENT_PROJECT_VERSION=20261028 CLOAKROLL_RELEASE_CHANNEL=Beta
     CLOAKROLL_RELEASE_CHANNEL: "Development preview"
 packages:
+  Sparkle:
+    url: https://github.com/sparkle-project/Sparkle
+    exactVersion: 2.10.1
   CloakRollCore:
     path: Packages/CloakRollCore
 targets:
@@ -48,6 +51,9 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.cloakyard.cloakroll
         PRODUCT_NAME: CloakRoll
+        SPARKLE_PUBLIC_ED_KEY: "EBzHCNnP8QgNuZy5d2UiU6Ifky3oZSSYXXvIKXd4GCk="
+        SPARKLE_FEED_URL: https://roll.cloakyard.com/updates/appcast.xml
+        LD_RUNPATH_SEARCH_PATHS: "$(inherited) @executable_path/../Frameworks"
         CODE_SIGN_ENTITLEMENTS: App/Resources/CloakRoll.entitlements
         ASSETCATALOG_COMPILER_APPICON_NAME: CloakRoll
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AppAccent
@@ -58,6 +64,15 @@ targets:
     info:
       path: App/Resources/Info.plist
       properties:
+        SUFeedURL: "$(SPARKLE_FEED_URL)"
+        SUPublicEDKey: "$(SPARKLE_PUBLIC_ED_KEY)"
+        SUEnableAutomaticChecks: false
+        SUAutomaticallyUpdate: false
+        SUEnableSystemProfiling: false
+        SUVerifyUpdateBeforeExtraction: true
+        SURequireSignedFeed: true
+        SUEnableInstallerLauncherService: true
+        SUEnableDownloaderService: true
         CFBundleName: CloakRoll
         CFBundleDisplayName: CloakRoll
         CFBundleShortVersionString: "$(MARKETING_VERSION)"
@@ -67,7 +82,12 @@ targets:
         LSApplicationCategoryType: public.app-category.photography
         NSPhotoLibraryUsageDescription: "CloakRoll reads photos and videos from your connected iPhone for local browsing and backup. It does not modify or delete them."
         NSHumanReadableCopyright: "CloakRoll is part of Cloakyard. Your camera roll, safely on your Mac."
+    postBuildScripts:
+      - name: Sign Sparkle helpers for an explicit signing identity
+        basedOnDependencyAnalysis: false
+        script: /bin/bash "${SRCROOT}/../../scripts/sign-sparkle.sh"
     dependencies:
+      - package: Sparkle
       - package: CloakRollCore
         product: MediaModels
       - package: CloakRollCore

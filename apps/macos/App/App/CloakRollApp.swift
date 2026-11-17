@@ -3,6 +3,7 @@ import SwiftUI
 
 @main
 struct CloakRollApp: App {
+    @StateObject private var updater = AppUpdater()
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @State private var model: AppModel
 
@@ -39,7 +40,10 @@ struct CloakRollApp: App {
                 }
         }
         .defaultSize(width: 1_100, height: 740)
-        .commands { LibraryCommands(model: model) }
+        .commands {
+            LibraryCommands(model: model)
+            UpdateCommands(updater: updater)
+        }
 
         #if DEBUG
         Window("Generated Backup Features", id: "feature-preview") {
@@ -61,6 +65,7 @@ struct CloakRollApp: App {
 
         Settings {
             SettingsView()
+                .environmentObject(updater)
                 .environment(model)
                 .tint(Design.accent)
         }

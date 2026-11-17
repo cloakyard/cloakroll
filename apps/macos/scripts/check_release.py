@@ -51,7 +51,11 @@ def check(app, distribution, build=None, channel=None):
 
     command("/usr/bin/codesign", "--verify", "--deep", "--strict", str(app))
     entitlements, _ = command("/usr/bin/codesign", "-d", "--entitlements", "-", "--xml", str(app))
-    expected = plist(Path(__file__).resolve().parents[1] / "App/Resources/CloakRoll.entitlements")
+    entitlement_file = "CloakRoll.Release.entitlements" if distribution else "CloakRoll.entitlements"
+    expected = plist(Path(__file__).resolve().parents[1] / "App/Resources" / entitlement_file)
+    expected["com.apple.security.temporary-exception.mach-lookup.global-name"] = [
+        info["CFBundleIdentifier"] + "-spks", info["CFBundleIdentifier"] + "-spki"
+    ]
     require(plistlib.loads(entitlements) == expected,
             "Signed entitlements differ from the reviewed source (including possible test/debug permissions).")
     _, signature = command("/usr/bin/codesign", "-dv", "--verbose=4", str(app))

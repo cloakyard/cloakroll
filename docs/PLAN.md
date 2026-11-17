@@ -1255,3 +1255,13 @@ and unauthenticated public downloads passed checksum and byte comparisons. The s
 Website and Cloudflare build checks passed. [Release notes](releases/v0.1.0-beta.20261030.md).
 Existing acceptance gates remain open; production website promotion stays in the `dev` → `main`
 PR for review, and both long-lived branches are retained.
+
+
+## 17 November 2026 — Sparkle updates
+
+Added Sparkle 2.10.1 as an app-only dependency, with a signed website feed, GitHub release
+archives and opt-in update settings. Default Debug/Release builds remain ad-hoc and team-less;
+Sparkle uses its separate downloader and installer services, preserving the host’s lack of
+a network entitlement. See [publishing](UPDATES.md) and [verification](verification/SPARKLE-2026-11-17.md).
+Local install/relaunch is verified; public deployment, Developer ID, notarization and hardware
+acceptance are separate. Existing published builds require one manual Sparkle-enabled upgrade.
