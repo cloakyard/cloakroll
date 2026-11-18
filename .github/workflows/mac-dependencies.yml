@@ -16,7 +16,6 @@ jobs:
         id: release
         shell: python
         run: |
-          from pathlib import Path
           import os, re, xml.etree.ElementTree as ET
           items = ET.parse("apps/site/public/updates/appcast.xml").findall("./channel/item")
           ns = "{http://www.andymatuschak.org/xml-namespaces/sparkle}"
@@ -32,4 +31,4 @@ jobs:
           persist-credentials: false
       - run: python3 shipped/scripts/check-mac-dependencies.py
       - if: always()
-        run: python3 shipped/scripts/check-published-update.py
+        run: python3 scripts/check-published-update.py --native-source shipped
