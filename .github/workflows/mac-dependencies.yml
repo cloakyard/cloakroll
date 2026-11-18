@@ -12,6 +12,23 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - run: python3 scripts/check-mac-dependencies.py
+      - name: Identify the source tag of the published native build
+        id: release
+        shell: python
+        run: |
+          import os, re, xml.etree.ElementTree as ET
+          items = ET.parse("apps/site/public/updates/appcast.xml").findall("./channel/item")
+          ns = "{http://www.andymatuschak.org/xml-namespaces/sparkle}"
+          current = max(items, key=lambda i: tuple(map(int, i.findtext(ns + "version").split("."))))
+          url = current.find("enclosure").get("url")
+          tag = re.fullmatch(r"https://github\.com/cloakyard/cloakroll/releases/download/(v[0-9A-Za-z.\-]+)/[^/]+", url).group(1)
+          with open(os.environ["GITHUB_OUTPUT"], "a") as out:
+              print(f"tag={tag}", file=out)
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ steps.release.outputs.tag }}
+          path: shipped
+          persist-credentials: false
+      - run: python3 shipped/scripts/check-mac-dependencies.py
       - if: always()
-        run: python3 scripts/check-published-update.py
+        run: python3 scripts/check-published-update.py --native-source shipped
