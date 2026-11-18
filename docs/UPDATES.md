@@ -105,3 +105,9 @@ Publication is separate from preparation; neither script silently uploads or dep
 ## Ongoing checks
 
 Run `python3 scripts/check-mac-dependencies.py` to compare the shipping dependencies and installer tooling with their stable upstream versions. After deploying a release, run `python3 scripts/check-published-update.py` to verify the production feed matches the signed source and the advertised archive is available at the expected size. The Mac dependencies and public updates workflow runs both checks weekly and on demand.
+
+## Production verification on 18 November 2026
+
+The installed build `20261118.1` found `20261118.2` using **Settings → About → Check for Updates** against the public HTTPS feed. **Install Update** downloaded the signed GitHub ZIP. **Install and Relaunch** replaced the app in Applications. About then displayed build `20261118.2`, and a second check reported that the app was up to date. The unauthenticated public DMG, ZIP and checksum manifest matched the local release files byte for byte.
+
+All three apps used the same update offer, cancellable progress window, relaunch action and up-to-date dialog. An isolated copy of each release with an unavailable test feed showed Sparkle’s update error and **Cancel Update**. In those copies automatic checks and downloads started off. Enabling checks enabled the download switch, and disabling checks disabled it again. The production apps kept their own saved preferences.
