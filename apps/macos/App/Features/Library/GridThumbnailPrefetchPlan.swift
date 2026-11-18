@@ -1,4 +1,3 @@
-import Foundation
 import MediaModels
 
 /// Section rows, independent of whether SwiftUI has instantiated their cells yet.

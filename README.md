@@ -25,6 +25,11 @@ A native macOS app for backing up iPhone photos and videos over USB. Browse the 
 
 ## Features
 
+CloakRoll includes backup health, explicit continuation of unfinished jobs,
+an offline saved-original browser, a storage review before Start, and opt-in local notifications.
+See the prioritized [feature checklist](docs/FEATURE-TODO.md)
+and [software verification](docs/verification/NEXT-BETA-2026-11-03.md); physical acceptance is the final stage.
+
 | Capability | Implementation |
 |---|---|
 | **Browse your iPhone** | Photos, videos, RAW and Live Photos exposed over USB; filename search, capture-date filtering, chronological groups and three thumbnail sizes. |
@@ -69,7 +74,8 @@ can be verified once with the source iPhone. Filenames alone are never treated a
 
 ## Privacy
 
-No accounts, analytics, automatic crash uploads, update checks or app-operated network services.
+No accounts, analytics, automatic crash uploads or media uploads. Sparkle update checks/downloads
+are manual unless enabled in About settings; see [update publishing](docs/UPDATES.md).
 Media, previews, preferences and history stay on your Mac or in the folder you choose.
 Original embedded metadata is preserved. A cloud-managed folder may sync through its own service.
 External Help/About links open in your browser only when chosen. Read the
@@ -77,7 +83,10 @@ External Help/About links open in your browser only when chosen. Read the
 
 ## Getting started
 
-The [public beta, build 20261118.2](https://github.com/cloakyard/cloakroll/releases/tag/v0.1.0-beta.20261118.2), includes signed updates in About. The [release notes](docs/releases/v0.1.0-beta.20261118.2.md) list the verification and hardware limits.
+The published **0.1.0 beta, build 20261118.2**, is available on
+[GitHub Releases](https://github.com/cloakyard/cloakroll/releases/tag/v0.1.0-beta.20261118.2),
+with a DMG and SHA-256 checksum. The [beta notes](docs/releases/v0.1.0-beta.20261118.2.md)
+record the features, verification and known limits; release binaries stay out of source control.
 
 1. Download and open [CloakRoll-v0.1.0-beta.20261118.2.dmg](https://github.com/cloakyard/cloakroll/releases/download/v0.1.0-beta.20261118.2/CloakRoll-v0.1.0-beta.20261118.2.dmg).
 2. Drag **CloakRoll** to **Applications**, then open it and eject the installer.
@@ -93,10 +102,7 @@ Keep another independent copy of irreplaceable originals while evaluating the be
 
 ### Published release and source
 
-The October 30 beta adds **About → Buy me a coffee** and refreshes compatible project dependencies.
-It retains original USB backups, incremental verification, bundled license notices and the Air
-installer. See the [release audit](docs/verification/SUPPORT-BETA-2026-10-30.md) for checks,
-dependency versions and remaining acceptance limits.
+The November 18 beta adds signed in-app updates and the family Air installer. It retains the backup health, saved originals and storage review features of the November 3 beta. The [release notes](docs/releases/v0.1.0-beta.20261118.2.md) cover installation and verification.
 
 ## Development
 
@@ -128,8 +134,9 @@ avoids inherited agent Git configuration interfering with SwiftPM. See
 | Verification | Original sizes, CryptoKit SHA-256 and exclusive file publication |
 | Build and packaging | XcodeGen, SwiftLint, hdiutil and pinned build-time dmgbuild tooling |
 
-GRDB 7.11.1 is the only third-party Swift dependency. Its exact revision is pinned, and its
-MIT notice and privacy manifest ship in the app. The installer tools are build-only dependencies.
+GRDB 7.12.0 is the core’s only third-party Swift dependency; its MIT notice and privacy manifest
+ship in the app. The app also embeds pinned Sparkle 2.10.1 and its license notices. The installer
+tools are build-only dependencies.
 
 To prepare a dated beta and DMG, follow the setup in [Release](docs/RELEASE.md), then run:
 
@@ -170,6 +177,8 @@ The website follows the portable [Air contract](DESIGN.md) and its pinned local 
 
 ## Project structure
 
+In `apps/macos/App/`, `App/` holds the entry point and app state, `Features/` groups product workflows, `Shared/` holds reusable UI helpers and `Resources/` contains app resources. Headless code and its tests live under `apps/macos/Packages/`.
+
 ```text
 cloakroll/
 ├── apps/macos/
@@ -187,6 +196,9 @@ See [architecture](ARCHITECTURE.md), [artwork](assets/README.md) and the
 [documentation index](docs/README.md).
 
 ## Deployment and releases
+
+The app uses a three-part marketing version and an increasing `YYYYMMDD.N` build number.
+See the [Mac release guide](docs/MAC-RELEASE.md) for the Air installer, version settings and Developer ID workflow.
 
 Publish website changes through tested `dev` → `main` PRs and keep `dev` updated. When dev also holds unrelated native work, use a separately reviewed website-only PR under the maintainer's approved exception, then merge main into dev without releasing that native work. The [website guide](apps/site/README.md#deployment-and-releases) records build and deployment commands.
 

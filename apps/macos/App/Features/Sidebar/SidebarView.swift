@@ -5,6 +5,14 @@ struct SidebarView: View {
     @Environment(AppModel.self) private var model
 
     var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            productHeader
+            navigationList.clipped()
+            settingsFooter
+        }
+    }
+
+    private var navigationList: some View {
         List(selection: selection) {
             Section {
                 DeviceSummary()
@@ -15,6 +23,9 @@ struct SidebarView: View {
                 ForEach([LibraryFilter.all, .photos, .videos, .livePhotos, .raw], id: \.self) { row($0) }
             }
             Section("Backup") {
+                Label("Saved Originals", systemImage: "photo.stack").tag(SidebarDestination.savedLibrary)
+                Label("Backup Health", systemImage: "checkmark.shield")
+                    .tag(SidebarDestination.backupHealth)
                 ForEach([LibraryFilter.notBackedUp, .backedUp, .recentlyBackedUp], id: \.self) { row($0) }
                 Label("Backup History", systemImage: "clock.arrow.circlepath")
                     .tag(SidebarDestination.backupHistory)
@@ -68,7 +79,31 @@ struct SidebarView: View {
             }
         }
         .listStyle(.sidebar)
-        .navigationTitle("CloakRoll")
+    }
+
+    private var productHeader: some View {
+        HStack(spacing: 10) {
+            Image("SidebarAppIcon").interpolation(.high)
+                .frame(width: 44, height: 44).accessibilityHidden(true)
+            Text(verbatim: "CloakRoll").font(.title3.weight(.semibold)).accessibilityAddTraits(.isHeader)
+        }
+        .padding(.horizontal, 16)
+        .padding(.top, 10)
+        .padding(.bottom, 12)
+    }
+
+    private var settingsFooter: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Divider().accessibilityHidden(true)
+            SettingsLink {
+                Label("Settings…", systemImage: "gearshape")
+                    .frame(maxWidth: .infinity, minHeight: 40, alignment: .leading)
+                    .contentShape(.rect)
+            }
+            .buttonStyle(.borderless)
+        }
+        .padding(.horizontal, 16)
+        .padding(.bottom, 6)
     }
 
     private var openDestinationAction: some View {
@@ -85,6 +120,8 @@ struct SidebarView: View {
             switch value {
             case .library(let filter): model.filter = filter
             case .backupHistory: model.navigation = .backupHistory
+            case .backupHealth: model.navigation = .backupHealth
+            case .savedLibrary: model.navigation = .savedLibrary
             case nil: break
             }
         })

@@ -26,7 +26,7 @@ def output(*args):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--build", default=datetime.now(ZoneInfo("Asia/Kolkata")).strftime("%Y%m%d"),
+    parser.add_argument("--build", default=datetime.now(ZoneInfo("Asia/Kolkata")).strftime("%Y%m%d") + ".1",
                         help="YYYYMMDD, optionally .N for another build that day (India time).")
     args = parser.parse_args()
     if not re.fullmatch(r"\d{8}(?:\.[1-9]\d*)?", args.build):
@@ -36,7 +36,11 @@ def main():
         source_commit = capture_source(ROOT)
     except ValueError as error:
         parser.error(str(error))
-    version = "0.1.0"
+    match = re.search(r'^\s*MARKETING_VERSION:\s*["\']?(\d+\.\d+\.\d+)["\']?\s*$',
+                      (MACOS / "project.yml").read_text(), re.MULTILINE)
+    if not match:
+        parser.error("Set MARKETING_VERSION to X.Y.Z in project.yml.")
+    version = match.group(1)
     release = MACOS / "build" / f"Beta-{version}-{args.build}"
     release.mkdir(parents=True, exist_ok=False)
     logs = release / "logs"

@@ -1,7 +1,7 @@
 import SwiftUI
 
 enum SettingsTab: String {
-    case general, backup, privacy, about
+    case general, backup, notifications, privacy, about
 }
 
 struct SettingsView: View {
@@ -12,10 +12,12 @@ struct SettingsView: View {
         TabView(selection: $model.settingsTab) {
             general.tabItem { Label("General", systemImage: "gearshape") }.tag(SettingsTab.general)
             backup.tabItem { Label("Backup", systemImage: "externaldrive") }.tag(SettingsTab.backup)
+            NotificationSettingsView().tabItem { Label("Notifications", systemImage: "bell") }.tag(SettingsTab.notifications)
             PrivacySettingsView().tabItem { Label("Privacy", systemImage: "lock.shield") }.tag(SettingsTab.privacy)
             AboutSettingsView().tabItem { Label("About", systemImage: "info.circle") }.tag(SettingsTab.about)
         }
-        .frame(width: 640, height: 600)
+        .frame(minWidth: 640, idealWidth: 640, maxWidth: .infinity,
+               minHeight: 480, idealHeight: 600, maxHeight: .infinity)
         .onDisappear { model.settingsTab = .general }
     }
 

@@ -75,7 +75,7 @@ struct BackupCompletionIndexTests {
         let migrations = try await directory.database().read {
             try String.fetchAll($0, sql: "SELECT identifier FROM grdb_migrations")
         }
-        #expect(migrations == ["v1_original_backup_history", "v2_publication_journal", "v3_session_asset_lookup", "v4_folder_recovery", "v5_device_last_backup", "v6_history_pages", "v7_session_failure_details"])
+        #expect(migrations == ["v1_original_backup_history", "v2_publication_journal", "v3_session_asset_lookup", "v4_folder_recovery", "v5_device_last_backup", "v6_history_pages", "v7_session_failure_details", "v8_integrity_checks", "v9_backup_continuation", "v10_saved_library_metadata"])
     }
 
     @Test func indexedActiveCompletionCountsAnAssetOnlyAfterItsLastDistinctResource() async throws {

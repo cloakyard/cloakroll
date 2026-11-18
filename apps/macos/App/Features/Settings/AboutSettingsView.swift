@@ -9,6 +9,7 @@ struct AboutSettingsView: View {
                 AboutHeaderView(version: "\(version) · \(releaseChannel)")
                     .listRowInsets(EdgeInsets())
             }
+            UpdateSettingsSection()
             Section {
                 if let url = SettingsLinks.author {
                     SettingsLinkRow(title: "github.com/sumitsahoo", symbol: "person.crop.circle", destination: url)
@@ -55,8 +56,10 @@ private struct LicensesView: View {
                     Text("Open-Source Licenses").font(.title2.weight(.semibold))
                     Text("CloakRoll").font(.headline)
                     Text(license("LICENSE"))
-                    Text("GRDB 7.11.1").font(.headline)
+                    Text("GRDB 7.12.0").font(.headline)
                     Text(license("ThirdPartyNotices/GRDB.txt"))
+                    Text("Sparkle 2.10.1").font(.headline)
+                    Text(license("ThirdPartyNotices/Sparkle.txt"))
                 }
                 .font(.callout)
                 .textSelection(.enabled)

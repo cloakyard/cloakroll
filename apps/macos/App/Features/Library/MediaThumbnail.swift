@@ -1,4 +1,3 @@
-import CoreGraphics
 import MediaModels
 import SwiftUI
 import ThumbnailPipeline

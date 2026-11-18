@@ -17,7 +17,8 @@ public actor BackupStore {
 
     public func beginSession(
         device: ConnectedDevice, destinationID: UUID, sourceSessionID: UUID,
-        assets: [MediaAsset], identity: BackupCatalogIdentity
+        assets: [MediaAsset], identity: BackupCatalogIdentity,
+        folderLayout: BackupFolderLayout? = nil, continuingSessionID: UUID? = nil
     ) async throws -> UUID {
         do {
             let registration = try BackupRegistration(
@@ -25,7 +26,16 @@ public actor BackupStore {
             )
             let id = UUID()
             try await database.write { db in
+                if let continuingSessionID {
+                    let plan = try BackupContinuation.read(db, sessionID: continuingSessionID,
+                                                           destinationID: destinationID, identity: identity)
+                    guard plan.unavailableAssets == 0, Set(plan.assetIDs) == Set(assets.map(\.id)),
+                          plan.folderLayout == folderLayout else { throw BackupStoreError.invalidIdentity }
+                }
                 try BackupStoreWriting.begin(db, id: id, destinationID: destinationID, registration: registration)
+                try SavedLibraryReading.recordMetadata(db, assets: assets, identity: identity)
+                try db.execute(sql: "UPDATE backup_session SET folder_layout = ?, continued_from = ? WHERE id = ?",
+                               arguments: [folderLayout?.rawValue, continuingSessionID?.uuidString, id.uuidString])
             }
             return id
         } catch { throw Self.failure(error) }

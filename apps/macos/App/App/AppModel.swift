@@ -12,7 +12,6 @@ typealias DeviceViewState = DeviceConnectionState
 @MainActor @Observable
 final class AppModel {
     var navigation = SidebarDestination.library(.all)
-    var isViewingLibrary: Bool { navigation != .backupHistory }
     var filter: LibraryFilter = .all { didSet { navigation = .library(filter); scheduleProjection() } }
     var search = "" { didSet { scheduleProjection() } }
     var searchPresented = false
@@ -33,6 +32,7 @@ final class AppModel {
     private(set) var deviceInventory = DeviceInventory()
     var isProjecting = false
     var presentation: LibraryPresentation?
+    var backupPreviewRequest: BackupPreviewRequest?
     var settingsTab = SettingsTab.general
     var backupOrganization = BackupOrganization.byDate { didSet { preferences.save(backupOrganization) } }
     var sampleProgress = false
@@ -91,7 +91,10 @@ final class AppModel {
         #if DEBUG
         if ProcessInfo.processInfo.environment["CLOAKROLL_TESTING"] == "1" { return }
         let arguments = ProcessInfo.processInfo.arguments
-        if arguments.contains("--empty") {
+        if arguments.contains("--feature-preview") {
+            await FeaturePreview.prepare(self)
+            return
+        } else if arguments.contains("--empty") {
             await loadSample(count: 0, state: .disconnected)
             return
         } else if arguments.contains("--locked") {
@@ -104,6 +107,7 @@ final class AppModel {
         #endif
         startLive()
         await backup.persistence?.loadSessions()
+        await backup.restoreNotificationHistory()
     }
 
     func loadSample(count: Int, state: DeviceViewState = .ready) async {
@@ -200,10 +204,7 @@ final class AppModel {
 
     func currentAsset(id: String) -> MediaAsset? { lookup[id] }
 
-    func startBackup(assets: [MediaAsset]) {
-        guard let sessionID = catalogSessionID, let download = originalDownload else { return }
-        backup.start(assets: assets, sessionID: sessionID, folderLayout: backupOrganization.folderLayout, download: download)
-    }
+    func waitUntilProjected() async { await projectionTask?.value }
 
     var originalDownload: BackupEngine.Download? {
         guard backupSourceAvailable, let provider = browser as? any OriginalMediaDownloading else { return nil }

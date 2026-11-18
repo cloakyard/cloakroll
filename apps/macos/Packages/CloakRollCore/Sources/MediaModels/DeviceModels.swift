@@ -1,5 +1,3 @@
-import Foundation
-
 public struct DeviceIdentity: Hashable, Codable, Sendable {
     public enum Kind: String, Codable, Sendable {
         case persistent

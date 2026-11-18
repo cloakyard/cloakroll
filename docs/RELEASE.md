@@ -4,7 +4,26 @@ Target: finish the current USB-original-backup scope, fix acceptance failures, a
 restore-to-iPhone in the backlog. Additional feature expansion is not needed to finish V1.
 
 
-## Current beta — 30 October 2026
+## Current beta — 3 November 2026
+
+Published **0.1.0 beta (20261103)** on
+[GitHub Releases](https://github.com/cloakyard/cloakroll/releases/tag/v0.1.0-beta.20261103)
+with its DMG and SHA-256 checksum. Backup Health, explicit unfinished-backup continuation,
+offline Saved Originals, storage review and optional local notifications are implemented, with
+follow-up correctness, lifecycle and keyboard/AX fixes. All 664 Swift tests, five release-tool
+tests, strict lint, fresh Debug/Release builds, generated metadata probe, bundle and mounted-DMG
+checks passed. The packaged app launched directly from the DMG and reported the correct beta
+build in About. Both uploaded assets were downloaded and matched byte-for-byte before publication.
+The tag points to the exact clean app/installer source, `ac275dbb4162063f2d5366065daa67c609c7677b`.
+
+The user's existing ad-hoc signing process is retained; paid-account signing/notarization is
+deferred. No macOS 26/clean test environment is available. Full VoiceOver feedback remains
+unobservable through the control tool, and physical testing remains the final stage. None of
+these gates is closed by publication. See [the nonphysical audit](verification/NONPHYSICAL-2026-11-03.md)
+and [release notes](releases/v0.1.0-beta.20261103.md). No installed-app replacement or production
+website deployment was performed.
+
+## Previous beta — 30 October 2026
 
 Published **0.1.0 beta (20261030)** on
 [GitHub Releases](https://github.com/cloakyard/cloakroll/releases/tag/v0.1.0-beta.20261030)
@@ -32,13 +51,10 @@ Python 3.11/3.12/3.13 may be used to create the environment. These tools do not 
 Then run from `apps/macos`:
 
 ```sh
-scripts/prepare_beta.sh --build 20261028
+scripts/prepare_beta.sh --build 20261118.1
 ```
 
-The build number uses CloakDrop’s `YYYYMMDD` convention. Omitting `--build` uses today in
-Asia/Kolkata. Use `.1`, `.2`, etc. for additional builds that day. `CFBundleShortVersionString`
-stays numeric `0.1.0`; the app’s separate channel is **Beta**. Ordinary Debug builds remain
-**Development preview**. Reusing an existing build directory or DMG output is rejected.
+The build number uses the family’s `YYYYMMDD.N` convention. Omitting `--build` selects today in Asia/Kolkata with revision 1. Increment the revision for subsequent builds on that date. The marketing version comes from `project.yml`. The beta packager sets the **Beta** channel, and ordinary local builds show **Development preview**. Choose a fresh output directory for each build.
 
 The command captures the starting clean Git revision and rejects a changed revision or dirty
 source tree before and after each stage. Do not edit or commit source while it runs. It runs
@@ -47,8 +63,8 @@ hosted app tests, strict lint, normal Debug and Apple silicon Release builds, ac
 DMG creation and a read-only mounted comparison. It writes:
 
 ```text
-build/Beta-0.1.0-20261028/
-  CloakRoll-v0.1.0-beta.20261028.dmg
+build/Beta-0.1.0-20261118.1/
+  CloakRoll-v0.1.0-beta.20261118.1.dmg
   SHA256SUMS.txt
   build-manifest.json       # Exact commit, toolchain, build, architectures, tests and DMG hash
   app-inventory.json        # File hashes, permissions and symlink targets
@@ -69,11 +85,11 @@ build/dmg-tools/bin/python scripts/dmg/validate_dmg.py /absolute/path/new-instal
 
 The Air layout matches CloakDrop’s 760×570-point composition and native 96-point icons.
 The Finder frame is 760×602 points to include its title bar without clipping the artwork.
-`background.swift` authors a 1520×1140 image at 144 dpi, with CloakRoll’s purple accent.
+`background.swift` authors a 1520×1140 image at 144 dpi, with the Cloakyard family mark and Air palette.
 Regenerate the committed background from `apps/macos`:
 
 ```sh
-swift scripts/dmg/background.swift App/Resources/Assets.xcassets/AboutAppIcon.imageset/about_icon_512.png ../../assets/dmg/background.png
+swift scripts/dmg/background.swift ../../assets/dmg/background.png
 sips -s dpiWidth 144 -s dpiHeight 144 ../../assets/dmg/background.png
 ```
 
@@ -165,7 +181,9 @@ Do not bypass Gatekeeper or treat an ad-hoc signature as notarization.
 See [the privacy policy](PRIVACY.md). The app has no network entitlements, analytics,
 account system or remote processing. The actual signed bundle must contain only the
 reviewed sandbox, USB, user-selected read/write, app-scoped bookmark and photo-library
-entitlements. Existing photo access permission is retained until device testing can
+entitlements, Sparkle’s app-scoped installer Mach lookup exceptions, and (for ad-hoc builds only)
+the library-validation exception. Sparkle’s separate downloader service performs opt-in update
+network requests; the host retains no network entitlement. Existing photo access permission is retained until device testing can
 validate any reduction; this pass does not expand access. No download path enables
 conversion, source deletion, private PTP commands or device writes.
 

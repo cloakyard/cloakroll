@@ -4,6 +4,25 @@
   "note": "Presence in this inventory is not audit or validation. Preserve evidence when updating.",
   "surfaces": [
     {
+      "path": "apps/macos/scripts/dmg/background.swift",
+      "kind": "static-artwork",
+      "sourceReviewed": true,
+      "airImplemented": true,
+      "validated": true,
+      "states": [
+        "static light artwork",
+        "real Finder icons and labels",
+        "mounted read-only installer"
+      ],
+      "viewports": [
+        "760×570 pt / 1520×1140 px fixed Finder canvas"
+      ],
+      "evidence": [
+        "docs/MAC-RELEASE.md"
+      ],
+      "notes": "The fixed Air background uses the family mark from Cloakyard. Finder supplies the draggable product icon, Applications shortcut and Install Guide."
+    },
+    {
       "path": "apps/site/src/components/Brand.astro",
       "kind": "app-surface",
       "sourceReviewed": false,
@@ -116,8 +135,10 @@
       "validated": false,
       "states": [],
       "viewports": [],
-      "evidence": [],
-      "notes": ""
+      "evidence": [
+        "docs/verification/RETINA-UI-2026-11-18.md"
+      ],
+      "notes": "The November 18 review covers new native light and dark product captures at 390, 820, 1280 and 1600 CSS pixels."
     },
     {
       "path": "apps/site/src/pages/privacy.astro",

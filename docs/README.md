@@ -14,6 +14,7 @@
 - [Development](DEVELOPMENT.md), [architecture](../ARCHITECTURE.md), [Apple APIs](APPLE_APIS.md).
 - [Implementation plan](PLAN.md) — completed work and open acceptance gates.
 - [Release process](RELEASE.md) — checks, dated builds, DMGs and distribution requirements.
+- [Signed updates](UPDATES.md) — free-account builds, Sparkle keys, feeds and update packaging.
 - [Beta readiness audit](verification/BETA-2026-10-28.md).
 - [Artwork](../assets/README.md) and [contributing](../CONTRIBUTING.md).
 
@@ -24,6 +25,7 @@ generated scale measurements and physical device evidence. Dated records describ
 actually observed on that build; they do not imply later hardware or OS acceptance.
 
 - [About support, dependency audit and beta 20261030](verification/SUPPORT-BETA-2026-10-30.md)
+- [Sparkle, About updates and privacy](verification/SPARKLE-2026-11-17.md)
 - [First public beta, DMG and GitHub publication](verification/FIRST-PUBLIC-BETA-2026-10-29.md)
 - [Keyboard, system accessibility, scale profiling and beta 20261029](verification/CLOSEOUT-2026-10-29.md)
 - [Live Photo support and the dev/main workflow](verification/LIVE-PHOTOS-AND-BRANCHES-2026-10-29.md)

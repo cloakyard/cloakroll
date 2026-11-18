@@ -1,5 +1,3 @@
-import Foundation
-
 public struct BackupHistoryFilter: Sendable, Equatable, Hashable {
     public enum Outcome: Sendable, Hashable { case all, completed, unfinished }
 

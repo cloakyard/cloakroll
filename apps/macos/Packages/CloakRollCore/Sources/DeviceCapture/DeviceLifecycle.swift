@@ -53,11 +53,6 @@ struct DeviceLifecycle {
         connection = DeviceConnection(device: connection.device, state: .unavailable, message: message)
     }
 
-    mutating func removed(token: UUID) {
-        guard activeToken == token else { return }
-        reset()
-    }
-
     mutating func reset() {
         activeToken = nil
         isReady = false

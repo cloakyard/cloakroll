@@ -24,10 +24,10 @@ func hex(_ string: String, _ alpha: CGFloat = 1) -> NSColor {
     )
 }
 
-let accent = hex("#714BC4")
-let accentStrong = hex("#503584")
+let accent = hex("#287F9B")
+let accentStrong = hex("#175E76")
 let surface = hex("#FBFCFC")
-let surfaceTwo = hex("#EEEAF5")
+let surfaceTwo = hex("#E6EFF1")
 
 let icon = NSImage(size: iconSize, flipped: true) { _ in
     let context = NSGraphicsContext.current!

@@ -51,11 +51,24 @@ def check(app, distribution, build=None, channel=None):
 
     command("/usr/bin/codesign", "--verify", "--deep", "--strict", str(app))
     entitlements, _ = command("/usr/bin/codesign", "-d", "--entitlements", "-", "--xml", str(app))
-    expected = plist(Path(__file__).resolve().parents[1] / "App/Resources/CloakRoll.entitlements")
-    require(plistlib.loads(entitlements) == expected,
-            "Signed entitlements differ from the reviewed source (including possible test/debug permissions).")
+    entitlement_file = "CloakRoll.Release.entitlements" if distribution else "CloakRoll.entitlements"
+    expected = plist(Path(__file__).resolve().parents[1] / "App/Resources" / entitlement_file)
+    expected["com.apple.security.temporary-exception.mach-lookup.global-name"] = [
+        info["CFBundleIdentifier"] + "-spks", info["CFBundleIdentifier"] + "-spki"
+    ]
     _, signature = command("/usr/bin/codesign", "-dv", "--verbose=4", str(app))
     signature = signature.decode()
+    actual = plistlib.loads(entitlements)
+    if distribution:
+        team = re.search(r"^TeamIdentifier=([A-Z0-9]{10})$", signature, re.MULTILINE)
+        require(team, "Developer ID team missing.")
+        # Xcode can inject these identity entitlements at export.
+        for key, value in {"com.apple.developer.team-identifier": team.group(1),
+                           "com.apple.application-identifier": team.group(1) + "." + info["CFBundleIdentifier"]}.items():
+            if key in actual:
+                expected[key] = value
+    require(actual == expected,
+            "Signed entitlements differ from the reviewed source (including possible test/debug permissions).")
     require(re.search(r"flags=.*\([^\n]*runtime", signature), "Hardened runtime is missing.")
     architectures, _ = command("/usr/bin/lipo", "-archs", str(app / "Contents/MacOS/CloakRoll"))
     architectures = architectures.decode().strip()

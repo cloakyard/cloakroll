@@ -5,7 +5,7 @@ struct PrivacySettingsView: View {
         Form {
             Section {
                 Label("Local processing", systemImage: "internaldrive")
-                Label("No accounts, analytics or media uploads", systemImage: "lock.shield")
+                Label("No accounts, advertising, analytics or telemetry", systemImage: "lock.shield")
                 Label("Your iPhone originals stay unchanged", systemImage: "photo.on.rectangle")
             } header: {
                 Text("Your Privacy")
@@ -17,6 +17,13 @@ struct PrivacySettingsView: View {
                 Backup history, device and folder references, preferences and disposable previews stay in the app’s local storage.
                 Camera information is read when you open Media Info. CloakRoll does not extract GPS fields from that request.
                 """)
+            }
+            Section("Notifications") {
+                Text("Optional backup notifications and reminders are scheduled locally. "
+                     + "Their text excludes phone names, filenames and paths. No notification server is used.")
+            }
+            Section("Updates") {
+                Text(UpdatePrivacyCopy.details)
             }
             Section("Your Originals") {
                 Text("""
@@ -36,7 +43,8 @@ struct PrivacySettingsView: View {
                     SettingsLinkRow(title: "Read the Full Privacy Policy", symbol: "doc.text", destination: url)
                 }
             } footer: {
-                Text("External links open in your browser only when you choose them. CloakRoll does not upload diagnostics.")
+                Text("Policy updated 17 November 2026. External links open in your browser only when you choose them. "
+                     + "CloakRoll does not upload diagnostics.")
             }
         }
         .formStyle(.grouped)

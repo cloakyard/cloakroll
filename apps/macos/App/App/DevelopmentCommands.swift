@@ -34,6 +34,7 @@ struct DevelopmentCommands: Commands {
                 }
                 Button("Sample Backup History · 205 Sessions") { openWindow(id: "sample-backup-history") }
                 Button("Dock Progress Examples") { openWindow(id: "dock-progress-examples") }
+                Button("New Features · Generated Backups") { openWindow(id: "feature-preview") }
                 Menu("Media Info Examples") {
                     Button("Long Filenames and Many Originals") {
                         Task { await MediaInfoExamples.show(.longFilenames, in: model) }

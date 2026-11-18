@@ -45,6 +45,9 @@ final class BackupSessionCheckController {
             let result = try await withTaskCancellationHandler { try await task.value } onCancel: { task.cancel() }
             try Task.checkCancellation()
             progress = result
+            if result.totalFiles > 0 {
+                try await persistence.store().recordIntegrityCheck(sessionID: session.id, result: result)
+            }
             phase = .completed
         } catch is CancellationError {
             phase = .stopped

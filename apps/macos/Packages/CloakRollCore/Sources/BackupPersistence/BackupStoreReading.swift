@@ -187,7 +187,10 @@ enum BackupStoreReading {
         }
         let clause = conditions.isEmpty ? "" : " WHERE " + conditions.joined(separator: " AND ")
         arguments += [limit]
-        return try Row.fetchAll(db, sql: "SELECT * FROM backup_session" + clause + " ORDER BY started_at DESC, id DESC LIMIT ?",
+        return try Row.fetchAll(db, sql: """
+            SELECT *, EXISTS(SELECT 1 FROM backup_session child WHERE child.continued_from = backup_session.id) AS has_continuation
+            FROM backup_session
+            """ + clause + " ORDER BY started_at DESC, id DESC LIMIT ?",
                                arguments: arguments)
     }
 
@@ -201,7 +204,9 @@ enum BackupStoreReading {
             totalAssets: row["total_assets"], totalResources: row["total_resources"], completedAssets: row["completed_assets"],
             verifiedResources: row["verified_resources"], verifiedBytes: row["verified_bytes"],
             transferredBytes: row["transferred_bytes"], failureMessage: row["failure_message"],
-            unavailableOriginalsCount: row["unavailable_originals"]
+            unavailableOriginalsCount: row["unavailable_originals"],
+            folderLayout: (row["folder_layout"] as String?).flatMap(BackupFolderLayout.init(rawValue:)),
+            hasContinuation: row.hasColumn("has_continuation") ? row["has_continuation"] : false
         )
     }
 }

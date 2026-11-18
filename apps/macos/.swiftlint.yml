@@ -4,6 +4,11 @@ included:
 excluded:
   - Packages/CloakRollCore/.build
   - build
+analyzer_rules:
+  - unused_import
+unused_import:
+  # Logger is surfaced through OSLog; SourceKit attributes it to the re-exported os module.
+  always_keep_imports: [OSLog]
 disabled_rules:
   - trailing_comma
   - todo

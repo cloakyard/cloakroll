@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 """Verify a read-only installer and compare every app file/link with its source."""
 import argparse
+from datetime import datetime
 import hashlib
+import json
 import os
 from pathlib import Path
 import plistlib
+import re
 import stat
 import subprocess
 import sys
@@ -14,6 +17,32 @@ from ds_store import DSStore
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[3]
+CONFIG = json.loads((HERE / "installer.json").read_text())
+PRODUCT = CONFIG["product"]
+ICON = CONFIG["volumeIcon"]
+BACKGROUND = ROOT / CONFIG["background"]
+
+
+def check_app(app):
+    info = plistlib.loads((app / "Contents/Info.plist").read_bytes())
+    require(info["CFBundleIdentifier"] == "com.cloakyard." + PRODUCT.lower(), "Wrong app for this installer.")
+    require(app.name == PRODUCT + ".app", "Pass the app with its original product name.")
+    require(info["LSMinimumSystemVersion"].split(".")[0] == str(CONFIG["minimumOS"]), "Artwork OS mismatch.")
+    require(run("lipo", "-archs", app / "Contents/MacOS" / info["CFBundleExecutable"]).strip() == b"arm64",
+            "Artwork requires an Apple silicon build.")
+    require(re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", info["CFBundleShortVersionString"]), "Expected X.Y.Z.")
+    build = info["CFBundleVersion"]
+    require(re.fullmatch(r"[0-9]{8}(?:\.[1-9][0-9]*)?", build), "Expected YYYYMMDD or YYYYMMDD.N.")
+    datetime.strptime(build.split(".")[0], "%Y%m%d")
+    for extension in (app / "Contents/PlugIns").glob("*.appex"):
+        ext = plistlib.loads((extension / "Contents/Info.plist").read_bytes())
+        require(all(ext[k] == info[k] for k in ("CFBundleVersion", "CFBundleShortVersionString")),
+                "Extension version must match its app.")
+    run("codesign", "--verify", "--deep", "--strict", app)
+    ents = plistlib.loads(run("codesign", "-d", "--entitlements", "-", "--xml", app))
+    require(not ents.get("com.apple.security.get-task-allow"), "Package a Release build.")
+    mode = [] if ents.get("com.apple.security.cs.disable-library-validation") else ["--require-distribution"]
+    run(sys.executable, HERE.parent / "check_release.py", app, *mode)
 
 
 def run(*args):
@@ -57,28 +86,28 @@ def validate(dmg, source):
     run("/usr/bin/hdiutil", "verify", dmg)
     image = plistlib.loads(run("/usr/bin/hdiutil", "imageinfo", "-plist", dmg))
     require(image["Format"] == "UDZO", "Installer is not compressed read-only UDZO.")
-    with tempfile.TemporaryDirectory(prefix="cloakroll-validate-") as directory:
+    with tempfile.TemporaryDirectory(prefix="installer-validate-") as directory:
         mount = Path(directory) / "volume"
         mounted = False
         try:
             run("/usr/bin/hdiutil", "attach", "-readonly", "-nobrowse", "-noautoopen",
                 "-mountpoint", mount, "-plist", dmg)
             mounted = True
-            app = mount / "CloakRoll.app"
-            run("python3", HERE.parent / "check_release.py", app, "--channel", "Beta")
+            app = mount / f"{PRODUCT}.app"
+            check_app(app)
             require(inventory(app) == inventory(source), "Packaged app differs from the verified source.")
             require((mount / "Applications").is_symlink() and os.readlink(mount / "Applications") == "/Applications",
                     "Applications link has the wrong target.")
             require((mount / "Install Guide.txt").read_bytes() == (HERE / "ReadMe.txt").read_bytes(),
                     "Install guide differs from source.")
-            require(digest(mount / ".background.png") == digest(ROOT / "assets/dmg/background.png"),
+            require(digest(mount / ".background.png") == digest(BACKGROUND),
                     "Installer background differs from the reviewed artwork.")
-            require(digest(mount / ".VolumeIcon.icns") == digest(app / "Contents/Resources/CloakRoll.icns"),
+            require(digest(mount / ".VolumeIcon.icns") == digest(app / "Contents/Resources" / ICON),
                     "Volume icon differs from app icon.")
             visible = {p.name for p in mount.iterdir() if not p.name.startswith(".")}
-            require(visible == {"CloakRoll.app", "Applications", "Install Guide.txt"}, "Unexpected installer contents.")
+            require(visible == {f"{PRODUCT}.app", "Applications", "Install Guide.txt"}, "Unexpected installer contents.")
             with DSStore.open(str(mount / ".DS_Store"), "r") as store:
-                for name, position in {"CloakRoll.app": (204, 282), "Applications": (556, 282),
+                for name, position in {f"{PRODUCT}.app": (204, 282), "Applications": (556, 282),
                                        "Install Guide.txt": (380, 464)}.items():
                     require(tuple(store[name]["Iloc"]) == position, f"Wrong icon position: {name}")
                 options = store["."]["icvp"]

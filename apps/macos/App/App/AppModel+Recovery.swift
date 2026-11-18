@@ -1,6 +1,3 @@
-import BackupEngine
-import Foundation
-
 extension AppModel {
     func rebuildBackupHistory(mode: BackupFolderRecoveryController.Mode) async {
         guard !backup.isBusy, !backup.isCheckingHistory,

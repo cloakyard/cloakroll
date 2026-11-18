@@ -2,7 +2,38 @@
 
 Started 12 September 2026. Product: **Your camera roll, safely on your Mac.**
 
+## Local review — 18 November 2026
+
+The [Retina sidebar and website review](verification/RETINA-UI-2026-11-18.md) records build 20261118.4, the installed update check and the new sample-library screenshots.
+
+## Dependency audit — 14 November 2026
+
+GRDB 7.12.0 is verified in the app core and performance probe. All 664 Swift tests,
+strict lint, normal/clean builds, compiler-backed import analysis and the 10k probe
+pass. See [evidence](verification/DEPENDENCIES-2026-11-14.md). Native UI and hardware
+acceptance are unchanged; this is not a new beta publication.
+
 ## Working agreement
+
+On 3 November 2026 the user authorized the five next-beta features, implemented in
+priority order with physical device testing deferred to the end. The active queue and
+separate software/physical checkboxes are in [FEATURE-TODO.md](FEATURE-TODO.md).
+All five implementations are now present on `dev`. The [3 November software audit](verification/NEXT-BETA-2026-11-03.md)
+records automated and generated-data UI evidence. Physical, real-notification and full accessibility
+acceptance remain open; no new release or production promotion is implied.
+The follow-up [code and lifecycle cleanup](verification/CODE-CLEANUP-2026-11-03.md) removes obsolete
+paths and audits async preview ownership without closing any hardware gate.
+The subsequent [correctness audit](verification/CORRECTNESS-2026-11-03.md) fixes same-connection
+retry, saved-source identity and notification ordering with reproducible regression tests.
+The user subsequently authorized the remaining nonphysical acceptance and next beta, retaining
+the existing ad-hoc build process without a paid Apple developer account. No macOS 26/clean test
+environment is available. The [nonphysical acceptance audit](verification/NONPHYSICAL-2026-11-03.md)
+records keyboard/AX fixes and real macOS-reported local notification delivery; VoiceOver feedback
+observation remains blocked. Physical testing stays last and production deployment remains separate.
+The requested [beta 20261103](https://github.com/cloakyard/cloakroll/releases/tag/v0.1.0-beta.20261103)
+is published with its verified DMG and checksum from source `ac275db`. Its 664 Swift tests,
+five release-tool tests, strict lint, clean Debug/Release builds, bundle checks and packaged-app
+launch passed; publication does not close the recorded external acceptance gates.
 
 CloakDrop (`../cloakdrop`) is read-only. Work proceeds through the gates below in order.
 Every phase records its build, relevant tests, manual evidence and remaining limitations here.
@@ -1228,3 +1259,27 @@ and unauthenticated public downloads passed checksum and byte comparisons. The s
 Website and Cloudflare build checks passed. [Release notes](releases/v0.1.0-beta.20261030.md).
 Existing acceptance gates remain open; production website promotion stays in the `dev` → `main`
 PR for review, and both long-lived branches are retained.
+
+
+## 17 November 2026 — Sparkle updates
+
+Added Sparkle 2.10.1 as an app-only dependency, with a signed website feed, GitHub release
+archives and opt-in update settings. Default Debug/Release builds remain ad-hoc and team-less;
+Sparkle uses its separate downloader and installer services, preserving the host’s lack of
+a network entitlement. See [publishing](UPDATES.md) and [verification](verification/SPARKLE-2026-11-17.md).
+Local install/relaunch is verified; public deployment, Developer ID, notarization and hardware
+acceptance are separate. Existing published builds require one manual Sparkle-enabled upgrade.
+
+## 18 November 2026 — Family installer
+
+Verified the Air DMG in Finder and installed build `20261118.1` from the mounted volume. The family mark comes from the Cloakyard repository. The three products now share native source layout, README headings and dated build conventions. Developer ID export, Apple notarization and physical device acceptance remain pending. [Mac release workflow and verification](MAC-RELEASE.md).
+
+## 18 November 2026 — Public update beta
+
+Build `20261118.2` adds the signed release feed and archive. All 664 Swift tests, five tooling tests, the scale probe and read-only installer validation passed. [Beta and remaining hardware checks](releases/v0.1.0-beta.20261118.2.md).
+
+## 18 November 2026 — Sidebar review build
+
+Build `20261118.3` pins the CloakRoll icon and name above the library and Settings below it. In a generated library, scrolling to the bottom left Change Folder above the divider in light appearance. The footer opened native Settings. Closing it returned to Backup Health, and ⌘, reopened Settings. [Sidebar at the end of the list](verification/2026-11-18-sidebar.png).
+
+All 418 core and 246 hosted tests, five release-tool tests, strict lint and arm64 Debug and Release builds passed. The verified read-only DMG matched the installed app across 134 entries. Sparkle verified the candidate feed and ZIP locally. Public rollout awaits review. The existing physical-device acceptance gates still apply.

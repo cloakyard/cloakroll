@@ -3,12 +3,14 @@ import SwiftUI
 
 @main
 struct CloakRollApp: App {
+    @StateObject private var updater = AppUpdater()
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
-    @State private var model = AppModel()
+    @State private var model: AppModel
 
     init() {
         #if DEBUG
         let arguments = ProcessInfo.processInfo.arguments
+        _model = State(initialValue: arguments.contains("--feature-preview") ? FeaturePreview.makeModel() : AppModel())
         let highContrast = arguments.contains("--verify-increased-contrast")
         if arguments.contains("--verify-dark-appearance") {
             NSApplication.shared.appearance = NSAppearance(
@@ -19,6 +21,8 @@ struct CloakRollApp: App {
                 named: highContrast ? .accessibilityHighContrastAqua : .aqua
             )
         }
+        #else
+        _model = State(initialValue: AppModel())
         #endif
     }
 
@@ -36,9 +40,16 @@ struct CloakRollApp: App {
                 }
         }
         .defaultSize(width: 1_100, height: 740)
-        .commands { LibraryCommands(model: model) }
+        .commands {
+            LibraryCommands(model: model)
+            UpdateCommands(updater: updater)
+        }
 
         #if DEBUG
+        Window("Generated Backup Features", id: "feature-preview") {
+            FeaturePreviewWindow()
+        }.defaultSize(width: 1_100, height: 740)
+
         Window("Sample Backup History", id: "sample-backup-history") {
             BackupHistoryExample()
                 .environment(model)
@@ -54,9 +65,11 @@ struct CloakRollApp: App {
 
         Settings {
             SettingsView()
+                .environmentObject(updater)
                 .environment(model)
                 .tint(Design.accent)
         }
+        .defaultSize(width: 640, height: 600)
     }
 }
 

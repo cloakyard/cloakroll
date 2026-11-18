@@ -80,8 +80,7 @@ final class LibraryThumbnailController {
     }
 
     func logMetrics() async {
-        let source = await encoded.metrics()
-        let images = await decoded.metrics()
+        let (source, images) = await metrics()
         let logger = Logger(subsystem: "com.cloakyard.cloakroll", category: "Thumbnails")
         logger.notice("Thumbnail loads=\(source.sourceLoads) active=\(source.active) queued=\(source.queued)")
         logger.notice("Thumbnail coalesced=\(source.coalesced) failed=\(source.failed) diskFailures=\(source.diskFailures)")

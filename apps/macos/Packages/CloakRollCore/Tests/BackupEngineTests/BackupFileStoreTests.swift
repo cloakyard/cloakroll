@@ -45,10 +45,10 @@ struct BackupFileStoreTests {
         let second = try stage(secondStore, name: "IMG.HEIC", data: Data([2]))
         let date = date
         async let one = Task.detached {
-            try firstStore.verifyAndFinalize(first, returnedURL: first.directory.appendingPathComponent(first.filename), expectedByteCount: 1, createdAt: date)
+            try firstStore.finalizeFixture(first, returnedURL: first.directory.appendingPathComponent(first.filename), expectedByteCount: 1, createdAt: date)
         }.value
         async let two = Task.detached {
-            try secondStore.verifyAndFinalize(second, returnedURL: second.directory.appendingPathComponent(second.filename), expectedByteCount: 1, createdAt: date)
+            try secondStore.finalizeFixture(second, returnedURL: second.directory.appendingPathComponent(second.filename), expectedByteCount: 1, createdAt: date)
         }.value
         let results = try await [one, two]
         #expect(Set(results.map(\.relativePath)).count == 2)
@@ -67,7 +67,7 @@ struct BackupFileStoreTests {
         let store = try BackupFileStore(destination: root, runID: UUID(), timeZone: .gmt)
         let staged = try store.prepare(filename: "IMG.HEIC")
         #expect(throws: BackupFileError.unexpectedDownload) {
-            try store.verifyAndFinalize(staged, returnedURL: outside, expectedByteCount: 1, createdAt: date)
+            try store.finalizeFixture(staged, returnedURL: outside, expectedByteCount: 1, createdAt: date)
         }
         store.discard(staged)
         store.closeStaging()
@@ -86,7 +86,7 @@ struct BackupFileStoreTests {
         let store = try BackupFileStore(destination: root, runID: UUID(), timeZone: .gmt)
         let staged = try stage(store, name: "IMG.HEIC", data: Data([1]))
         #expect(throws: (any Error).self) {
-            try store.verifyAndFinalize(staged, returnedURL: staged.directory.appendingPathComponent(staged.filename), expectedByteCount: 1, createdAt: date)
+            try store.finalizeFixture(staged, returnedURL: staged.directory.appendingPathComponent(staged.filename), expectedByteCount: 1, createdAt: date)
         }
         store.discard(staged)
         store.closeStaging()
@@ -105,7 +105,7 @@ struct BackupFileStoreTests {
             if hardLink { try FileManager.default.linkItem(at: outside, to: file) }
             else { try FileManager.default.createSymbolicLink(at: file, withDestinationURL: outside) }
             #expect(throws: (any Error).self) {
-                try store.verifyAndFinalize(staged, returnedURL: file, expectedByteCount: 1, createdAt: date)
+                try store.finalizeFixture(staged, returnedURL: file, expectedByteCount: 1, createdAt: date)
             }
             store.discard(staged)
             #expect(try Data(contentsOf: outside) == Data([42]))
@@ -121,7 +121,7 @@ struct BackupFileStoreTests {
         let file = staged.directory.appendingPathComponent(staged.filename)
         #expect(mkfifo(file.path, 0o600) == 0)
         #expect(throws: BackupFileError.invalidFile) {
-            try store.verifyAndFinalize(staged, returnedURL: file, expectedByteCount: 1, createdAt: date)
+            try store.finalizeFixture(staged, returnedURL: file, expectedByteCount: 1, createdAt: date)
         }
         store.discard(staged)
         store.closeStaging()
@@ -162,7 +162,7 @@ struct BackupFileStoreTests {
         defer { try? FileManager.default.removeItem(at: root) }
         let store = try BackupFileStore(destination: root, runID: UUID(), timeZone: .gmt)
         let staged = try stage(store, name: "IMG.HEIC", data: Data([1, 2, 3]))
-        let result = try store.verifyAndFinalize(
+        let result = try store.finalizeFixture(
             staged, returnedURL: staged.directory.appendingPathComponent(staged.filename), expectedByteCount: 3, createdAt: date
         )
         #expect(try store.verifyExisting(relativePath: result.relativePath, expectedByteCount: 3, sha256: result.sha256))
@@ -184,7 +184,7 @@ struct BackupFileStoreTests {
         let declaredFile = originalFolder.appendingPathComponent(staged.filename)
         var finalized: FinalizedOriginal?
         #expect(throws: BackupFileError.changedDuringVerification) {
-            finalized = try store.verifyAndFinalize(
+            finalized = try store.finalizeFixture(
                 staged, returnedURL: staged.directory.appendingPathComponent(staged.filename), expectedByteCount: 3, createdAt: date
             ) {
                 try FileManager.default.moveItem(at: originalFolder, to: movedFolder)
@@ -208,5 +208,20 @@ struct BackupFileStoreTests {
         let staged = try store.prepare(filename: name)
         try data.write(to: staged.directory.appendingPathComponent(staged.filename), options: [.withoutOverwriting])
         return staged
+    }
+}
+
+// Fixture setup only. Production publication is journaled by BackupEngine.finalize.
+private extension BackupFileStore {
+    func finalizeFixture(
+        _ staged: StagedOriginal, returnedURL: URL, expectedByteCount: Int64, createdAt: Date?,
+        afterPublication: @Sendable () throws -> Void = {}
+    ) throws -> FinalizedOriginal {
+        let verified = try verifyStaged(staged, returnedURL: returnedURL, expectedByteCount: expectedByteCount, createdAt: createdAt)
+        for collision in 0..<10_000 {
+            let filename = BackupPathNaming.filename(staged.filename, collision: collision)
+            if let result = try publish(verified, filename: filename, afterPublication: afterPublication) { return result }
+        }
+        throw BackupFileError.tooManyCollisions
     }
 }
