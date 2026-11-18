@@ -1273,3 +1273,9 @@ Verified the Air DMG in Finder and installed build `20261118.1` from the mounted
 ## 18 November 2026 — Public update beta
 
 Build `20261118.2` adds the signed release feed and archive. All 664 Swift tests, five tooling tests, the scale probe and read-only installer validation passed. [Beta and remaining hardware checks](releases/v0.1.0-beta.20261118.2.md).
+
+## 18 November 2026 — Sidebar review build
+
+Build `20261118.3` pins the CloakRoll icon and name above the library and Settings below it. In a generated library, scrolling to the bottom left Change Folder above the divider in light appearance. The footer opened native Settings. Closing it returned to Backup Health, and ⌘, reopened Settings. [Sidebar at the end of the list](verification/2026-11-18-sidebar.png).
+
+All 418 core and 246 hosted tests, five release-tool tests, strict lint and arm64 Debug and Release builds passed. The verified read-only DMG matched the installed app across 134 entries. Sparkle verified the candidate feed and ZIP locally. Public rollout awaits review. The existing physical-device acceptance gates still apply.
