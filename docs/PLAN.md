@@ -2,6 +2,10 @@
 
 Started 12 September 2026. Product: **Your camera roll, safely on your Mac.**
 
+## Local review — 18 November 2026
+
+The [Retina sidebar and website review](verification/RETINA-UI-2026-11-18.md) records build 20261118.4, the installed update check and the new sample-library screenshots.
+
 ## Dependency audit — 14 November 2026
 
 GRDB 7.12.0 is verified in the app core and performance probe. All 664 Swift tests,

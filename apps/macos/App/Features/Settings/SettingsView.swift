@@ -16,7 +16,8 @@ struct SettingsView: View {
             PrivacySettingsView().tabItem { Label("Privacy", systemImage: "lock.shield") }.tag(SettingsTab.privacy)
             AboutSettingsView().tabItem { Label("About", systemImage: "info.circle") }.tag(SettingsTab.about)
         }
-        .frame(width: 640, height: 600)
+        .frame(minWidth: 640, idealWidth: 640, maxWidth: .infinity,
+               minHeight: 480, idealHeight: 600, maxHeight: .infinity)
         .onDisappear { model.settingsTab = .general }
     }
 

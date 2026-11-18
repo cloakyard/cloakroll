@@ -69,6 +69,7 @@ struct CloakRollApp: App {
                 .environment(model)
                 .tint(Design.accent)
         }
+        .defaultSize(width: 640, height: 600)
     }
 }
 

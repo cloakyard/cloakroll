@@ -83,7 +83,7 @@ struct SidebarView: View {
 
     private var productHeader: some View {
         HStack(spacing: 10) {
-            Image("AboutAppIcon").resizable().scaledToFit()
+            Image("SidebarAppIcon").interpolation(.high)
                 .frame(width: 44, height: 44).accessibilityHidden(true)
             Text(verbatim: "CloakRoll").font(.title3.weight(.semibold)).accessibilityAddTraits(.isHeader)
         }

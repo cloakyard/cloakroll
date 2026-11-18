@@ -78,3 +78,5 @@ backup. Refresh through the Debug Development menu and inspect both appearances.
 The website uses `apps/site/public/cloakroll-mark.svg`, a circular adaptation of the native
 mountain-and-sun paths matching CloakDrop’s web mark. It is used for the site brand and SVG
 favicon only; the native layered app icon and touch-icon PNG are unchanged.
+
+The sidebar uses 44- and 88-pixel renditions of the 44-point product icon for standard and Retina displays. Regenerate its light and dark artwork from the repository root with `apps/macos/scripts/export-sidebar-icon.sh assets/icon/CloakRoll.icon`. The exporter downsamples a 1024-pixel Icon Composer render of each appearance.

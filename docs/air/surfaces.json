@@ -135,8 +135,10 @@
       "validated": false,
       "states": [],
       "viewports": [],
-      "evidence": [],
-      "notes": ""
+      "evidence": [
+        "docs/verification/RETINA-UI-2026-11-18.md"
+      ],
+      "notes": "The November 18 review covers new native light and dark product captures at 390, 820, 1280 and 1600 CSS pixels."
     },
     {
       "path": "apps/site/src/pages/privacy.astro",

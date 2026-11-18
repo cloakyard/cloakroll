@@ -19,6 +19,7 @@ struct AboutHeaderView: View {
             .accessibilityLabel(matrixMode ? "Stop Matrix animation" : "CloakRoll")
             VStack(spacing: 3) {
                 Text(wordmark).font(.title2.weight(.semibold)).accessibilityLabel("CloakRoll")
+                    .accessibilityAddTraits(.isHeader)
                 Text("Version \(version)")
                     .font(.callout).monospacedDigit()
                     .foregroundStyle(matrixMode ? Self.phosphor.opacity(0.85) : .secondary)
