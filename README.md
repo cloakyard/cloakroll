@@ -7,7 +7,7 @@
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
   <img src="https://img.shields.io/badge/platform-macOS%2026%2B%20%C2%B7%20Apple%20silicon-lightgrey" alt="Requires macOS 26+, Apple silicon only">
-  <img src="https://img.shields.io/badge/beta-0.1.0%20%2820261030%29-714BC4" alt="Beta: 0.1.0 (20261030)">
+  <img src="https://img.shields.io/badge/beta-0.1.0%20%2820261118.2%29-714BC4" alt="Beta: 0.1.0 (20261118.2)">
   <img src="https://img.shields.io/badge/Swift-6-F05138?logo=swift&logoColor=white" alt="Swift 6">
   <img src="https://img.shields.io/badge/SwiftUI-Liquid%20Glass-8A2BE2" alt="SwiftUI · Liquid Glass">
 </p>
@@ -25,9 +25,9 @@ A native macOS app for backing up iPhone photos and videos over USB. Browse the 
 
 ## Features
 
-Development for the next beta adds backup health, explicit continuation of unfinished jobs,
+CloakRoll includes backup health, explicit continuation of unfinished jobs,
 an offline saved-original browser, a storage review before Start, and opt-in local notifications.
-These changes are not in build 20261030. See the prioritized [feature checklist](docs/FEATURE-TODO.md)
+See the prioritized [feature checklist](docs/FEATURE-TODO.md)
 and [software verification](docs/verification/NEXT-BETA-2026-11-03.md); physical acceptance is the final stage.
 
 | Capability | Implementation |
@@ -83,12 +83,12 @@ External Help/About links open in your browser only when chosen. Read the
 
 ## Getting started
 
-The published **0.1.0 beta, build 20261030**, is available on
-[GitHub Releases](https://github.com/cloakyard/cloakroll/releases/tag/v0.1.0-beta.20261030),
-with a DMG and SHA-256 checksum. The [beta notes](docs/releases/v0.1.0-beta.20261030.md)
+The published **0.1.0 beta, build 20261118.2**, is available on
+[GitHub Releases](https://github.com/cloakyard/cloakroll/releases/tag/v0.1.0-beta.20261118.2),
+with a DMG and SHA-256 checksum. The [beta notes](docs/releases/v0.1.0-beta.20261118.2.md)
 record the features, verification and known limits; release binaries stay out of source control.
 
-1. Download and open [CloakRoll-v0.1.0-beta.20261030.dmg](https://github.com/cloakyard/cloakroll/releases/download/v0.1.0-beta.20261030/CloakRoll-v0.1.0-beta.20261030.dmg).
+1. Download and open [CloakRoll-v0.1.0-beta.20261118.2.dmg](https://github.com/cloakyard/cloakroll/releases/download/v0.1.0-beta.20261118.2/CloakRoll-v0.1.0-beta.20261118.2.dmg).
 2. Drag **CloakRoll** to **Applications**, then open it and eject the installer.
 3. Connect and unlock your iPhone over USB, accepting Trust if prompted. Choose a backup folder.
 4. Back up new items, or select items and back up the selection.
@@ -102,10 +102,7 @@ Keep another independent copy of irreplaceable originals while evaluating the be
 
 ### Published release and source
 
-The October 30 beta adds **About → Buy me a coffee** and refreshes compatible project dependencies.
-It retains original USB backups, incremental verification, bundled license notices and the Air
-installer. See the [release audit](docs/verification/SUPPORT-BETA-2026-10-30.md) for checks,
-dependency versions and remaining acceptance limits.
+The November 18 beta adds signed in-app updates and the family Air installer. It retains the backup health, saved originals and storage review features of the November 3 beta. The [release notes](docs/releases/v0.1.0-beta.20261118.2.md) cover installation and verification.
 
 ## Development
 

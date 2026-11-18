@@ -1269,3 +1269,7 @@ acceptance are separate. Existing published builds require one manual Sparkle-en
 ## 18 November 2026 — Family installer
 
 Verified the Air DMG in Finder and installed build `20261118.1` from the mounted volume. The family mark comes from the Cloakyard repository. The three products now share native source layout, README headings and dated build conventions. Developer ID export, Apple notarization and physical device acceptance remain pending. [Mac release workflow and verification](MAC-RELEASE.md).
+
+## 18 November 2026 — Public update beta
+
+Build `20261118.2` adds the signed release feed and archive. All 664 Swift tests, five tooling tests, the scale probe and read-only installer validation passed. [Beta and remaining hardware checks](releases/v0.1.0-beta.20261118.2.md).

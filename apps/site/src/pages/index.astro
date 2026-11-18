@@ -5,7 +5,7 @@ import Footer from '../components/Footer.astro';
 import Icon from '../components/Icon.astro';
 import PhotoRoll from '../components/PhotoRoll.astro';
 import { site } from '../data/site';
-const releases = `${site.repo}/releases`;
+const releases = `${site.repo}/releases/tag/v0.1.0-beta.20261118.2`;
 ---
 <BaseLayout>
   <Header />
@@ -59,8 +59,8 @@ const releases = `${site.repo}/releases`;
     <section id="download" class="section frame" tabindex="-1" aria-labelledby="download-title">
       <div class="download-grid">
         <div class="section-intro"><p class="eyebrow">Yours to keep</p><h2 id="download-title">Make room for<br />what comes next.</h2><p>macOS 26 or later · Apple silicon only<br />Free · Open source</p>
-          <a class="air-button air-button--primary" href={releases}><Icon name="download" size={18} />View beta releases</a>
-          <p class="detail release-note">CloakRoll is in public beta. Find available builds and release notes on GitHub.</p>
+          <a class="air-button air-button--primary" href={releases}><Icon name="download" size={18} />Download the beta</a>
+          <p class="detail release-note">Public beta 0.1.0, build 20261118.2. This release adds signed updates in Settings → About. Find the installer and checksums on GitHub.</p>
         </div>
         <div class="install" aria-labelledby="install-title"><h3>From iPhone to folder.</h3><ol>
           <li>Download the <strong>.dmg</strong> from <a href={releases}>GitHub Releases</a>. Open it and drag <strong>CloakRoll</strong> to <strong>Applications</strong>.</li>
