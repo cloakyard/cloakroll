@@ -10,16 +10,16 @@ IMPORTANT: This file was signed by Sparkle. Any modifications to this file requi
         <language>en</language>
         <item>
             <title>0.1.0</title>
-            <pubDate>Wed, 18 Nov 2026 15:14:25 +0530</pubDate>
-            <sparkle:version>20261118.2</sparkle:version>
+            <pubDate>Wed, 18 Nov 2026 20:42:06 +0530</pubDate>
+            <sparkle:version>20261118.6</sparkle:version>
             <sparkle:shortVersionString>0.1.0</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
             <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
-            <enclosure url="https://github.com/cloakyard/cloakroll/releases/download/v0.1.0-beta.20261118.2/CloakRoll-20261118.2.zip" length="7386772" type="application/octet-stream" sparkle:edSignature="tPZjsTWPEPxo1ZMIWQen2dXF+AVm7L2+tPafNrUY9cqnN0XwY2o2olAkIyDB0eOLJrE4l1Z+fPV5IyC38DwLBg=="/>
+            <enclosure url="https://github.com/cloakyard/cloakroll/releases/download/v0.1.0-beta.20261118.6/CloakRoll-20261118.6.zip" length="7422691" type="application/octet-stream" sparkle:edSignature="OHiuZMEwcQ20c3APq/ezlpvJJYlpQrTopq4TmPG6n4lkThA4lX6ixmK7EqXDnnYtj6l1/pDKfd219zoWkRIgAg=="/>
         </item>
     </channel>
 </rss>
 <!-- sparkle-signatures:
-edSignature: D8zFUsrxBcvaukuaAFhmfsYHby6BOHROryGs0F5/wfKTa1LG2EurE/r6Vg/GcXpxcxV0irpYM3gZU5quzj3fDg==
+edSignature: Y2k3YNGz42M6GR+Bw2vAc6CU7dSG2ViNdvL12blu30b+q9spNKaWWAeRRLMNaLKPLKInqLEKzis3YhC/4Cm6DA==
 length: 1336
 -->
