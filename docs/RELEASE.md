@@ -51,13 +51,10 @@ Python 3.11/3.12/3.13 may be used to create the environment. These tools do not 
 Then run from `apps/macos`:
 
 ```sh
-scripts/prepare_beta.sh --build 20261028
+scripts/prepare_beta.sh --build 20261118.1
 ```
 
-The build number uses CloakDrop’s `YYYYMMDD` convention. Omitting `--build` uses today in
-Asia/Kolkata. Use `.1`, `.2`, etc. for additional builds that day. `CFBundleShortVersionString`
-stays numeric `0.1.0`; the app’s separate channel is **Beta**. Ordinary Debug builds remain
-**Development preview**. Reusing an existing build directory or DMG output is rejected.
+The build number uses the family’s `YYYYMMDD.N` convention. Omitting `--build` selects today in Asia/Kolkata with revision 1. Increment the revision for subsequent builds on that date. The marketing version comes from `project.yml`. The beta packager sets the **Beta** channel, and ordinary local builds show **Development preview**. Choose a fresh output directory for each build.
 
 The command captures the starting clean Git revision and rejects a changed revision or dirty
 source tree before and after each stage. Do not edit or commit source while it runs. It runs
@@ -66,8 +63,8 @@ hosted app tests, strict lint, normal Debug and Apple silicon Release builds, ac
 DMG creation and a read-only mounted comparison. It writes:
 
 ```text
-build/Beta-0.1.0-20261028/
-  CloakRoll-v0.1.0-beta.20261028.dmg
+build/Beta-0.1.0-20261118.1/
+  CloakRoll-v0.1.0-beta.20261118.1.dmg
   SHA256SUMS.txt
   build-manifest.json       # Exact commit, toolchain, build, architectures, tests and DMG hash
   app-inventory.json        # File hashes, permissions and symlink targets
@@ -88,11 +85,11 @@ build/dmg-tools/bin/python scripts/dmg/validate_dmg.py /absolute/path/new-instal
 
 The Air layout matches CloakDrop’s 760×570-point composition and native 96-point icons.
 The Finder frame is 760×602 points to include its title bar without clipping the artwork.
-`background.swift` authors a 1520×1140 image at 144 dpi, with CloakRoll’s purple accent.
+`background.swift` authors a 1520×1140 image at 144 dpi, with the Cloakyard family mark and Air palette.
 Regenerate the committed background from `apps/macos`:
 
 ```sh
-swift scripts/dmg/background.swift App/Resources/Assets.xcassets/AboutAppIcon.imageset/about_icon_512.png ../../assets/dmg/background.png
+swift scripts/dmg/background.swift ../../assets/dmg/background.png
 sips -s dpiWidth 144 -s dpiHeight 144 ../../assets/dmg/background.png
 ```
 

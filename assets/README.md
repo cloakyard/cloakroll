@@ -69,12 +69,7 @@ represent an actual asset's metadata, transfer size or backup state.
 
 ## Air installer and README captures
 
-The beta installer follows CloakDrop’s Air composition: light neutral page, native system
-fonts, open spacing, a restrained purple horizon, a single arrow and real Finder items.
-Editable source: `apps/macos/scripts/dmg/background.swift`. The committed export is
-`assets/dmg/background.png` (1520×1140, 144 dpi, displayed at 760×570 points).
-The artwork is authored in AppKit and uses the existing CloakRoll icon; no AI bitmap is needed.
-See [Release](../docs/RELEASE.md) for regeneration and mounted validation.
+The Air installer uses a light neutral background, native type, a directional arrow and Finder’s app and Applications icons. The header pairs the canonical Cloakyard mark with its name. The draggable app and the mounted volume use CloakRoll’s own icon. The editable AppKit source is `apps/macos/scripts/dmg/background.swift`. Its export is `assets/dmg/background.png` (1520×1140 pixels at 144 dpi on a 760×570-point canvas). See the [Mac release guide](../docs/MAC-RELEASE.md) for the original mark, regeneration commands and mounted checks.
 
 `assets/screenshots/library-light.png` and `library-dark.png` show the current native app
 with its illustrated sample library. They contain no personal media and do not prove a physical

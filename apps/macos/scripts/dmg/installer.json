@@ -1,0 +1,7 @@
+{
+  "product": "CloakRoll",
+  "website": "roll.cloakyard.com",
+  "minimumOS": 26,
+  "volumeIcon": "CloakRoll.icns",
+  "background": "assets/dmg/background.png"
+}

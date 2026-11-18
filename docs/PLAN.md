@@ -1265,3 +1265,7 @@ Sparkle uses its separate downloader and installer services, preserving the host
 a network entitlement. See [publishing](UPDATES.md) and [verification](verification/SPARKLE-2026-11-17.md).
 Local install/relaunch is verified; public deployment, Developer ID, notarization and hardware
 acceptance are separate. Existing published builds require one manual Sparkle-enabled upgrade.
+
+## 18 November 2026 — Family installer
+
+Verified the Air DMG in Finder and installed build `20261118.1` from the mounted volume. The family mark comes from the Cloakyard repository. The three products now share native source layout, README headings and dated build conventions. Developer ID export, Apple notarization and physical device acceptance remain pending. [Mac release workflow and verification](MAC-RELEASE.md).

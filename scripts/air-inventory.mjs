@@ -24,7 +24,7 @@ async function scan(directory) {
   );
   return nested.flat();
 }
-const paths = (await scan(scanRoot)).sort();
+const paths = [...(await scan(scanRoot)), "apps/macos/scripts/dmg/background.swift"].sort();
 const surfaces = paths.map(
   (path) =>
     saved.get(path) ?? {

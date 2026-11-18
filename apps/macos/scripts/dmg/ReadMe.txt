@@ -1,14 +1,14 @@
-CloakRoll — Beta Install Guide
+CloakRoll — Install Guide
 
 INSTALL
-  1. Drag CloakRoll onto Applications in this window.
-  2. Open CloakRoll from Applications, then eject the installer.
+  Drag CloakRoll to Applications. Open it from Applications, then eject this disk.
+  Requires an Apple silicon Mac with macOS 26 or later. Check the release notes
+  for this build’s signing status and checksum. macOS checks the app on first open.
+  Apple’s installation guidance: https://support.apple.com/en-us/102445
 
-  This beta is locally ad-hoc signed and is not notarized by Apple.
-  If macOS cannot verify it, only proceed if you trust its source and have
-  checked the supplied checksum. After attempting to open it, use System
-  Settings → Privacy & Security → Open Anyway, then confirm Open.
-  Apple’s guidance: https://support.apple.com/en-us/102445
+UPDATES AND PRIVACY
+  Settings → About lets you check for signed updates and choose automatic updates.
+  Automatic checks and downloads start off. See Settings → Privacy for details.
 
 FIRST BACKUP
   Connect and unlock your iPhone over USB; accept Trust if asked. Choose
