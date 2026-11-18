@@ -1,10 +1,10 @@
 # CloakRoll privacy
 
-Updated 28 October 2026. Applies to the macOS 0.1.0 beta.
+Updated 17 November 2026. Applies to the current source; update support awaits a new beta release.
 
 CloakRoll works locally with an iPhone connected over USB and a backup folder you
-choose. It has no accounts, advertising, analytics, telemetry or app-operated cloud
-service. It does not upload your photos, videos or device information to Cloakyard. External Help,
+choose. It has no accounts, advertising, analytics, telemetry or cloud
+processing. It does not upload your photos, videos or device information to Cloakyard. External Help,
 source, privacy and bug-report links open in your browser only when you choose them.
 That browser and the visited website have their own privacy behavior.
 
@@ -56,11 +56,33 @@ Diagnostic logging covers operations, cache counts and error codes. Framework er
 descriptions may be logged with macOS's private-data designation and may contain file
 context; raw photos/videos are not logged. There is no automatic upload of logs or
 crash reports by CloakRoll. macOS diagnostics are governed by your system
-settings. No data is sent to third-party SDK services; GRDB is used for local SQLite
-storage only.
+settings. GRDB is used for local SQLite storage only. Sparkle update requests are described below.
 
 The app's privacy manifest declares scoped file metadata, app-owned preferences and
 disk-space checking, with no tracking or collected-data declarations. macOS sandbox,
 USB and user-selected-folder permissions restrict access. A USB catalog can omit media
 not exposed by the phone; a successful backup does not assert complete iCloud Photos
 coverage.
+
+## App updates
+
+Sparkle 2 checks for updates only when you choose Check for Updates or enable automatic checks in About settings. Automatic checks and automatic downloads are off by default. The app contacts its Cloakyard website for a signed update feed and GitHub Releases (including its asset delivery hosts) for update downloads. These providers receive ordinary request data such as your IP address, requested resource and the app/updater version in the user agent. No system profile, analytics, files or app activity are uploaded. Preferences and the last check time are stored locally. Downloads are signature-verified before extraction; optional automatic installation happens when the app quits.
+
+CloakRoll keeps its host process without a network entitlement. Sparkle’s separate downloader service handles update traffic, and its installer service replaces the app. Photo and backup processing stay local.
+
+## Unreleased additions — 3 November 2026
+
+The next-beta development branch also keeps the original backup selection and folder layout
+for explicit continuation, capture dates/media types for offline browsing, and dated results
+of completed saved-file checks in the local database. Quick Look reads saved originals with
+scoped read-only folder access. A preview is not evidence of file integrity. The pre-backup
+storage review rechecks reusable originals locally and reads available destination capacity.
+
+Completion/attention notices and a one-time overdue reminder are optional and off by default.
+Authorization is requested only when enabling them. Notices are scheduled through macOS on
+this Mac and contain no phone names, filenames, paths or media. Local preferences retain the
+chosen interval and latest completed-backup time. A successful backup replaces the reminder;
+disabling a feature removes its pending and delivered notices. There is no notification server,
+automatic backup or media upload. macOS controls notification delivery and presentation.
+
+This section describes additions in source; published builds retain the behavior documented in their release notes.
