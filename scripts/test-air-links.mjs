@@ -17,8 +17,42 @@ const browser = await puppeteer.launch({
     process.env.CHROME_PATH || "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
   headless: true,
 });
-const evidence = { base, layouts: [], interactions: [], errors: [] };
+const evidence = { base, layouts: [], interactions: [], previewSizes: [], errors: [] };
+async function checkPreviewSize(theme) {
+  const preview = await browser.newPage();
+  const releaseImage = Promise.withResolvers();
+  try {
+    await preview.setViewport({ width: 390, height: 844 });
+    await preview.emulateMediaFeatures([{ name: "prefers-color-scheme", value: theme }]);
+    await preview.setCacheEnabled(false);
+    await preview.setRequestInterception(true);
+    preview.on("request", async (request) => {
+      if (new URL(request.url()).pathname.startsWith("/images/library-")) await releaseImage.promise;
+      await request.continue();
+    });
+    await preview.goto(base, { waitUntil: "domcontentloaded" });
+    const image = await preview.waitForSelector(".product-preview img");
+    await image.evaluate((img) => img.scrollIntoView({ block: "center" }));
+    const before = await image.evaluate((img) => img.offsetHeight);
+    releaseImage.resolve();
+    const after = await image.evaluate(async (img) => {
+      await img.decode();
+      return img.offsetHeight;
+    });
+    assert.ok(
+      after > 0 && before === after,
+      `${theme}: preview height changed from ${before} to ${after}`,
+    );
+    evidence.previewSizes.push({ theme, before, after });
+  } finally {
+    releaseImage.resolve();
+    await preview.close();
+  }
+}
 try {
+  if (routes.includes("/")) {
+    for (const theme of ["light", "dark"]) await checkPreviewSize(theme);
+  }
   const page = await browser.newPage();
   await page.setCacheEnabled(false);
   page.on("pageerror", (error) => evidence.errors.push(error.message));
